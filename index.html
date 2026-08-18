@@ -205,29 +205,29 @@
     box-shadow: var(--shadow-soft);
     }
     .goal-page-image {
-    width: 100%;
-    height: 86px;
-    object-fit: cover;
-    border-radius: 18px;
-    margin-bottom: 14px;
-    background: var(--surface-2);
-    box-shadow: var(--shadow-soft);
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      background: var(--surface-2);
+      box-shadow: var(--shadow-soft);
     }
     .goal-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 19px; background: var(--brand-soft); font-size: 1.8rem; }
     .product-link {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 15px;
-    padding: 9px 13px;
-    border-radius: 12px;
-    background: var(--brand-soft);
-    color: var(--brand);
-    font-size: .8rem;
-    font-weight: 800;
-    text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 15px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: .8rem;
+      font-weight: 800;
+      text-decoration: none;
     }
     .product-link:hover {
-    background: var(--surface-2);
+      background: var(--surface-2);
     }
     .goal-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
     .goal-top h3 { margin: 0 0 8px; }
@@ -592,6 +592,16 @@
     const $$ = selector => [...document.querySelectorAll(selector)];
     const money = value => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(value) || 0);
     const safe = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+    const safeUrl = value => {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      try {
+        const url = new URL(raw, window.location.href);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch {
+        return "";
+      }
+    };
     const formatDate = value => value ? new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(new Date(value)) : "Recently";
     const clampPercent = value => Math.max(0, Math.min(100, Number(value) || 0));
 
@@ -698,8 +708,9 @@
   const target = Math.max(Number(goal.targetAmount) || 0, 1);
   const percent = clampPercent(saved / target * 100);
 
-  const visual = goal.imageUrl
-    ? `<img class="goal-image" src="${safe(goal.imageUrl)}" alt="${safe(goal.title)}">`
+  const imageUrl = safeUrl(goal.imageUrl);
+  const visual = imageUrl
+    ? `<img class="goal-image" src="${safe(imageUrl)}" alt="${safe(goal.title)}">`
     : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
 
   host.innerHTML = `
@@ -761,72 +772,71 @@
     }
 
     function renderGoals() {
-  const host = $("#goals-list");
+      const host = $("#goals-list");
 
-  if (!app.data.goals.length) {
-    host.innerHTML = `
-      <div class="surface empty">
-        <span class="empty-icon">🎯</span>
-        <strong>No goals yet</strong>
-        <p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p>
-      </div>`;
-    return;
-  }
+      if (!app.data.goals.length) {
+        host.innerHTML = `
+          <div class="surface empty">
+            <span class="empty-icon">🎯</span>
+            <strong>No goals yet</strong>
+            <p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p>
+          </div>`;
+        return;
+      }
 
-  host.innerHTML = app.data.goals.map(goal => {
-    const target = Math.max(Number(goal.targetAmount) || 0, 1);
-    const saved = Number(goal.savedAmount) || 0;
-    const percent = clampPercent(saved / target * 100);
+      host.innerHTML = app.data.goals.map(goal => {
+        const target = Math.max(Number(goal.targetAmount) || 0, 1);
+        const saved = Number(goal.savedAmount) || 0;
+        const percent = clampPercent(saved / target * 100);
+        const imageUrl = safeUrl(goal.imageUrl);
+        const productUrl = safeUrl(goal.productUrl);
 
-    const visual = goal.imageUrl
-      ? `<img class="goal-page-image"
-              src="${safe(goal.imageUrl)}"
-              alt="${safe(goal.title)}">`
-      : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
+        const visual = imageUrl
+          ? `<img class="goal-page-image"
+                  src="${safe(imageUrl)}"
+                  alt="${safe(goal.title)}">`
+          : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
 
-    return `
-      <article class="surface full-goal-card">
+        const productLink = productUrl
+          ? `<a class="product-link"
+                href="${safe(productUrl)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                View product / Where to buy →
+             </a>`
+          : "";
 
-        ${visual}
+        return `
+          <article class="surface full-goal-card">
+            ${visual}
 
-        <div class="skill-head">
-          <span></span>
-          <span class="status ${
-            String(goal.status).toLowerCase() === "complete"
-              ? "completed"
-              : "pending"
-          }">
-            ${safe(goal.status || "active")}
-          </span>
-        </div>
+            <div class="skill-head">
+              <span></span>
+              <span class="status ${
+                String(goal.status).toLowerCase() === "complete"
+                  ? "completed"
+                  : "pending"
+              }">
+                ${safe(goal.status || "active")}
+              </span>
+            </div>
 
-        <h3>${safe(goal.title)}</h3>
+            <h3>${safe(goal.title)}</h3>
+            <p>${money(saved)} saved towards ${money(target)}</p>
 
-        <p>
-          ${money(saved)} saved towards ${money(target)}
-        </p>
+            <div class="progress">
+              <span style="width:${percent}%"></span>
+            </div>
 
-        <div class="progress">
-          <span style="width:${percent}%"></span>
-        </div>
+            <div class="goal-meta">
+              <span>${Math.round(percent)}%</span>
+              <span>${money(Math.max(0, target - saved))} left</span>
+            </div>
 
-        <div class="goal-meta">
-          <span>${Math.round(percent)}%</span>
-          <span>${money(Math.max(0, target - saved))} left</span>
-        ${goal.productUrl
-        ? `<a class="product-link"
-        href="${safe(goal.productUrl)}"
-        target="_blank"
-        rel="noopener noreferrer">
-        View product / Where to buy →
-     </a>`
-  : ""
-}
-        </div>
-
-      </article>`;
-  }).join("");
-}
+            ${productLink}
+          </article>`;
+      }).join("");
+    }
 
     function renderSkills() {
       const host = $("#skills-list");
