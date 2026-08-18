@@ -214,6 +214,21 @@
     box-shadow: var(--shadow-soft);
     }
     .goal-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 19px; background: var(--brand-soft); font-size: 1.8rem; }
+    .product-link {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 15px;
+    padding: 9px 13px;
+    border-radius: 12px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: .8rem;
+    font-weight: 800;
+    text-decoration: none;
+    }
+    .product-link:hover {
+    background: var(--surface-2);
+    }
     .goal-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
     .goal-top h3 { margin: 0 0 8px; }
     .goal-amount { color: var(--muted); font-size: .82rem; font-weight: 700; white-space: nowrap; }
@@ -798,6 +813,15 @@
         <div class="goal-meta">
           <span>${Math.round(percent)}%</span>
           <span>${money(Math.max(0, target - saved))} left</span>
+        ${goal.productUrl
+        ? `<a class="product-link"
+        href="${safe(goal.productUrl)}"
+        target="_blank"
+        rel="noopener noreferrer">
+        View product / Where to buy →
+     </a>`
+  : ""
+}
         </div>
 
       </article>`;
