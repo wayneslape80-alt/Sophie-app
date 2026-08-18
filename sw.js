@@ -1,4 +1,3 @@
-
 const CACHE_NAME = "sophie-app-v2-1";
 const APP_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
