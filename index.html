@@ -737,18 +737,63 @@
     }
 
     function renderGoals() {
-      const host = $("#goals-list");
-      if (!app.data.goals.length) {
-        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🎯</span><strong>No goals yet</strong><p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p></div>`;
-        return;
-      }
-      host.innerHTML = app.data.goals.map(goal => {
-        const target = Math.max(Number(goal.targetAmount) || 0, 1);
-        const saved = Number(goal.savedAmount) || 0;
-        const percent = clampPercent(saved / target * 100);
-        return `<article class="surface full-goal-card"><div class="skill-head"><span>${safe(goal.icon || "🎯")}</span><span class="status ${String(goal.status).toLowerCase() === "complete" ? "completed" : "pending"}">${safe(goal.status || "active")}</span></div><h3>${safe(goal.title)}</h3><p>${money(saved)} saved towards ${money(target)}</p><div class="progress"><span style="width:${percent}%"></span></div><div class="goal-meta"><span>${Math.round(percent)}%</span><span>${money(Math.max(0, target - saved))} left</span></div></article>`;
-      }).join("");
-    }
+  const host = $("#goals-list");
+
+  if (!app.data.goals.length) {
+    host.innerHTML = `
+      <div class="surface empty">
+        <span class="empty-icon">🎯</span>
+        <strong>No goals yet</strong>
+        <p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p>
+      </div>`;
+    return;
+  }
+
+  host.innerHTML = app.data.goals.map(goal => {
+    const target = Math.max(Number(goal.targetAmount) || 0, 1);
+    const saved = Number(goal.savedAmount) || 0;
+    const percent = clampPercent(saved / target * 100);
+
+    const visual = goal.imageUrl
+      ? `<img class="goal-page-image"
+              src="${safe(goal.imageUrl)}"
+              alt="${safe(goal.title)}">`
+      : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
+
+    return `
+      <article class="surface full-goal-card">
+
+        ${visual}
+
+        <div class="skill-head">
+          <span></span>
+          <span class="status ${
+            String(goal.status).toLowerCase() === "complete"
+              ? "completed"
+              : "pending"
+          }">
+            ${safe(goal.status || "active")}
+          </span>
+        </div>
+
+        <h3>${safe(goal.title)}</h3>
+
+        <p>
+          ${money(saved)} saved towards ${money(target)}
+        </p>
+
+        <div class="progress">
+          <span style="width:${percent}%"></span>
+        </div>
+
+        <div class="goal-meta">
+          <span>${Math.round(percent)}%</span>
+          <span>${money(Math.max(0, target - saved))} left</span>
+        </div>
+
+      </article>`;
+  }).join("");
+}
 
     function renderSkills() {
       const host = $("#skills-list");
