@@ -646,22 +646,50 @@
     }
 
     function renderGoal() {
-      const goal = app.data.goals.find(item => String(item.status).toLowerCase() === "active") || app.data.goals[0];
-      const host = $("#active-goal");
-      if (!goal) {
-        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🎯</span><strong>No active goal yet</strong><p>Goals appear after the v2 spreadsheet setup is run.</p></div>`;
-        return;
-      }
-      const saved = Number(goal.savedAmount) || 0;
-      const target = Math.max(Number(goal.targetAmount) || 0, 1);
-      const percent = clampPercent(saved / target * 100);
-      host.innerHTML = `<article class="surface goal-card">
-        <div class="goal-icon">${safe(goal.icon || "🎯")}</div>
-        <div><div class="goal-top"><h3>${safe(goal.title)}</h3><span class="goal-amount">${money(saved)} / ${money(target)}</span></div>
-        <div class="progress" aria-label="${Math.round(percent)} percent saved"><span style="width:${percent}%"></span></div>
-        <div class="goal-meta"><span>${Math.round(percent)}% there</span><span>${money(Math.max(0, target - saved))} to go</span></div></div>
-      </article>`;
-    }
+  const goal = app.data.goals.find(
+    item => String(item.status).toLowerCase() === "active"
+  ) || app.data.goals[0];
+
+  const host = $("#active-goal");
+
+  if (!goal) {
+    host.innerHTML = `
+      <div class="surface empty">
+        <span class="empty-icon">🎯</span>
+        <strong>No active goal yet</strong>
+        <p>Goals appear after the v2 spreadsheet setup is run.</p>
+      </div>`;
+    return;
+  }
+
+  const saved = Number(goal.savedAmount) || 0;
+  const target = Math.max(Number(goal.targetAmount) || 0, 1);
+  const percent = clampPercent(saved / target * 100);
+
+  const visual = goal.imageUrl
+    ? `<img class="goal-image" src="${safe(goal.imageUrl)}" alt="${safe(goal.title)}">`
+    : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
+
+  host.innerHTML = `
+    <article class="surface goal-card">
+      ${visual}
+      <div>
+        <div class="goal-top">
+          <h3>${safe(goal.title)}</h3>
+          <span class="goal-amount">${money(saved)} / ${money(target)}</span>
+        </div>
+
+        <div class="progress" aria-label="${Math.round(percent)} percent saved">
+          <span style="width:${percent}%"></span>
+        </div>
+
+        <div class="goal-meta">
+          <span>${Math.round(percent)}% there</span>
+          <span>${money(Math.max(0, target - saved))} to go</span>
+        </div>
+      </div>
+    </article>`;
+}
 
     function jobMarkup(job) {
       const pending = job.status === "pending" || job.status === "claimed";
