@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6d5dfc">
+  <meta name="description" content="Sophie’s independence app — contribute, learn, earn and choose.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>Sophie — My Independence</title>
+  <style>
+    :root {
+      --bg: #f7f7fc;
+      --surface: #ffffff;
+      --surface-2: #f0efff;
+      --ink: #202033;
+      --muted: #73738a;
+      --line: #e9e8f2;
+      --brand: #6d5dfc;
+      --brand-strong: #5040dc;
+      --brand-soft: #ebe8ff;
+      --mint: #dff8ed;
+      --mint-ink: #167753;
+      --sun: #fff1ca;
+      --sun-ink: #996700;
+      --rose: #ffe5eb;
+      --rose-ink: #b9385a;
+      --shadow: 0 18px 50px rgba(46, 38, 100, .10);
+      --shadow-soft: 0 8px 24px rgba(46, 38, 100, .07);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --nav-height: 78px;
+    }
+
+    [data-theme="forest"] {
+      --bg: #f2f7f1;
+      --surface-2: #e4f1e2;
+      --ink: #203124;
+      --muted: #68796b;
+      --line: #dfeade;
+      --brand: #3d8a5d;
+      --brand-strong: #2c6c46;
+      --brand-soft: #dff2e5;
+    }
+
+    [data-theme="sakura"] {
+      --bg: #fff6f8;
+      --surface-2: #fff0f4;
+      --ink: #402630;
+      --muted: #8a6875;
+      --line: #f4e1e7;
+      --brand: #db5a82;
+      --brand-strong: #bb3b65;
+      --brand-soft: #ffe4ec;
+    }
+
+    [data-theme="night"] {
+      --bg: #171724;
+      --surface: #222234;
+      --surface-2: #2a2943;
+      --ink: #f8f7ff;
+      --muted: #aaa7c0;
+      --line: #37364e;
+      --brand: #9b8fff;
+      --brand-strong: #b9b0ff;
+      --brand-soft: #353257;
+      --mint: #1f493d;
+      --mint-ink: #8ce3c1;
+      --sun: #4a3d23;
+      --sun-ink: #ffd77c;
+      --rose: #4a2934;
+      --rose-ink: #ff9bb5;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+      --shadow-soft: 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background .25s ease, color .25s ease;
+    }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent);
+      outline-offset: 2px;
+    }
+    .app-shell {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 18px calc(var(--nav-height) + 28px + env(safe-area-inset-bottom));
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: max(18px, env(safe-area-inset-top)) 2px 14px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(18px);
+    }
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 0; font-size: clamp(1.65rem, 5vw, 2.2rem); letter-spacing: -.04em; }
+    h2 { margin-bottom: 6px; font-size: clamp(1.35rem, 4vw, 1.75rem); letter-spacing: -.035em; }
+    h3 { letter-spacing: -.02em; }
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+    .icon-button, .avatar-button {
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: var(--surface);
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: transform .18s ease;
+    }
+    .icon-button:active, .avatar-button:active { transform: scale(.94); }
+    .icon-button { width: 42px; height: 42px; border-radius: 14px; font-size: 1.1rem; }
+    .avatar-button { min-width: 48px; height: 48px; padding: 0 8px; border-radius: 17px; font-size: 1.55rem; }
+    .sync-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      margin: 31px 0 0 31px;
+      border: 2px solid var(--surface);
+      border-radius: 50%;
+      background: #35bd81;
+    }
+    .sync-dot.offline { background: #f3a52b; }
+    .view { display: none; animation: rise .28s ease both; }
+    .view.active { display: block; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 218px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 20px;
+      margin: 8px 0 22px;
+      padding: 27px;
+      border-radius: var(--radius-xl);
+      color: #fff;
+      background: linear-gradient(135deg, #5143da 0%, #7a68ff 48%, #a67bff 100%);
+      box-shadow: 0 24px 55px rgba(86, 68, 218, .28);
+    }
+    .hero::before, .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .12);
+    }
+    .hero::before { width: 230px; height: 230px; right: -85px; top: -110px; }
+    .hero::after { width: 120px; height: 120px; right: 110px; bottom: -70px; }
+    .hero-content, .hero-side { position: relative; z-index: 1; }
+    .hero-label { margin-bottom: 8px; font-size: .82rem; font-weight: 750; opacity: .75; text-transform: uppercase; letter-spacing: .08em; }
+    .money { margin-bottom: 7px; font-size: clamp(2.5rem, 11vw, 4.6rem); line-height: .95; font-weight: 850; letter-spacing: -.065em; }
+    .pending-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .16);
+      font-size: .82rem;
+      font-weight: 650;
+    }
+    .hero-side { text-align: right; align-self: center; }
+    .hero-side .big-icon { display: block; margin-bottom: 8px; font-size: 3.5rem; filter: drop-shadow(0 8px 10px rgba(0,0,0,.13)); }
+    .hero-side span:last-child { font-size: .75rem; opacity: .78; }
+    .section { margin: 25px 0; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 13px; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .text-button { border: 0; background: transparent; color: var(--brand); font-size: .86rem; font-weight: 800; cursor: pointer; }
+    .surface {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+    }
+    .goal-card { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; padding: 19px; }
+    .goal-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 19px; background: var(--brand-soft); font-size: 1.8rem; }
+    .goal-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .goal-top h3 { margin: 0 0 8px; }
+    .goal-amount { color: var(--muted); font-size: .82rem; font-weight: 700; white-space: nowrap; }
+    .progress { overflow: hidden; height: 9px; border-radius: 99px; background: var(--line); }
+    .progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand), #9c7aff); transition: width .7s cubic-bezier(.2,.8,.2,1); }
+    .goal-meta { display: flex; justify-content: space-between; margin-top: 8px; color: var(--muted); font-size: .75rem; }
+    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+    .quick-card {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px;
+      border: 0;
+      border-radius: 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .quick-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+    .quick-card .quick-icon { font-size: 1.55rem; }
+    .quick-card strong { font-size: .92rem; }
+    .quick-card small { color: color-mix(in srgb, currentColor 70%, transparent); }
+    .quick-card.earn { background: var(--mint); color: var(--mint-ink); }
+    .quick-card.goals { background: var(--sun); color: var(--sun-ink); }
+    .quick-card.learn { background: var(--rose); color: var(--rose-ink); }
+    .cards { display: grid; gap: 12px; }
+    .job-card { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 17px; }
+    .job-icon { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 17px; background: var(--surface-2); font-size: 1.5rem; }
+    .job-card h3 { margin: 0 0 5px; font-size: 1rem; }
+    .job-card p { margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.35; }
+    .job-side { text-align: right; }
+    .job-value { display: block; margin-bottom: 7px; font-weight: 850; color: var(--brand); }
+    .pill, .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 99px;
+      font-size: .7rem;
+      line-height: 1;
+      font-weight: 800;
+    }
+    .pill { margin-right: 5px; background: var(--surface-2); color: var(--muted); }
+    .status.pending { background: var(--sun); color: var(--sun-ink); }
+    .status.completed { background: var(--mint); color: var(--mint-ink); }
+    .primary-button, .secondary-button, .danger-button {
+      border: 0;
+      border-radius: 13px;
+      padding: 10px 14px;
+      font-size: .78rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .primary-button { color: #fff; background: var(--brand); }
+    .secondary-button { color: var(--brand); background: var(--brand-soft); }
+    .danger-button { color: var(--rose-ink); background: var(--rose); }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .impact-card { padding: 20px; background: linear-gradient(135deg, var(--surface), var(--surface-2)); }
+    .impact-card p { margin: 7px 0 0; color: var(--muted); line-height: 1.55; }
+    .impact-number { font-size: 2rem; font-weight: 850; color: var(--brand); }
+    .page-intro { margin: 12px 1px 20px; }
+    .page-intro p { margin: 5px 0 0; color: var(--muted); line-height: 1.5; }
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 14px; scrollbar-width: none; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip { flex: 0 0 auto; padding: 9px 13px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--muted); font-size: .78rem; font-weight: 750; cursor: pointer; }
+    .filter-chip.active { border-color: var(--brand); color: #fff; background: var(--brand); }
+    .skill-grid, .goal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .skill-card, .full-goal-card { padding: 18px; }
+    .skill-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 17px; }
+    .skill-head span:first-child { font-size: 1.6rem; }
+    .level { color: var(--brand); font-size: .75rem; font-weight: 850; }
+    .skill-card h3, .full-goal-card h3 { margin-bottom: 7px; }
+    .skill-card p, .full-goal-card p { color: var(--muted); font-size: .8rem; line-height: 1.45; }
+    .activity-list { overflow: hidden; }
+    .activity-row { display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: center; padding: 15px 17px; border-bottom: 1px solid var(--line); }
+    .activity-row:last-child { border-bottom: 0; }
+    .activity-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: var(--surface-2); }
+    .activity-row h3 { margin: 0 0 3px; font-size: .9rem; }
+    .activity-row p { margin: 0; color: var(--muted); font-size: .72rem; }
+    .activity-amount { font-size: .88rem; font-weight: 850; }
+    .positive { color: var(--mint-ink); }
+    .negative { color: var(--rose-ink); }
+    .empty { padding: 30px 20px; text-align: center; color: var(--muted); }
+    .empty .empty-icon { display: block; margin-bottom: 9px; font-size: 2rem; }
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      z-index: 30;
+      width: min(calc(100% - 24px), 610px);
+      height: var(--nav-height);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 25px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: 0 20px 60px rgba(33, 28, 77, .18);
+      backdrop-filter: blur(20px);
+      transform: translateX(-50%);
+    }
+    .nav-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 18px; background: transparent; color: var(--muted); font-size: .66rem; font-weight: 750; cursor: pointer; }
+    .nav-button .nav-icon { font-size: 1.18rem; transition: transform .2s ease; }
+    .nav-button.active { color: var(--brand); background: var(--brand-soft); }
+    .nav-button.active .nav-icon { transform: translateY(-1px) scale(1.08); }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--nav-height) + 30px + env(safe-area-inset-bottom));
+      z-index: 100;
+      max-width: calc(100% - 40px);
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: #fff;
+      background: #262537;
+      box-shadow: var(--shadow);
+      font-size: .84rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: .22s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    dialog {
+      width: min(calc(100% - 28px), 570px);
+      max-height: min(82vh, 760px);
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 30px 90px rgba(20, 18, 50, .3);
+    }
+    dialog::backdrop { background: rgba(24, 22, 46, .46); backdrop-filter: blur(5px); }
+    .dialog-body { padding: 24px; }
+    .dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 22px; }
+    .dialog-head h2 { margin: 0; }
+    .close-button { width: 38px; height: 38px; border: 0; border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    .setting-row:last-child { border-bottom: 0; }
+    .setting-row p { margin: 3px 0 0; color: var(--muted); font-size: .77rem; }
+    .theme-options, .avatar-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .theme-swatch, .avatar-choice { width: 38px; height: 38px; display: grid; place-items: center; border: 2px solid transparent; border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+    .theme-swatch.active, .avatar-choice.active { border-color: var(--brand); }
+    .theme-swatch[data-value="default"] { background: #7564ff; }
+    .theme-swatch[data-value="forest"] { background: #4d9869; }
+    .theme-swatch[data-value="sakura"] { background: #e76f94; }
+    .theme-swatch[data-value="night"] { background: #292840; }
+    label { display: block; margin-bottom: 7px; font-size: .78rem; font-weight: 800; }
+    input, textarea {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    textarea { min-height: 74px; resize: vertical; }
+    .form-field { margin-bottom: 14px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+    .parent-review { margin-bottom: 13px; padding: 17px; }
+    .parent-review-head { display: flex; justify-content: space-between; gap: 15px; }
+    .parent-review h3 { margin-bottom: 5px; }
+    .parent-review p { color: var(--muted); font-size: .78rem; }
+    .parent-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: end; margin-top: 13px; }
+    .parent-actions .form-field { margin: 0; }
+    .parent-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+    .parent-stat { padding: 16px; text-align: center; }
+    .parent-stat strong { display: block; margin-bottom: 4px; font-size: 1.35rem; color: var(--brand); }
+    .parent-stat span { color: var(--muted); font-size: .72rem; }
+    .skeleton { position: relative; overflow: hidden; min-height: 80px; background: var(--surface); border-radius: var(--radius-lg); }
+    .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand) 8%, transparent), transparent); animation: shimmer 1.2s infinite; transform: translateX(-100%); }
+    @keyframes shimmer { to { transform: translateX(100%); } }
+
+    @media (min-width: 760px) {
+      .app-shell { padding-left: 30px; padding-right: 30px; }
+      .home-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 22px; align-items: start; }
+      .home-columns .section { margin-top: 0; }
+      .home-columns .cards { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .job-card { min-height: 112px; }
+      .skill-grid, .goal-grid { grid-template-columns: repeat(3, 1fr); }
+      .bottom-nav { bottom: 18px; }
+    }
+    @media (max-width: 420px) {
+      .app-shell { padding-left: 13px; padding-right: 13px; }
+      .hero { min-height: 198px; padding: 22px; }
+      .hero-side { display: none; }
+      .quick-card { min-height: 102px; padding: 13px; }
+      .job-card { grid-template-columns: auto 1fr; }
+      .job-side { grid-column: 2; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+      .job-value { margin: 0; }
+      .skill-grid, .goal-grid { grid-template-columns: 1fr; }
+      .parent-actions { grid-template-columns: 1fr 1fr; }
+      .parent-actions .form-field { grid-column: 1 / -1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="day-greeting">My independence</p>
+        <h1>Hey, Sophie <span aria-hidden="true">👋</span></h1>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻</button>
+        <button class="avatar-button" id="settings-button" aria-label="Open personalisation"><span id="avatar">🐉</span><span class="sync-dot" id="sync-dot"></span></button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-home" data-view="home">
+      <article class="hero">
+        <div class="hero-content">
+          <div class="hero-label">My money</div>
+          <div class="money" id="balance">$0.00</div>
+          <div class="pending-pill"><span>◷</span><span id="pending">$0.00 awaiting approval</span></div>
+        </div>
+        <div class="hero-side"><span class="big-icon">🌈</span><span>Every step builds independence</span></div>
+      </article>
+
+      <div class="home-columns">
+        <div>
+          <section class="section">
+            <div class="section-heading"><div><h2>Saving for</h2><p>A goal Sophie chose</p></div><button class="text-button" data-go-view="goals">All goals →</button></div>
+            <div id="active-goal"><div class="skeleton"></div></div>
+          </section>
+
+          <section class="section">
+            <div class="section-heading"><div><h2>What do you feel like?</h2><p>Choose your own next step</p></div></div>
+            <div class="quick-grid">
+              <button class="quick-card earn" data-filter-jump="earn"><span class="quick-icon">💰</span><span><strong>Earn</strong><br><small>Open opportunities</small></span></button>
+              <button class="quick-card goals" data-go-view="goals"><span class="quick-icon">🎯</span><span><strong>Goals</strong><br><small>See your progress</small></span></button>
+              <button class="quick-card learn" data-filter-jump="learn"><span class="quick-icon">🌱</span><span><strong>Learn</strong><br><small>Build a life skill</small></span></button>
+            </div>
+          </section>
+        </div>
+
+        <section class="section">
+          <div class="section-heading"><div><h2>For you</h2><p>Opportunities you can choose</p></div><button class="text-button" data-go-view="opportunities">See all →</button></div>
+          <div class="cards" id="suggested-jobs"><div class="skeleton"></div><div class="skeleton"></div></div>
+        </section>
+      </div>
+
+      <section class="section">
+        <div class="section-heading"><div><h2>Your family impact</h2><p>Contribution without keeping score</p></div></div>
+        <article class="surface impact-card" id="impact-card"><span class="impact-number">0</span><p>Your contributions will appear here as you help make family life easier.</p></article>
+      </section>
+    </section>
+
+    <section class="view" id="view-opportunities" data-view="opportunities">
+      <div class="page-intro"><h2>Opportunities</h2><p>Some things earn money, some help the family, and some grow a skill. Each one matters differently.</p></div>
+      <div class="filter-row" id="opportunity-filters">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="earn">💰 Earn</button>
+        <button class="filter-chip" data-filter="contribute">🤝 Contribute</button>
+        <button class="filter-chip" data-filter="learn">🌱 Learn</button>
+        <button class="filter-chip" data-filter="pending">◷ Awaiting approval</button>
+      </div>
+      <div class="cards" id="all-jobs"></div>
+    </section>
+
+    <section class="view" id="view-goals" data-view="goals">
+      <div class="page-intro"><h2>My goals</h2><p>Money becomes meaningful when it moves you closer to something you chose.</p></div>
+      <div class="goal-grid" id="goals-list"></div>
+    </section>
+
+    <section class="view" id="view-skills" data-view="skills">
+      <div class="page-intro"><h2>Growing independence</h2><p>Progress means becoming more capable—not collecting endless points.</p></div>
+      <div class="skill-grid" id="skills-list"></div>
+    </section>
+
+    <section class="view" id="view-activity" data-view="activity">
+      <div class="page-intro"><h2>My activity</h2><p>A clear history of earnings, contributions, feedback and choices.</p></div>
+      <div class="surface activity-list" id="activity-list"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-button active" data-view-target="home"><span class="nav-icon">⌂</span><span>Home</span></button>
+    <button class="nav-button" data-view-target="opportunities"><span class="nav-icon">✦</span><span>Opportunities</span></button>
+    <button class="nav-button" data-view-target="goals"><span class="nav-icon">◎</span><span>Goals</span></button>
+    <button class="nav-button" data-view-target="skills"><span class="nav-icon">♧</span><span>Skills</span></button>
+    <button class="nav-button" data-view-target="activity"><span class="nav-icon">☷</span><span>Activity</span></button>
+  </nav>
+
+  <dialog id="settings-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><h2>Make it yours</h2><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
+      <div class="setting-row"><div><strong>Your character</strong><p>Choose a companion for the app.</p></div><div class="avatar-options" id="avatar-options"></div></div>
+      <div class="setting-row"><div><strong>Colour theme</strong><p>Pick the style that feels most like you.</p></div><div class="theme-options" id="theme-options"></div></div>
+      <div class="setting-row"><div><strong>Parent dashboard</strong><p>Approvals and helpful feedback.</p></div><button class="secondary-button" id="open-parent">Parent access</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="parent-login-dialog">
+    <form class="dialog-body" id="parent-login-form">
+      <div class="dialog-head"><h2>Parent access</h2><button type="button" class="close-button" data-close-dialog="parent-login-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">Enter the private admin key generated when the v2 backend is initialised.</p>
+      <div class="form-field"><label for="admin-key">Admin key</label><input id="admin-key" type="password" autocomplete="current-password" required></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="parent-login-dialog">Cancel</button><button class="primary-button" type="submit">Open dashboard</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="parent-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><h2>Parent dashboard</h2><button class="close-button" data-close-dialog="parent-dialog" aria-label="Close">×</button></div>
+      <div class="parent-summary" id="parent-summary"></div>
+      <h3>Needs review</h3>
+      <div id="parent-reviews"></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // Keep this URL if you update the existing Apps Script deployment. Replace it only if you create a new deployment.
+    const API_URL = "https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec";
+
+    const mockData = {
+      appVersion: "2.0-preview",
+      balance: 82.50,
+      pending: 15,
+      impact: { contributionsThisWeek: 3, minutesThisWeek: 75, message: "You helped with dinner and the dishwasher this week." },
+      goals: [{ goalId: "G001", title: "New headphones", targetAmount: 150, savedAmount: 82.5, icon: "🎧", status: "active" }],
+      jobs: [
+        { id: 1, title: "Load the dishwasher", description: "Reset the kitchen after dinner.", value: 0, tier: 1, status: "open", type: "contribute", category: "Kitchen", skill: "Home care", estimatedMinutes: 10, icon: "🍽️", whyItMatters: "Everyone gets a calmer start tomorrow." },
+        { id: 2, title: "Cook family dinner", description: "Plan, cook and tidy as you go.", value: 15, tier: 3, status: "open", type: "earn", category: "Kitchen", skill: "Cooking", estimatedMinutes: 55, icon: "🍝", whyItMatters: "Dinner is handled for the whole family." },
+        { id: 3, title: "Learn a laundry load", description: "Sort colours, choose a cycle and hang it out.", value: 0, tier: 2, status: "open", type: "learn", category: "Laundry", skill: "Laundry", estimatedMinutes: 25, icon: "🧺", whyItMatters: "You can care for your own clothes." },
+        { id: 4, title: "Wash both cars", description: "Wash, rinse and dry both family cars.", value: 12, tier: 2, status: "pending", type: "earn", category: "Outside", skill: "Car care", estimatedMinutes: 45, icon: "🚗", whyItMatters: "It saves the family time and money." }
+      ],
+      skills: [
+        { skillId: "S001", name: "Cooking", level: 2, progress: 62, nextLevelAt: 100, icon: "🍳", description: "Planning and preparing food safely." },
+        { skillId: "S002", name: "Laundry", level: 1, progress: 38, nextLevelAt: 100, icon: "🧺", description: "Caring for clothes independently." },
+        { skillId: "S003", name: "Money", level: 2, progress: 54, nextLevelAt: 100, icon: "💳", description: "Saving, choosing and understanding value." },
+        { skillId: "S004", name: "Organisation", level: 1, progress: 45, nextLevelAt: 100, icon: "🗓️", description: "Planning time and keeping track of tasks." }
+      ],
+      transactions: [
+        { transactionId: "TX003", date: new Date().toISOString(), type: "earning", description: "Cook family dinner", amount: 15, status: "completed", feedback: "Great timing—everything was ready together." },
+        { transactionId: "TX002", date: new Date(Date.now() - 86400000 * 2).toISOString(), type: "contribution", description: "Load the dishwasher", amount: 0, status: "completed", feedback: "That made the evening easier. Thank you." },
+        { transactionId: "TX001", date: new Date(Date.now() - 86400000 * 4).toISOString(), type: "earning", description: "Wash both cars", amount: 12, status: "completed", feedback: "Careful and thorough work." }
+      ]
+    };
+
+    const app = {
+      data: mockData,
+      activeView: "home",
+      jobFilter: "all",
+      previewMode: false,
+      adminKey: sessionStorage.getItem("sophie_admin_key") || ""
+    };
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const money = value => new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(Number(value) || 0);
+    const safe = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+    const formatDate = value => value ? new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(new Date(value)) : "Recently";
+    const clampPercent = value => Math.max(0, Math.min(100, Number(value) || 0));
+
+    function normaliseData(raw = {}) {
+      return {
+        appVersion: raw.appVersion || "1-compatible",
+        balance: Number(raw.balance) || 0,
+        pending: Number(raw.pending) || 0,
+        impact: raw.impact || { contributionsThisWeek: 0, minutesThisWeek: 0, message: "Your contributions will appear here as you help make family life easier." },
+        goals: Array.isArray(raw.goals) ? raw.goals : [],
+        jobs: (Array.isArray(raw.jobs) ? raw.jobs : []).map(job => ({
+          ...job,
+          value: Number(job.value) || 0,
+          tier: Number(job.tier) || 1,
+          status: String(job.status || "open").toLowerCase(),
+          type: String(job.type || ((Number(job.value) || 0) > 0 ? "earn" : "contribute")).toLowerCase(),
+          category: job.category || "Home",
+          skill: job.skill || "Independence",
+          estimatedMinutes: Number(job.estimatedMinutes) || 0,
+          icon: job.icon || iconFor(job.type || ((Number(job.value) || 0) > 0 ? "earn" : "contribute"))
+        })),
+        skills: Array.isArray(raw.skills) ? raw.skills : [],
+        transactions: Array.isArray(raw.transactions) ? raw.transactions : []
+      };
+    }
+
+    function iconFor(type) {
+      return ({ earn: "💰", earning: "💰", contribute: "🤝", contribution: "🤝", learn: "🌱", skill: "🌱", spending: "🛍️" })[String(type).toLowerCase()] || "✨";
+    }
+
+    async function apiGet(action = "getData") {
+      if (!API_URL) throw new Error("No API URL configured");
+      const response = await fetch(`${API_URL}?action=${encodeURIComponent(action)}&t=${Date.now()}`);
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      const result = await response.json();
+      if (result.success === false) throw new Error(result.error || "Request failed");
+      return result.data || result;
+    }
+
+    async function apiPost(payload) {
+      if (!API_URL) throw new Error("No API URL configured");
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || "Request failed");
+      return result.data || result;
+    }
+
+    async function loadData({ quiet = false } = {}) {
+      const refresh = $("#refresh-button");
+      refresh.disabled = true;
+      refresh.textContent = "…";
+      try {
+        app.data = normaliseData(await apiGet("getData"));
+        app.previewMode = false;
+        $("#sync-dot").classList.remove("offline");
+        if (!quiet) toast("Everything is up to date");
+      } catch (error) {
+        console.warn("Using preview data:", error);
+        app.data = normaliseData(mockData);
+        app.previewMode = true;
+        $("#sync-dot").classList.add("offline");
+        if (!quiet) toast("Preview mode — the backend could not be reached");
+      } finally {
+        refresh.disabled = false;
+        refresh.textContent = "↻";
+        renderAll();
+      }
+    }
+
+    function renderAll() {
+      $("#balance").textContent = money(app.data.balance);
+      $("#pending").textContent = `${money(app.data.pending)} awaiting approval`;
+      renderGoal();
+      renderJobs();
+      renderImpact();
+      renderGoals();
+      renderSkills();
+      renderActivity();
+    }
+
+    function renderGoal() {
+      const goal = app.data.goals.find(item => String(item.status).toLowerCase() === "active") || app.data.goals[0];
+      const host = $("#active-goal");
+      if (!goal) {
+        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🎯</span><strong>No active goal yet</strong><p>Goals appear after the v2 spreadsheet setup is run.</p></div>`;
+        return;
+      }
+      const saved = Number(goal.savedAmount) || 0;
+      const target = Math.max(Number(goal.targetAmount) || 0, 1);
+      const percent = clampPercent(saved / target * 100);
+      host.innerHTML = `<article class="surface goal-card">
+        <div class="goal-icon">${safe(goal.icon || "🎯")}</div>
+        <div><div class="goal-top"><h3>${safe(goal.title)}</h3><span class="goal-amount">${money(saved)} / ${money(target)}</span></div>
+        <div class="progress" aria-label="${Math.round(percent)} percent saved"><span style="width:${percent}%"></span></div>
+        <div class="goal-meta"><span>${Math.round(percent)}% there</span><span>${money(Math.max(0, target - saved))} to go</span></div></div>
+      </article>`;
+    }
+
+    function jobMarkup(job) {
+      const pending = job.status === "pending" || job.status === "claimed";
+      const completed = job.status === "completed" || job.status === "approved";
+      const typeLabel = ({ earn: "Earn", contribute: "Contribute", learn: "Learn" })[job.type] || job.type;
+      const value = job.value > 0 ? money(job.value) : typeLabel;
+      const button = pending
+        ? `<span class="status pending">Awaiting approval</span>`
+        : completed
+          ? `<span class="status completed">Completed</span>`
+          : `<button class="primary-button" data-claim-job="${safe(job.id)}">I'll do this</button>`;
+      return `<article class="surface job-card">
+        <div class="job-icon">${safe(job.icon)}</div>
+        <div class="job-info"><h3>${safe(job.title)}</h3><p>${safe(job.description || job.whyItMatters || "A step towards greater independence.")}</p>
+          <div style="margin-top:8px"><span class="pill">${safe(job.category)}</span><span class="pill">Level ${safe(job.tier)}</span>${job.estimatedMinutes ? `<span class="pill">${safe(job.estimatedMinutes)} min</span>` : ""}</div>
+        </div>
+        <div class="job-side"><span class="job-value">${safe(value)}</span>${button}</div>
+      </article>`;
+    }
+
+    function renderJobs() {
+      const suggestions = app.data.jobs.filter(job => job.status === "open").slice(0, 2);
+      $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing open right now.</div>`;
+      const filtered = app.data.jobs.filter(job => {
+        if (app.jobFilter === "all") return true;
+        if (app.jobFilter === "pending") return ["pending", "claimed"].includes(job.status);
+        return job.type === app.jobFilter;
+      });
+      $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No opportunities in this group yet.</div>`;
+    }
+
+    function renderImpact() {
+      const impact = app.data.impact || {};
+      const count = Number(impact.contributionsThisWeek) || 0;
+      const minutes = Number(impact.minutesThisWeek) || 0;
+      $("#impact-card").innerHTML = `<span class="impact-number">${count}</span><strong> contribution${count === 1 ? "" : "s"} this week</strong><p>${safe(impact.message || (minutes ? `You gave about ${minutes} minutes to family life this week.` : "Your contributions will appear here as you help make family life easier."))}</p>`;
+    }
+
+    function renderGoals() {
+      const host = $("#goals-list");
+      if (!app.data.goals.length) {
+        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🎯</span><strong>No goals yet</strong><p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p></div>`;
+        return;
+      }
+      host.innerHTML = app.data.goals.map(goal => {
+        const target = Math.max(Number(goal.targetAmount) || 0, 1);
+        const saved = Number(goal.savedAmount) || 0;
+        const percent = clampPercent(saved / target * 100);
+        return `<article class="surface full-goal-card"><div class="skill-head"><span>${safe(goal.icon || "🎯")}</span><span class="status ${String(goal.status).toLowerCase() === "complete" ? "completed" : "pending"}">${safe(goal.status || "active")}</span></div><h3>${safe(goal.title)}</h3><p>${money(saved)} saved towards ${money(target)}</p><div class="progress"><span style="width:${percent}%"></span></div><div class="goal-meta"><span>${Math.round(percent)}%</span><span>${money(Math.max(0, target - saved))} left</span></div></article>`;
+      }).join("");
+    }
+
+    function renderSkills() {
+      const host = $("#skills-list");
+      if (!app.data.skills.length) {
+        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🌱</span><strong>Your skill tree is ready to grow</strong><p>The setup function creates starter skills without changing current balances.</p></div>`;
+        return;
+      }
+      host.innerHTML = app.data.skills.map(skill => {
+        const max = Math.max(Number(skill.nextLevelAt) || 100, 1);
+        const percent = clampPercent((Number(skill.progress) || 0) / max * 100);
+        return `<article class="surface skill-card"><div class="skill-head"><span>${safe(skill.icon || "🌱")}</span><span class="level">Level ${safe(skill.level || 1)}</span></div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Growing through real experiences.")}</p><div class="progress"><span style="width:${percent}%"></span></div><div class="goal-meta"><span>${Math.round(percent)}% to next level</span></div></article>`;
+      }).join("");
+    }
+
+    function renderActivity() {
+      const host = $("#activity-list");
+      if (!app.data.transactions.length) {
+        host.innerHTML = `<div class="empty"><span class="empty-icon">☷</span><strong>No activity yet</strong><p>The secure transaction ledger begins with v2.</p></div>`;
+        return;
+      }
+      host.innerHTML = app.data.transactions.map(tx => {
+        const amount = Number(tx.amount) || 0;
+        const amountText = amount ? `${amount > 0 ? "+" : ""}${money(amount)}` : "Contribution";
+        return `<article class="activity-row"><div class="activity-icon">${iconFor(tx.type)}</div><div><h3>${safe(tx.description)}</h3><p>${formatDate(tx.date)} · ${safe(tx.feedback || tx.status || "Recorded")}</p></div><div class="activity-amount ${amount >= 0 ? "positive" : "negative"}">${safe(amountText)}</div></article>`;
+      }).join("");
+    }
+
+    function setView(view) {
+      app.activeView = view;
+      $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === view));
+      $$(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.viewTarget === view));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function setFilter(filter) {
+      app.jobFilter = filter;
+      $$(".filter-chip").forEach(chip => chip.classList.toggle("active", chip.dataset.filter === filter));
+      renderJobs();
+    }
+
+    async function claimJob(jobId, button) {
+      button.disabled = true;
+      button.textContent = "Claiming…";
+      try {
+        if (app.previewMode) {
+          const job = app.data.jobs.find(item => String(item.id) === String(jobId));
+          if (job) job.status = "pending";
+          renderJobs();
+          toast("Preview: sent for parent approval");
+          return;
+        }
+        await apiPost({ action: "claimJob", jobId });
+        toast("Sent for parent approval");
+        await loadData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "Could not claim this opportunity");
+        button.disabled = false;
+        button.textContent = "I'll do this";
+      }
+    }
+
+    function setupPersonalisation() {
+      const avatars = ["🐉", "🌱", "🦊", "🐱", "🔥", "🍙"];
+      const themes = ["default", "forest", "sakura", "night"];
+      const chosenAvatar = localStorage.getItem("sophie_avatar") || avatars[0];
+      const chosenTheme = localStorage.getItem("sophie_theme") || themes[0];
+      $("#avatar").textContent = chosenAvatar;
+      document.documentElement.dataset.theme = chosenTheme === "default" ? "" : chosenTheme;
+      $("#avatar-options").innerHTML = avatars.map(value => `<button class="avatar-choice ${value === chosenAvatar ? "active" : ""}" data-avatar="${safe(value)}" aria-label="Choose ${safe(value)}">${safe(value)}</button>`).join("");
+      $("#theme-options").innerHTML = themes.map(value => `<button class="theme-swatch ${value === chosenTheme ? "active" : ""}" data-value="${value}" aria-label="Choose ${value} theme"></button>`).join("");
+    }
+
+    async function openParentDashboard(key) {
+      try {
+        const data = app.previewMode ? app.data : await apiPost({ action: "getParentData", adminKey: key });
+        app.adminKey = key;
+        sessionStorage.setItem("sophie_admin_key", key);
+        renderParent(normaliseData(data));
+        $("#parent-login-dialog").close();
+        $("#parent-dialog").showModal();
+      } catch (error) {
+        toast(error.message || "The admin key was not accepted");
+      }
+    }
+
+    function renderParent(data) {
+      const pendingJobs = data.jobs.filter(job => ["pending", "claimed"].includes(job.status));
+      $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${pendingJobs.length}</strong><span>Awaiting review</span></article>`;
+      $("#parent-reviews").innerHTML = pendingJobs.length ? pendingJobs.map(job => `<article class="surface parent-review" data-review-card="${safe(job.id)}"><div class="parent-review-head"><div><h3>${safe(job.icon)} ${safe(job.title)}</h3><p>${safe(job.skill)} · Level ${safe(job.tier)}</p></div><strong>${job.value > 0 ? money(job.value) : "Contribution"}</strong></div><div class="parent-actions"><div class="form-field"><label for="feedback-${safe(job.id)}">Helpful feedback</label><input id="feedback-${safe(job.id)}" data-feedback-for="${safe(job.id)}" placeholder="What went well?"></div><button class="danger-button" data-review-action="reject" data-job-id="${safe(job.id)}">Needs work</button><button class="primary-button" data-review-action="approve" data-job-id="${safe(job.id)}">Approve</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>There is nothing waiting for review.</p></div>`;
+    }
+
+    async function reviewJob(action, jobId, button) {
+      const feedback = document.querySelector(`[data-feedback-for="${CSS.escape(String(jobId))}"]`)?.value || "";
+      button.disabled = true;
+      try {
+        if (app.previewMode) {
+          const job = app.data.jobs.find(item => String(item.id) === String(jobId));
+          if (job) job.status = action === "approve" ? "completed" : "open";
+          renderParent(app.data);
+          renderAll();
+          toast(action === "approve" ? "Preview: approved" : "Preview: returned for another try");
+          return;
+        }
+        await apiPost({ action: action === "approve" ? "approveJob" : "rejectJob", jobId, feedback, adminKey: app.adminKey });
+        toast(action === "approve" ? "Approved with feedback" : "Returned for another try");
+        const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
+        renderParent(data);
+        await loadData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The review could not be saved");
+        button.disabled = false;
+      }
+    }
+
+    let toastTimer;
+    function toast(message) {
+      const element = $("#toast");
+      element.textContent = message;
+      element.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => element.classList.remove("show"), 2800);
+    }
+
+    document.addEventListener("click", event => {
+      const viewButton = event.target.closest("[data-view-target], [data-go-view]");
+      if (viewButton) setView(viewButton.dataset.viewTarget || viewButton.dataset.goView);
+
+      const filterJump = event.target.closest("[data-filter-jump]");
+      if (filterJump) { setFilter(filterJump.dataset.filterJump); setView("opportunities"); }
+
+      const filter = event.target.closest("[data-filter]");
+      if (filter) setFilter(filter.dataset.filter);
+
+      const claim = event.target.closest("[data-claim-job]");
+      if (claim) claimJob(claim.dataset.claimJob, claim);
+
+      const close = event.target.closest("[data-close-dialog]");
+      if (close) document.getElementById(close.dataset.closeDialog).close();
+
+      const avatarChoice = event.target.closest("[data-avatar]");
+      if (avatarChoice) {
+        localStorage.setItem("sophie_avatar", avatarChoice.dataset.avatar);
+        setupPersonalisation();
+      }
+
+      const themeChoice = event.target.closest(".theme-swatch");
+      if (themeChoice) {
+        localStorage.setItem("sophie_theme", themeChoice.dataset.value);
+        setupPersonalisation();
+      }
+
+      const review = event.target.closest("[data-review-action]");
+      if (review) reviewJob(review.dataset.reviewAction, review.dataset.jobId, review);
+    });
+
+    $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+    $("#refresh-button").addEventListener("click", () => loadData());
+    $("#open-parent").addEventListener("click", () => {
+      $("#settings-dialog").close();
+      if (app.adminKey) openParentDashboard(app.adminKey);
+      else $("#parent-login-dialog").showModal();
+    });
+    $("#parent-login-form").addEventListener("submit", event => {
+      event.preventDefault();
+      openParentDashboard($("#admin-key").value.trim());
+    });
+
+    const hour = new Date().getHours();
+    $("#day-greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    setupPersonalisation();
+    loadData({ quiet: true });
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(() => {});
+  </script>
+</body>
+</html>
