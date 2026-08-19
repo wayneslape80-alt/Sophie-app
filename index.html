@@ -320,6 +320,34 @@
     .skill-card h3, .full-goal-card h3 { margin-bottom: 7px; }
     .skill-card p, .full-goal-card p { color: var(--muted); font-size: .8rem; line-height: 1.45; }
     .activity-list { overflow: hidden; }
+
+    .school-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .school-stack { display: grid; gap: 12px; }
+    .school-task { padding: 18px; }
+    .school-task-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .school-task-head h3 { margin: 3px 0 0; }
+    .school-meta { color: var(--muted); font-size: .76rem; font-weight: 700; }
+    .school-next { margin: 13px 0; padding: 13px 14px; border-radius: 14px; background: var(--surface-2); }
+    .school-next span { display: block; margin-bottom: 4px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .school-next strong { line-height: 1.4; }
+    .school-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .school-actions button { flex: 0 0 auto; }
+    .school-help-note { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg); font-size: .78rem; }
+    .school-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .7rem; font-weight: 800; white-space: nowrap; }
+    .school-access { padding: 20px; margin-bottom: 18px; }
+    .school-access h3 { margin-bottom: 6px; }
+    .school-access p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .school-section { margin-top: 24px; }
+    .school-checklist { display: grid; gap: 12px; margin: 18px 0; }
+    .school-check { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
+    .school-check input { width: auto; margin-top: 2px; }
+    .school-check label { margin: 0; font-weight: 700; line-height: 1.4; }
+    .school-help-options { display: grid; gap: 9px; }
+    .school-help-options button { width: 100%; text-align: left; }
+    .parent-school-task { padding: 14px; margin-bottom: 9px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+    .parent-school-task strong { display: block; margin-bottom: 4px; }
+    .parent-school-task p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.4; }
+
     .activity-row { display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: center; padding: 15px 17px; border-bottom: 1px solid var(--line); }
     .activity-row:last-child { border-bottom: 0; }
     .activity-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: var(--surface-2); }
@@ -525,6 +553,18 @@
       <div class="skill-grid" id="skills-list"></div>
     </section>
 
+    <section class="view" id="view-school" data-view="school">
+      <div class="page-intro"><h2>School</h2><p>Turn schoolwork into one clear next step. The goal is to need less help over time.</p></div>
+      <div class="section-heading"><div><h2>What matters next</h2><p>Keep the next action small and clear.</p></div><button class="primary-button" id="open-school-task">+ Add task</button></div>
+      <div id="school-access-state"></div>
+      <div class="school-stack" id="school-priority"></div>
+
+      <section class="school-section">
+        <div class="section-heading"><div><h2>Coming up</h2><p>Later work, without turning this into a giant calendar.</p></div></div>
+        <div class="school-stack" id="school-upcoming"></div>
+      </section>
+    </section>
+
     <section class="view" id="view-activity" data-view="activity">
       <div class="page-intro"><h2>My activity</h2><p>A clear history of earnings, contributions, feedback and choices.</p></div>
       <div class="surface activity-list" id="activity-list"></div>
@@ -536,7 +576,7 @@
     <button class="nav-button" data-view-target="opportunities"><span class="nav-icon">✦</span><span>Opportunities</span></button>
     <button class="nav-button" data-view-target="goals"><span class="nav-icon">◎</span><span>Goals</span></button>
     <button class="nav-button" data-view-target="skills"><span class="nav-icon">♧</span><span>Skills</span></button>
-    <button class="nav-button" data-view-target="activity"><span class="nav-icon">☷</span><span>Activity</span></button>
+    <button class="nav-button" data-view-target="school"><span class="nav-icon">▣</span><span>School</span></button>
   </nav>
 
   <dialog id="settings-dialog">
@@ -544,6 +584,7 @@
       <div class="dialog-head"><h2>Make it yours</h2><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
       <div class="setting-row"><div><strong>Your character</strong><p>Choose a companion for the app.</p></div><div class="avatar-options" id="avatar-options"></div></div>
       <div class="setting-row"><div><strong>Colour theme</strong><p>Pick the style that feels most like you.</p></div><div class="theme-options" id="theme-options"></div></div>
+      <div class="setting-row"><div><strong>Activity history</strong><p>Earnings, contributions and feedback.</p></div><button class="secondary-button" id="open-activity-history">View</button></div>
       <div class="setting-row"><div><strong>Parent dashboard</strong><p>Approvals and helpful feedback.</p></div><button class="secondary-button" id="open-parent">Parent access</button></div>
     </div>
   </dialog>
@@ -557,6 +598,46 @@
       <div class="form-field"><label for="goal-product-url">Product / information link <span style="font-weight:500">(optional)</span></label><input id="goal-product-url" type="url" maxlength="2048" placeholder="https://..."></div>
       <div class="form-field"><label for="goal-image-url">Image link <span style="font-weight:500">(optional)</span></label><input id="goal-image-url" type="url" maxlength="2048" placeholder="https://..."></div>
       <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="goal-dialog">Cancel</button><button class="primary-button" type="submit">Send for parent check</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="school-task-dialog">
+    <form class="dialog-body" id="school-task-form">
+      <div class="dialog-head"><h2 id="school-task-dialog-title">Add a school task</h2><button type="button" class="close-button" data-close-dialog="school-task-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">Keep this quick. The important part is choosing one useful next step.</p>
+      <input id="school-task-id" type="hidden">
+      <div class="form-field"><label for="school-subject">Subject</label><input id="school-subject" maxlength="60" placeholder="Science" required></div>
+      <div class="form-field"><label for="school-title">Task</label><input id="school-title" maxlength="120" placeholder="Solubility Investigation" required></div>
+      <div class="form-field"><label for="school-due">Due date</label><input id="school-due" type="date" required></div>
+      <div class="form-field"><label for="school-next-action">My next step</label><input id="school-next-action" maxlength="240" placeholder="Finish the results table" required></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="school-task-dialog">Cancel</button><button class="primary-button" type="submit">Save task</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="school-help-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><h2>I need help</h2><button type="button" class="close-button" data-close-dialog="school-help-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">Asking early is part of managing the task. What kind of help would be useful?</p>
+      <div class="school-help-options">
+        <button class="secondary-button" type="button" data-school-help-type="understand">I don't understand the task</button>
+        <button class="secondary-button" type="button" data-school-help-type="stuck">I'm stuck on a step</button>
+        <button class="secondary-button" type="button" data-school-help-type="feedback">I want feedback on my work</button>
+        <button class="secondary-button" type="button" data-school-help-type="submitting">I need help submitting it</button>
+        <button class="text-button" type="button" data-school-help-type="">I don't need help now</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="school-check-dialog">
+    <form class="dialog-body" id="school-check-form">
+      <div class="dialog-head"><h2>Quick check before submitting</h2><button type="button" class="close-button" data-close-dialog="school-check-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">This isn't about making it perfect. Make sure the work actually answers the task and is ready to hand in.</p>
+      <div class="school-checklist">
+        <div class="school-check"><input id="school-check-asked" type="checkbox" required><label for="school-check-asked">I answered what the teacher asked me to do.</label></div>
+        <div class="school-check"><input id="school-check-work" type="checkbox" required><label for="school-check-work">I checked for obvious missing parts or mistakes.</label></div>
+        <div class="school-check"><input id="school-check-how" type="checkbox" required><label for="school-check-how">I know where and how this needs to be submitted.</label></div>
+      </div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="school-check-dialog">Not yet</button><button class="primary-button" type="submit">Mark submitted</button></div>
     </form>
   </dialog>
 
@@ -577,7 +658,9 @@
       <div id="parent-reviews"></div>
       <div class="section-heading" style="margin-top:22px"><div><h3>Goal proposals</h3><p>Sophie chooses; you check practical details.</p></div></div>
       <div id="parent-goal-reviews"></div>
-      <div class="form-actions"><button class="secondary-button" type="button" id="lock-parent">Lock Parent Mode</button></div>
+      <div class="section-heading" style="margin-top:22px"><div><h3>School support</h3><p>Help requests and things worth a conversation — not a productivity score.</p></div></div>
+      <div id="parent-school-support"></div>
+      <div class="form-actions"><button class="secondary-button" type="button" id="setup-school-device">Set up School on this device</button><button class="secondary-button" type="button" id="lock-parent">Lock Parent Mode</button></div>
     </div>
   </dialog>
 
@@ -605,7 +688,12 @@
       jobFilter: "all",
       dataUnavailable: false,
       adminKey: sessionStorage.getItem("sophie_admin_key") || "",
-      adminExpiresAt: Number(sessionStorage.getItem("sophie_admin_expires_at")) || 0
+      adminExpiresAt: Number(sessionStorage.getItem("sophie_admin_expires_at")) || 0,
+      schoolKey: localStorage.getItem("sophie_school_key") || "",
+      schoolTasks: [],
+      schoolLoaded: false,
+      schoolUnavailable: false,
+      activeSchoolTaskId: ""
     };
 
     const $ = selector => document.querySelector(selector);
@@ -707,6 +795,7 @@
       renderGoals();
       renderSkills();
       renderActivity();
+      renderSchool();
     }
 
     function renderGoal() {
@@ -886,11 +975,278 @@
       }).join("");
     }
 
+
+    function parseDateOnly(value) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+      if (!match) return null;
+      return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    }
+
+    function schoolDueInfo(value) {
+      const due = parseDateOnly(value);
+      if (!due) return { label: "No due date", overdue: false, days: 9999 };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      due.setHours(0, 0, 0, 0);
+      const days = Math.round((due - today) / 86400000);
+      if (days === 0) return { label: "Due today", overdue: false, days };
+      if (days === 1) return { label: "Due tomorrow", overdue: false, days };
+      if (days === -1) return { label: "Due yesterday", overdue: true, days };
+      if (days < -1) return { label: `Due ${Math.abs(days)} days ago`, overdue: true, days };
+      if (days <= 6) return { label: `Due ${new Intl.DateTimeFormat("en-AU", { weekday: "short" }).format(due)}`, overdue: false, days };
+      return { label: `Due ${new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(due)}`, overdue: false, days };
+    }
+
+    function schoolStatusLabel(task) {
+      if (task.receiptConfirmedAt) return "Received ✓";
+      return ({ todo: "To do", working: "Working on it", ready: "Ready to submit", submitted: "Submitted" })[task.status] || "To do";
+    }
+
+    function schoolHelpLabel(type) {
+      return ({
+        understand: "You asked for help understanding the task.",
+        stuck: "You asked for help with a step.",
+        feedback: "You asked for feedback on your work.",
+        submitting: "You asked for help submitting."
+      })[type] || "";
+    }
+
+    function schoolTaskPriority(task) {
+      const due = schoolDueInfo(task.dueDate);
+      if (task.helpType) return -2000 + due.days;
+      if (task.status === "submitted" && !task.receiptConfirmedAt) return -1000 + due.days;
+      return due.days;
+    }
+
+    function schoolTaskMarkup(task) {
+      const due = schoolDueInfo(task.dueDate);
+      const helpNote = schoolHelpLabel(task.helpType);
+      let mainAction = "";
+      if (task.status === "todo") mainAction = `<button class="primary-button" data-school-status="working" data-school-id="${safe(task.taskId)}">Start</button>`;
+      if (task.status === "working") mainAction = `<button class="primary-button" data-school-status="ready" data-school-id="${safe(task.taskId)}">Ready to submit</button>`;
+      if (task.status === "ready") mainAction = `<button class="primary-button" data-school-submit="${safe(task.taskId)}">Submit</button>`;
+      if (task.status === "submitted" && !task.receiptConfirmedAt) mainAction = `<button class="primary-button" data-school-received="${safe(task.taskId)}">Confirm received</button>`;
+      if (task.receiptConfirmedAt) mainAction = `<button class="secondary-button" data-school-archive="${safe(task.taskId)}">Archive</button>`;
+
+      return `<article class="surface school-task">
+        <div class="school-task-head">
+          <div><div class="school-meta">${safe(task.subject)} · ${safe(due.label)}</div><h3>${safe(task.title)}</h3></div>
+          <span class="school-status">${safe(schoolStatusLabel(task))}</span>
+        </div>
+        <div class="school-next"><span>My next step</span><strong>${safe(task.nextAction || "Choose a next step")}</strong></div>
+        ${helpNote ? `<div class="school-help-note">${safe(helpNote)}</div>` : ""}
+        <div class="school-actions">
+          ${mainAction}
+          ${!task.receiptConfirmedAt ? `<button class="secondary-button" data-school-help="${safe(task.taskId)}">I need help</button>` : ""}
+          ${task.status !== "submitted" && !task.receiptConfirmedAt ? `<button class="text-button" data-school-edit="${safe(task.taskId)}">Edit</button>` : ""}
+        </div>
+      </article>`;
+    }
+
+    function renderSchool() {
+      const access = $("#school-access-state");
+      const priority = $("#school-priority");
+      const upcoming = $("#school-upcoming");
+      if (!access || !priority || !upcoming) return;
+
+      if (!app.schoolKey) {
+        access.innerHTML = `<article class="surface school-access"><h3>School needs setup on this device</h3><p>A parent can open Parent access and choose <strong>Set up School on this device</strong>. No school login or Daymap password is stored here.</p></article>`;
+        priority.innerHTML = "";
+        upcoming.innerHTML = "";
+        return;
+      }
+
+      if (app.schoolUnavailable) {
+        access.innerHTML = `<article class="surface school-access"><h3>School data is unavailable</h3><p>Your school tasks are private and are not replaced with fake or stale data. Reconnect and try again.</p></article>`;
+        priority.innerHTML = "";
+        upcoming.innerHTML = "";
+        return;
+      }
+
+      access.innerHTML = "";
+      if (!app.schoolLoaded) {
+        priority.innerHTML = `<div class="skeleton"></div>`;
+        upcoming.innerHTML = "";
+        return;
+      }
+
+      const active = app.schoolTasks.filter(task => !task.archivedAt);
+      if (!active.length) {
+        priority.innerHTML = `<div class="surface empty"><span class="empty-icon">▣</span><strong>No school tasks here yet</strong><p>Add the next task you need to manage. Daymap stays the official school record.</p></div>`;
+        upcoming.innerHTML = "";
+        return;
+      }
+
+      const ordered = [...active].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b));
+      const top = ordered.slice(0, 3);
+      const later = ordered.slice(3);
+      priority.innerHTML = top.map(schoolTaskMarkup).join("");
+      upcoming.innerHTML = later.length
+        ? later.map(schoolTaskMarkup).join("")
+        : `<div class="surface empty"><strong>Nothing else is waiting</strong><p>Keep the list small enough to be useful.</p></div>`;
+    }
+
+    async function loadSchoolData({ quiet = false, adminKey = "" } = {}) {
+      if (!app.schoolKey && !adminKey) {
+        app.schoolLoaded = false;
+        app.schoolUnavailable = false;
+        renderSchool();
+        return [];
+      }
+      try {
+        const payload = { action: "getSchoolTasks" };
+        if (adminKey) payload.adminKey = adminKey;
+        else payload.schoolKey = app.schoolKey;
+        const tasks = await apiPost(payload);
+        app.schoolTasks = Array.isArray(tasks) ? tasks : [];
+        app.schoolLoaded = true;
+        app.schoolUnavailable = false;
+        renderSchool();
+        return app.schoolTasks;
+      } catch (error) {
+        console.warn("School data unavailable:", error);
+        app.schoolLoaded = false;
+        app.schoolUnavailable = true;
+        if (/not authorised|not set up/i.test(String(error.message || "")) && !adminKey) {
+          app.schoolKey = "";
+          localStorage.removeItem("sophie_school_key");
+        }
+        renderSchool();
+        if (!quiet) toast(error.message || "School data is unavailable");
+        return [];
+      }
+    }
+
+    function openSchoolTaskForm(task = null) {
+      if (!app.schoolKey) return toast("Ask a parent to set up School on this device first");
+      $("#school-task-form").reset();
+      $("#school-task-id").value = task?.taskId || "";
+      $("#school-task-dialog-title").textContent = task ? "Edit school task" : "Add a school task";
+      if (task) {
+        $("#school-subject").value = task.subject || "";
+        $("#school-title").value = task.title || "";
+        $("#school-due").value = task.dueDate || "";
+        $("#school-next-action").value = task.nextAction || "";
+      }
+      $("#school-task-dialog").showModal();
+    }
+
+    async function saveSchoolTask(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-task-form button[type=submit]");
+      submit.disabled = true;
+      const taskId = $("#school-task-id").value;
+      try {
+        const payload = {
+          action: taskId ? "updateSchoolTask" : "createSchoolTask",
+          schoolKey: app.schoolKey,
+          subject: $("#school-subject").value.trim(),
+          title: $("#school-title").value.trim(),
+          dueDate: $("#school-due").value,
+          nextAction: $("#school-next-action").value.trim()
+        };
+        if (taskId) payload.taskId = taskId;
+        await apiPost(payload);
+        $("#school-task-dialog").close();
+        toast(taskId ? "Task updated" : "Task added");
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The school task could not be saved");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function updateSchoolStatus(taskId, status, button) {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, status });
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The task could not be updated");
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openSchoolHelp(taskId) {
+      app.activeSchoolTaskId = taskId;
+      $("#school-help-dialog").showModal();
+    }
+
+    async function saveSchoolHelp(helpType, button) {
+      if (!app.activeSchoolTaskId) return;
+      if (button) button.disabled = true;
+      try {
+        await apiPost({
+          action: "requestSchoolHelp",
+          schoolKey: app.schoolKey,
+          taskId: app.activeSchoolTaskId,
+          helpType
+        });
+        $("#school-help-dialog").close();
+        toast(helpType ? "Help request saved" : "Help request cleared");
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The help request could not be saved");
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openSchoolSubmitCheck(taskId) {
+      app.activeSchoolTaskId = taskId;
+      $("#school-check-form").reset();
+      $("#school-check-dialog").showModal();
+    }
+
+    async function submitSchoolTask(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-check-form button[type=submit]");
+      submit.disabled = true;
+      try {
+        await apiPost({ action: "markSchoolSubmitted", schoolKey: app.schoolKey, taskId: app.activeSchoolTaskId });
+        $("#school-check-dialog").close();
+        toast("Marked submitted — confirm when Daymap or the teacher shows it was received");
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The task could not be marked submitted");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function confirmSchoolReceived(taskId, button) {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "confirmSchoolReceipt", schoolKey: app.schoolKey, taskId });
+        toast("Receipt confirmed");
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "Receipt could not be confirmed");
+        if (button) button.disabled = false;
+      }
+    }
+
+    async function archiveSchoolTask(taskId, button) {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "archiveSchoolTask", schoolKey: app.schoolKey, taskId });
+        toast("Task archived");
+        await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "Task could not be archived");
+        if (button) button.disabled = false;
+      }
+    }
+
     function setView(view) {
       app.activeView = view;
       $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === view));
       $$(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.viewTarget === view));
       window.scrollTo({ top: 0, behavior: "smooth" });
+      if (view === "school") {
+        renderSchool();
+        if (app.schoolKey && !app.schoolLoaded) loadSchoolData({ quiet: true });
+      }
     }
 
     function setFilter(filter) {
@@ -983,6 +1339,7 @@
         renderParent(normaliseData(data));
         $("#parent-login-dialog").close();
         $("#parent-dialog").showModal();
+        loadParentSchoolSupport();
       } catch (error) {
         lockParentMode(error.message || "The admin key was not accepted");
       }
@@ -995,6 +1352,73 @@
       $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${totalPending}</strong><span>Total awaiting review</span></article>`;
       $("#parent-reviews").innerHTML = pendingJobs.length ? pendingJobs.map(job => `<article class="surface parent-review" data-review-card="${safe(job.id)}"><div class="parent-review-head"><div><h3>${safe(job.icon)} ${safe(job.title)}</h3><p>${safe(job.skill)} · Level ${safe(job.tier)}</p></div><strong>${job.value > 0 ? money(job.value) : "Contribution"}</strong></div><div class="parent-actions"><div class="form-field"><label for="feedback-${safe(job.id)}">Helpful feedback</label><input id="feedback-${safe(job.id)}" data-feedback-for="${safe(job.id)}" placeholder="What went well?"></div><button class="danger-button" data-review-action="reject" data-job-id="${safe(job.id)}">Needs work</button><button class="primary-button" data-review-action="approve" data-job-id="${safe(job.id)}">Approve</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No opportunities need review.</p></div>`;
       $("#parent-goal-reviews").innerHTML = pendingGoals.length ? pendingGoals.map(goal => `<article class="surface parent-review"><div class="parent-review-head"><div><h3>${safe(goal.icon || "🎯")} ${safe(goal.title)}</h3><p>Target: ${money(goal.targetAmount)}</p></div><span class="status pending">Sophie chose this</span></div><p>Check practical details such as the amount, link and suitability. The goal remains Sophie's choice.</p><div class="form-actions"><button class="danger-button" data-goal-review="reject" data-goal-id="${safe(goal.goalId)}">Decline</button><button class="primary-button" data-goal-review="approve" data-goal-id="${safe(goal.goalId)}">Make active</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>No goal proposals waiting</strong></div>`;
+    }
+
+
+    async function loadParentSchoolSupport() {
+      const host = $("#parent-school-support");
+      if (!host || !parentSessionValid()) return;
+      host.innerHTML = `<div class="skeleton"></div>`;
+      try {
+        extendParentSession();
+        const tasks = await apiPost({ action: "getSchoolTasks", adminKey: app.adminKey });
+        renderParentSchoolSupport(Array.isArray(tasks) ? tasks : []);
+      } catch (error) {
+        host.innerHTML = `<div class="empty"><strong>School support unavailable</strong><p>${safe(error.message || "The school workspace is not available yet.")}</p></div>`;
+      }
+    }
+
+    function renderParentSchoolSupport(tasks) {
+      const host = $("#parent-school-support");
+      const active = tasks.filter(task => !task.archivedAt);
+      const help = active.filter(task => task.helpType);
+      const dueSoon = active.filter(task => {
+        if (task.status === "submitted" || task.receiptConfirmedAt) return false;
+        const days = schoolDueInfo(task.dueDate).days;
+        return days <= 2;
+      });
+      const combined = [...help, ...dueSoon.filter(task => !help.some(item => item.taskId === task.taskId))].slice(0, 6);
+
+      host.innerHTML = combined.length
+        ? combined.map(task => `<article class="parent-school-task"><strong>${safe(task.subject)} · ${safe(task.title)}</strong><p>${safe(task.helpType ? schoolHelpLabel(task.helpType) : schoolDueInfo(task.dueDate).label)}<br>Next: ${safe(task.nextAction || "No next step yet")}</p>${task.helpType ? `<div class="form-actions"><button class="secondary-button" data-parent-clear-school-help="${safe(task.taskId)}">Help discussed</button></div>` : ""}</article>`).join("")
+        : `<div class="empty"><span class="empty-icon">✓</span><strong>No school support requests</strong><p>Nothing here needs a parent conversation right now.</p></div>`;
+    }
+
+    async function setupSchoolDevice() {
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      const button = $("#setup-school-device");
+      button.disabled = true;
+      try {
+        extendParentSession();
+        const result = await apiPost({ action: "provisionSchoolDevice", adminKey: app.adminKey });
+        if (!result.schoolKey) throw new Error("The backend did not return a school device key.");
+        app.schoolKey = result.schoolKey;
+        localStorage.setItem("sophie_school_key", result.schoolKey);
+        app.schoolLoaded = false;
+        app.schoolUnavailable = false;
+        toast("School is set up on this device");
+        await loadSchoolData({ quiet: true });
+        await loadParentSchoolSupport();
+      } catch (error) {
+        toast(error.message || "School could not be set up on this device");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function clearParentSchoolHelp(taskId, button) {
+      button.disabled = true;
+      try {
+        if (!parentSessionValid()) throw new Error("Parent Mode is locked. Sign in again.");
+        extendParentSession();
+        await apiPost({ action: "requestSchoolHelp", adminKey: app.adminKey, taskId, helpType: "" });
+        toast("Help request cleared");
+        await loadParentSchoolSupport();
+        if (app.schoolKey) await loadSchoolData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The help request could not be cleared");
+        button.disabled = false;
+      }
     }
 
     async function reviewJob(action, jobId, button) {
@@ -1072,9 +1496,44 @@
 
       const goalReview = event.target.closest("[data-goal-review]");
       if (goalReview) reviewGoal(goalReview.dataset.goalReview, goalReview.dataset.goalId, goalReview);
+
+      const schoolStatus = event.target.closest("[data-school-status]");
+      if (schoolStatus) updateSchoolStatus(schoolStatus.dataset.schoolId, schoolStatus.dataset.schoolStatus, schoolStatus);
+
+      const schoolHelp = event.target.closest("[data-school-help]");
+      if (schoolHelp) openSchoolHelp(schoolHelp.dataset.schoolHelp);
+
+      const schoolHelpType = event.target.closest("[data-school-help-type]");
+      if (schoolHelpType) saveSchoolHelp(schoolHelpType.dataset.schoolHelpType, schoolHelpType);
+
+      const schoolEdit = event.target.closest("[data-school-edit]");
+      if (schoolEdit) {
+        const task = app.schoolTasks.find(item => String(item.taskId) === String(schoolEdit.dataset.schoolEdit));
+        if (task) openSchoolTaskForm(task);
+      }
+
+      const schoolSubmit = event.target.closest("[data-school-submit]");
+      if (schoolSubmit) openSchoolSubmitCheck(schoolSubmit.dataset.schoolSubmit);
+
+      const schoolReceived = event.target.closest("[data-school-received]");
+      if (schoolReceived) confirmSchoolReceived(schoolReceived.dataset.schoolReceived, schoolReceived);
+
+      const schoolArchive = event.target.closest("[data-school-archive]");
+      if (schoolArchive) archiveSchoolTask(schoolArchive.dataset.schoolArchive, schoolArchive);
+
+      const parentClearHelp = event.target.closest("[data-parent-clear-school-help]");
+      if (parentClearHelp) clearParentSchoolHelp(parentClearHelp.dataset.parentClearSchoolHelp, parentClearHelp);
     });
 
     $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+    $("#open-activity-history").addEventListener("click", () => {
+      $("#settings-dialog").close();
+      setView("activity");
+    });
+    $("#open-school-task").addEventListener("click", () => openSchoolTaskForm());
+    $("#school-task-form").addEventListener("submit", saveSchoolTask);
+    $("#school-check-form").addEventListener("submit", submitSchoolTask);
+    $("#setup-school-device").addEventListener("click", setupSchoolDevice);
     $("#refresh-button").addEventListener("click", () => loadData());
     $("#open-goal-form").addEventListener("click", () => {
       if (app.dataUnavailable) return toast("Reconnect before creating a goal");
@@ -1101,6 +1560,7 @@
     const hour = new Date().getHours();
     $("#day-greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
     setupPersonalisation();
+    renderSchool();
     loadData({ quiet: true });
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(() => {});
   </script>
