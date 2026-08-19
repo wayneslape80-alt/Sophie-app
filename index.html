@@ -143,6 +143,19 @@
       background: #35bd81;
     }
     .sync-dot.offline { background: #f3a52b; }
+    .data-alert {
+      display: none;
+      margin: 6px 0 18px;
+      padding: 13px 15px;
+      border: 1px solid color-mix(in srgb, var(--sun-ink) 25%, var(--line));
+      border-radius: 15px;
+      background: var(--sun);
+      color: var(--sun-ink);
+      font-size: .82rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .data-alert.show { display: block; }
     .view { display: none; animation: rise .28s ease both; }
     .view.active { display: block; }
     @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
@@ -448,6 +461,8 @@
       </div>
     </header>
 
+    <div class="data-alert" id="data-alert" role="alert">Live data is unavailable. Your real balance, opportunities and goals are hidden until the app reconnects.</div>
+
     <section class="view active" id="view-home" data-view="home">
       <article class="hero">
         <div class="hero-content">
@@ -501,6 +516,7 @@
 
     <section class="view" id="view-goals" data-view="goals">
       <div class="page-intro"><h2>My goals</h2><p>Money becomes meaningful when it moves you closer to something you chose.</p></div>
+      <div class="section-heading"><div><p>Choose something that matters to you. A parent checks new goals before they become active.</p></div><button class="primary-button" id="open-goal-form">+ Add a goal</button></div>
       <div class="goal-grid" id="goals-list"></div>
     </section>
 
@@ -532,6 +548,18 @@
     </div>
   </dialog>
 
+  <dialog id="goal-dialog">
+    <form class="dialog-body" id="goal-form">
+      <div class="dialog-head"><h2>Add a goal</h2><button type="button" class="close-button" data-close-dialog="goal-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">This is your goal. It will be sent for a quick parent check before it becomes active.</p>
+      <div class="form-field"><label for="goal-title">What are you saving for?</label><input id="goal-title" maxlength="80" required></div>
+      <div class="form-field"><label for="goal-amount">Target amount</label><input id="goal-amount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" required></div>
+      <div class="form-field"><label for="goal-product-url">Product / information link <span style="font-weight:500">(optional)</span></label><input id="goal-product-url" type="url" maxlength="2048" placeholder="https://..."></div>
+      <div class="form-field"><label for="goal-image-url">Image link <span style="font-weight:500">(optional)</span></label><input id="goal-image-url" type="url" maxlength="2048" placeholder="https://..."></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="goal-dialog">Cancel</button><button class="primary-button" type="submit">Send for parent check</button></div>
+    </form>
+  </dialog>
+
   <dialog id="parent-login-dialog">
     <form class="dialog-body" id="parent-login-form">
       <div class="dialog-head"><h2>Parent access</h2><button type="button" class="close-button" data-close-dialog="parent-login-dialog" aria-label="Close">×</button></div>
@@ -545,8 +573,11 @@
     <div class="dialog-body">
       <div class="dialog-head"><h2>Parent dashboard</h2><button class="close-button" data-close-dialog="parent-dialog" aria-label="Close">×</button></div>
       <div class="parent-summary" id="parent-summary"></div>
-      <h3>Needs review</h3>
+      <div class="section-heading"><div><h3>Opportunities</h3><p>Work awaiting review</p></div></div>
       <div id="parent-reviews"></div>
+      <div class="section-heading" style="margin-top:22px"><div><h3>Goal proposals</h3><p>Sophie chooses; you check practical details.</p></div></div>
+      <div id="parent-goal-reviews"></div>
+      <div class="form-actions"><button class="secondary-button" type="button" id="lock-parent">Lock Parent Mode</button></div>
     </div>
   </dialog>
 
@@ -556,37 +587,25 @@
     // Keep this URL if you update the existing Apps Script deployment. Replace it only if you create a new deployment.
     const API_URL = "https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec";
 
-    const mockData = {
-      appVersion: "2.0-preview",
-      balance: 82.50,
-      pending: 15,
-      impact: { contributionsThisWeek: 3, minutesThisWeek: 75, message: "You helped with dinner and the dishwasher this week." },
-      goals: [{ goalId: "G001", title: "New headphones", targetAmount: 150, savedAmount: 82.5, icon: "🎧", status: "active" }],
-      jobs: [
-        { id: 1, title: "Load the dishwasher", description: "Reset the kitchen after dinner.", value: 0, tier: 1, status: "open", type: "contribute", category: "Kitchen", skill: "Home care", estimatedMinutes: 10, icon: "🍽️", whyItMatters: "Everyone gets a calmer start tomorrow." },
-        { id: 2, title: "Cook family dinner", description: "Plan, cook and tidy as you go.", value: 15, tier: 3, status: "open", type: "earn", category: "Kitchen", skill: "Cooking", estimatedMinutes: 55, icon: "🍝", whyItMatters: "Dinner is handled for the whole family." },
-        { id: 3, title: "Learn a laundry load", description: "Sort colours, choose a cycle and hang it out.", value: 0, tier: 2, status: "open", type: "learn", category: "Laundry", skill: "Laundry", estimatedMinutes: 25, icon: "🧺", whyItMatters: "You can care for your own clothes." },
-        { id: 4, title: "Wash both cars", description: "Wash, rinse and dry both family cars.", value: 12, tier: 2, status: "pending", type: "earn", category: "Outside", skill: "Car care", estimatedMinutes: 45, icon: "🚗", whyItMatters: "It saves the family time and money." }
-      ],
-      skills: [
-        { skillId: "S001", name: "Cooking", level: 2, progress: 62, nextLevelAt: 100, icon: "🍳", description: "Planning and preparing food safely." },
-        { skillId: "S002", name: "Laundry", level: 1, progress: 38, nextLevelAt: 100, icon: "🧺", description: "Caring for clothes independently." },
-        { skillId: "S003", name: "Money", level: 2, progress: 54, nextLevelAt: 100, icon: "💳", description: "Saving, choosing and understanding value." },
-        { skillId: "S004", name: "Organisation", level: 1, progress: 45, nextLevelAt: 100, icon: "🗓️", description: "Planning time and keeping track of tasks." }
-      ],
-      transactions: [
-        { transactionId: "TX003", date: new Date().toISOString(), type: "earning", description: "Cook family dinner", amount: 15, status: "completed", feedback: "Great timing—everything was ready together." },
-        { transactionId: "TX002", date: new Date(Date.now() - 86400000 * 2).toISOString(), type: "contribution", description: "Load the dishwasher", amount: 0, status: "completed", feedback: "That made the evening easier. Thank you." },
-        { transactionId: "TX001", date: new Date(Date.now() - 86400000 * 4).toISOString(), type: "earning", description: "Wash both cars", amount: 12, status: "completed", feedback: "Careful and thorough work." }
-      ]
+    const emptyData = {
+      appVersion: "unavailable",
+      balance: 0,
+      pending: 0,
+      impact: { contributionsThisWeek: 0, minutesThisWeek: 0, message: "Live data is unavailable." },
+      goals: [],
+      jobs: [],
+      skills: [],
+      transactions: []
     };
 
+    const ADMIN_SESSION_MS = 15 * 60 * 1000;
     const app = {
-      data: mockData,
+      data: emptyData,
       activeView: "home",
       jobFilter: "all",
-      previewMode: false,
-      adminKey: sessionStorage.getItem("sophie_admin_key") || ""
+      dataUnavailable: false,
+      adminKey: sessionStorage.getItem("sophie_admin_key") || "",
+      adminExpiresAt: Number(sessionStorage.getItem("sophie_admin_expires_at")) || 0
     };
 
     const $ = selector => document.querySelector(selector);
@@ -661,15 +680,17 @@
       refresh.textContent = "…";
       try {
         app.data = normaliseData(await apiGet("getData"));
-        app.previewMode = false;
+        app.dataUnavailable = false;
         $("#sync-dot").classList.remove("offline");
+        $("#data-alert").classList.remove("show");
         if (!quiet) toast("Everything is up to date");
       } catch (error) {
-        console.warn("Using preview data:", error);
-        app.data = normaliseData(mockData);
-        app.previewMode = true;
+        console.warn("Live data unavailable:", error);
+        app.data = normaliseData(emptyData);
+        app.dataUnavailable = true;
         $("#sync-dot").classList.add("offline");
-        if (!quiet) toast("Preview mode — the backend could not be reached");
+        $("#data-alert").classList.add("show");
+        if (!quiet) toast("Live data unavailable — nothing shown is a fake balance");
       } finally {
         refresh.disabled = false;
         refresh.textContent = "↻";
@@ -678,8 +699,8 @@
     }
 
     function renderAll() {
-      $("#balance").textContent = money(app.data.balance);
-      $("#pending").textContent = `${money(app.data.pending)} awaiting approval`;
+      $("#balance").textContent = app.dataUnavailable ? "—" : money(app.data.balance);
+      $("#pending").textContent = app.dataUnavailable ? "Live data unavailable" : `${money(app.data.pending)} awaiting approval`;
       renderGoal();
       renderJobs();
       renderImpact();
@@ -700,7 +721,7 @@
       <div class="surface empty">
         <span class="empty-icon">🎯</span>
         <strong>No active goal yet</strong>
-        <p>Goals appear after the v2 spreadsheet setup is run.</p>
+        <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose a goal when you are ready."}</p>
       </div>`;
     return;
   }
@@ -780,7 +801,7 @@
           <div class="surface empty">
             <span class="empty-icon">🎯</span>
             <strong>No goals yet</strong>
-            <p>Run the v2 setup, then add Sophie's first chosen goal in the Goals sheet.</p>
+            <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose something that matters to you and add your first goal."}</p>
           </div>`;
         return;
       }
@@ -882,13 +903,7 @@
       button.disabled = true;
       button.textContent = "Claiming…";
       try {
-        if (app.previewMode) {
-          const job = app.data.jobs.find(item => String(item.id) === String(jobId));
-          if (job) job.status = "pending";
-          renderJobs();
-          toast("Preview: sent for parent approval");
-          return;
-        }
+        if (app.dataUnavailable) throw new Error("Reconnect before claiming an opportunity.");
         await apiPost({ action: "claimJob", jobId });
         toast("Sent for parent approval");
         await loadData({ quiet: true });
@@ -896,6 +911,30 @@
         toast(error.message || "Could not claim this opportunity");
         button.disabled = false;
         button.textContent = "I'll do this";
+      }
+    }
+
+    async function createGoal(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#goal-form button[type=submit]");
+      submit.disabled = true;
+      try {
+        if (app.dataUnavailable) throw new Error("Reconnect before creating a goal.");
+        await apiPost({
+          action: "createGoal",
+          title: $("#goal-title").value.trim(),
+          targetAmount: Number($("#goal-amount").value),
+          productUrl: $("#goal-product-url").value.trim(),
+          imageUrl: $("#goal-image-url").value.trim()
+        });
+        $("#goal-form").reset();
+        $("#goal-dialog").close();
+        toast("Goal sent for parent check");
+        await loadData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The goal could not be sent");
+      } finally {
+        submit.disabled = false;
       }
     }
 
@@ -910,37 +949,60 @@
       $("#theme-options").innerHTML = themes.map(value => `<button class="theme-swatch ${value === chosenTheme ? "active" : ""}" data-value="${value}" aria-label="Choose ${value} theme"></button>`).join("");
     }
 
+    function lockParentMode(message = "Parent Mode locked") {
+      app.adminKey = "";
+      app.adminExpiresAt = 0;
+      sessionStorage.removeItem("sophie_admin_key");
+      sessionStorage.removeItem("sophie_admin_expires_at");
+      if ($("#parent-dialog").open) $("#parent-dialog").close();
+      $("#admin-key").value = "";
+      toast(message);
+    }
+
+    function parentSessionValid() {
+      if (!app.adminKey || Date.now() >= app.adminExpiresAt) {
+        if (app.adminKey) lockParentMode("Parent Mode timed out");
+        return false;
+      }
+      return true;
+    }
+
+    function extendParentSession() {
+      if (!app.adminKey) return;
+      app.adminExpiresAt = Date.now() + ADMIN_SESSION_MS;
+      sessionStorage.setItem("sophie_admin_expires_at", String(app.adminExpiresAt));
+    }
+
     async function openParentDashboard(key) {
       try {
-        const data = app.previewMode ? app.data : await apiPost({ action: "getParentData", adminKey: key });
+        if (app.dataUnavailable) throw new Error("Reconnect before opening Parent Mode.");
+        const data = await apiPost({ action: "getParentData", adminKey: key });
         app.adminKey = key;
         sessionStorage.setItem("sophie_admin_key", key);
+        extendParentSession();
         renderParent(normaliseData(data));
         $("#parent-login-dialog").close();
         $("#parent-dialog").showModal();
       } catch (error) {
-        toast(error.message || "The admin key was not accepted");
+        lockParentMode(error.message || "The admin key was not accepted");
       }
     }
 
     function renderParent(data) {
       const pendingJobs = data.jobs.filter(job => ["pending", "claimed"].includes(job.status));
-      $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${pendingJobs.length}</strong><span>Awaiting review</span></article>`;
-      $("#parent-reviews").innerHTML = pendingJobs.length ? pendingJobs.map(job => `<article class="surface parent-review" data-review-card="${safe(job.id)}"><div class="parent-review-head"><div><h3>${safe(job.icon)} ${safe(job.title)}</h3><p>${safe(job.skill)} · Level ${safe(job.tier)}</p></div><strong>${job.value > 0 ? money(job.value) : "Contribution"}</strong></div><div class="parent-actions"><div class="form-field"><label for="feedback-${safe(job.id)}">Helpful feedback</label><input id="feedback-${safe(job.id)}" data-feedback-for="${safe(job.id)}" placeholder="What went well?"></div><button class="danger-button" data-review-action="reject" data-job-id="${safe(job.id)}">Needs work</button><button class="primary-button" data-review-action="approve" data-job-id="${safe(job.id)}">Approve</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>There is nothing waiting for review.</p></div>`;
+      const pendingGoals = data.goals.filter(goal => String(goal.status).toLowerCase() === "pending");
+      const totalPending = pendingJobs.length + pendingGoals.length;
+      $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${totalPending}</strong><span>Total awaiting review</span></article>`;
+      $("#parent-reviews").innerHTML = pendingJobs.length ? pendingJobs.map(job => `<article class="surface parent-review" data-review-card="${safe(job.id)}"><div class="parent-review-head"><div><h3>${safe(job.icon)} ${safe(job.title)}</h3><p>${safe(job.skill)} · Level ${safe(job.tier)}</p></div><strong>${job.value > 0 ? money(job.value) : "Contribution"}</strong></div><div class="parent-actions"><div class="form-field"><label for="feedback-${safe(job.id)}">Helpful feedback</label><input id="feedback-${safe(job.id)}" data-feedback-for="${safe(job.id)}" placeholder="What went well?"></div><button class="danger-button" data-review-action="reject" data-job-id="${safe(job.id)}">Needs work</button><button class="primary-button" data-review-action="approve" data-job-id="${safe(job.id)}">Approve</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No opportunities need review.</p></div>`;
+      $("#parent-goal-reviews").innerHTML = pendingGoals.length ? pendingGoals.map(goal => `<article class="surface parent-review"><div class="parent-review-head"><div><h3>${safe(goal.icon || "🎯")} ${safe(goal.title)}</h3><p>Target: ${money(goal.targetAmount)}</p></div><span class="status pending">Sophie chose this</span></div><p>Check practical details such as the amount, link and suitability. The goal remains Sophie's choice.</p><div class="form-actions"><button class="danger-button" data-goal-review="reject" data-goal-id="${safe(goal.goalId)}">Decline</button><button class="primary-button" data-goal-review="approve" data-goal-id="${safe(goal.goalId)}">Make active</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>No goal proposals waiting</strong></div>`;
     }
 
     async function reviewJob(action, jobId, button) {
       const feedback = document.querySelector(`[data-feedback-for="${CSS.escape(String(jobId))}"]`)?.value || "";
       button.disabled = true;
       try {
-        if (app.previewMode) {
-          const job = app.data.jobs.find(item => String(item.id) === String(jobId));
-          if (job) job.status = action === "approve" ? "completed" : "open";
-          renderParent(app.data);
-          renderAll();
-          toast(action === "approve" ? "Preview: approved" : "Preview: returned for another try");
-          return;
-        }
+        if (!parentSessionValid()) throw new Error("Parent Mode is locked. Sign in again.");
+        extendParentSession();
         await apiPost({ action: action === "approve" ? "approveJob" : "rejectJob", jobId, feedback, adminKey: app.adminKey });
         toast(action === "approve" ? "Approved with feedback" : "Returned for another try");
         const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
@@ -948,6 +1010,22 @@
         await loadData({ quiet: true });
       } catch (error) {
         toast(error.message || "The review could not be saved");
+        button.disabled = false;
+      }
+    }
+
+    async function reviewGoal(action, goalId, button) {
+      button.disabled = true;
+      try {
+        if (!parentSessionValid()) throw new Error("Parent Mode is locked. Sign in again.");
+        extendParentSession();
+        await apiPost({ action: action === "approve" ? "approveGoal" : "rejectGoal", goalId, adminKey: app.adminKey });
+        toast(action === "approve" ? "Goal is now active" : "Goal proposal declined");
+        const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
+        renderParent(data);
+        await loadData({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The goal review could not be saved");
         button.disabled = false;
       }
     }
@@ -991,19 +1069,34 @@
 
       const review = event.target.closest("[data-review-action]");
       if (review) reviewJob(review.dataset.reviewAction, review.dataset.jobId, review);
+
+      const goalReview = event.target.closest("[data-goal-review]");
+      if (goalReview) reviewGoal(goalReview.dataset.goalReview, goalReview.dataset.goalId, goalReview);
     });
 
     $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
     $("#refresh-button").addEventListener("click", () => loadData());
+    $("#open-goal-form").addEventListener("click", () => {
+      if (app.dataUnavailable) return toast("Reconnect before creating a goal");
+      $("#goal-dialog").showModal();
+    });
+    $("#goal-form").addEventListener("submit", createGoal);
+    $("#lock-parent").addEventListener("click", () => lockParentMode());
     $("#open-parent").addEventListener("click", () => {
       $("#settings-dialog").close();
-      if (app.adminKey) openParentDashboard(app.adminKey);
+      if (parentSessionValid()) openParentDashboard(app.adminKey);
       else $("#parent-login-dialog").showModal();
     });
     $("#parent-login-form").addEventListener("submit", event => {
       event.preventDefault();
       openParentDashboard($("#admin-key").value.trim());
     });
+
+    if (app.adminKey && Date.now() >= app.adminExpiresAt) {
+      app.adminKey = "";
+      sessionStorage.removeItem("sophie_admin_key");
+      sessionStorage.removeItem("sophie_admin_expires_at");
+    }
 
     const hour = new Date().getHours();
     $("#day-greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
