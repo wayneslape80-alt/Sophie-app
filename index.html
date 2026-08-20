@@ -597,6 +597,7 @@
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
 
+    /* lr-v1 Learning Resources */
     .learning-resources {
       margin-top: 22px;
       padding-top: 18px;
@@ -2408,7 +2409,9 @@
           ...learningResourceTextPayload("learning-suggest")
         });
         const authoritative = normaliseLearningResource(result || {});
-        if (!authoritative.resourceId || authoritative.reviewState !== "pending" || authoritative.active) throw new Error("The backend did not return the expected pending suggestion state.");
+        if (!authoritative.resourceId || authoritative.reviewState !== "pending" || authoritative.active) {
+          throw new Error("The backend did not return the expected pending suggestion state.");
+        }
         $("#learning-resource-suggest-dialog").close();
         toast("Video suggestion sent for parent review");
       } catch (error) {
@@ -2469,7 +2472,9 @@
       }
       const resources = [...app.learningResourceAdmin].sort((a, b) => {
         const stateRank = { pending: 0, active: 1, rejected: 2, archived: 3 };
-        return (stateRank[a.reviewState] ?? 9) - (stateRank[b.reviewState] ?? 9) || learningResourceTargetTitle(a).localeCompare(learningResourceTargetTitle(b)) || a.sortOrder - b.sortOrder;
+        return (stateRank[a.reviewState] ?? 9) - (stateRank[b.reviewState] ?? 9)
+          || learningResourceTargetTitle(a).localeCompare(learningResourceTargetTitle(b))
+          || a.sortOrder - b.sortOrder;
       });
       if (!resources.length) {
         host.innerHTML = `<div class="empty"><span class="empty-icon">▶</span><strong>No learning resources yet</strong><p>Add a YouTube video to a Learn activity, or enable Sophie suggestions on this device.</p></div>`;
@@ -2692,6 +2697,10 @@
       app.adminExpiresAt = 0;
       sessionStorage.removeItem("sophie_admin_key");
       sessionStorage.removeItem("sophie_admin_expires_at");
+      app.parentData = null;
+      app.learningResourceAdmin = [];
+      app.learningResourceAdminLoaded = false;
+      app.learningResourceAdminUnavailable = false;
       if ($("#parent-dialog").open) $("#parent-dialog").close();
       $("#admin-key").value = "";
       toast(message);
@@ -2747,6 +2756,7 @@
         return `<article class="surface parent-review"><div class="parent-review-head"><div><span class="job-domain">${earn ? "EARN" : "CONTRIBUTE"}</span><h3>${safe(job.title)}</h3><p>${safe(state)}</p></div>${earn ? `<strong>${money(job.agreedValue)}</strong>` : ""}</div>${agreement}<div class="form-actions">${actions}</div></article>`;
       }).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No activities need review.</p></div>`;
       $("#parent-goal-reviews").innerHTML = pendingGoals.length ? pendingGoals.map(goal => `<article class="surface parent-review"><div class="parent-review-head"><div><h3>${safe(goal.icon || "🎯")} ${safe(goal.title)}</h3><p>Target: ${money(goal.targetAmount)}</p></div><span class="status pending">Sophie chose this</span></div><p>Check practical details such as the amount, link and suitability. The goal remains Sophie's choice.</p><div class="form-actions"><button class="danger-button" data-goal-review="reject" data-goal-id="${safe(goal.goalId)}">Decline</button><button class="primary-button" data-goal-review="approve" data-goal-id="${safe(goal.goalId)}">Make active</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>No goal proposals waiting</strong></div>`;
+      renderParentLearningResources();
     }
 
     async function loadParentSchoolSupport() {
