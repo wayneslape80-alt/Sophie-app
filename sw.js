@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-8-d006-opportunities";
+const CACHE_NAME = "sophie-app-v2-9-learning-resources";
 
 const APP_FILES = [
   "./",
