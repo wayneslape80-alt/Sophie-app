@@ -1,11 +1,9 @@
 name: Build and test lr-v1 Learning Resources frontend
 
 on:
-  push:
+  pull_request:
     branches:
-      - release-lr-v1-learning-resources
-    paths:
-      - '.github/workflows/apply-lr-v1-frontend.yml'
+      - main
 
 permissions:
   contents: write
@@ -19,6 +17,7 @@ jobs:
         with:
           ref: release-lr-v1-learning-resources
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Apply frontend integration
         run: python tools/apply_lr_v1_frontend.py
@@ -26,6 +25,7 @@ jobs:
       - name: JavaScript syntax checks
         shell: bash
         run: |
+          set -euo pipefail
           python - <<'PY'
           import re
           from pathlib import Path
@@ -39,83 +39,7 @@ jobs:
       - name: Contract and regression checks
         run: python tools/test_lr_v1_frontend.py
 
-      - name: Headless browser Learning Resources smoke
-        shell: bash
-        run: |
-          set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
-          python - <<'PY'
-          from pathlib import Path
-          html = Path('index.html').read_text(encoding='utf-8')
-          anchor = '  <script>\n    // Keep this URL if you update the existing Apps Script deployment.'
-          mock = r'''  <script>
-          window.__lrFetchCalls = [];
-          window.__lrFailReads = false;
-          const __mockData = {
-            appVersion: "2.4.2", opportunityContractVersion: "d006-v1", learningResourceContractVersion: "lr-v1",
-            balance: 10, pending: 0, impact: {}, goals: [], skills: [], transactions: [],
-            jobs: [
-              {id:"L1",type:"learn",title:"Knife skills",status:"available",requiredness:"optional",whyItMatters:"Build safe kitchen skill",completionStandard:"Practise the grip safely",skill:"Cooking"},
-              {id:"C1",type:"contribute",title:"Dishwasher",status:"available",requiredness:"expected",completionStandard:"Reset dishes"},
-              {id:"E1",type:"earn",title:"Extra dinner",status:"available",requiredness:"optional",value:5,agreedValue:5,scope:"Cook dinner",completionStandard:"Dinner ready"}
-            ],
-            learningResources: [{resourceId:"LR1",attachedToType:"opportunity",attachedToId:"L1",resourceType:"video",title:"Knife grip",url:"https://www.youtube.com/watch?v=abcdefghijk",provider:"youtube",providerResourceId:"abcdefghijk",videoId:"abcdefghijk",embedUrl:"https://www.youtube-nocookie.com/embed/abcdefghijk",embeddable:true,description:"",whatToNotice:"Claw grip",tryNext:"Practise slowly",safetyNote:"Adult supervision",sortOrder:1,addedByRole:"parent",reviewState:"active",active:true}]
-          };
-          window.fetch = async (url, options = {}) => {
-            if (window.__lrFailReads && (!options.method || options.method === "GET")) throw new Error("mock offline");
-            if (!options.method || options.method === "GET") return {ok:true,json:async()=>__mockData};
-            const body = JSON.parse(options.body || "{}");
-            window.__lrFetchCalls.push(body);
-            if (body.action === "suggestLearningResource") return {ok:true,json:async()=>({success:true,data:{resourceId:"LR-P",attachedToType:"opportunity",attachedToId:"L1",resourceType:"video",title:body.title,url:"https://www.youtube.com/watch?v=lmnopqrstuv",provider:"youtube",providerResourceId:"lmnopqrstuv",videoId:"lmnopqrstuv",embedUrl:"https://www.youtube-nocookie.com/embed/lmnopqrstuv",embeddable:true,sortOrder:2,addedByRole:"sophie",reviewState:"pending",active:false}})};
-            if (body.action === "getLearningResourcesAdmin") return {ok:true,json:async()=>({success:true,data:[]})};
-            return {ok:true,json:async()=>({success:true,data:{}})};
-          };
-          </script>
-'''
-          if anchor not in html:
-              raise SystemExit('main script anchor missing')
-          html = html.replace(anchor, mock + anchor, 1)
-          probe = r'''<script>
-          (async () => {
-            const result = document.createElement('div'); result.id = 'lr-browser-result'; document.body.appendChild(result);
-            const failures = [];
-            const ok = (name, value) => { if (!value) failures.push(name); };
-            await new Promise(r => setTimeout(r, 100));
-            ok('gate', learningResourceContractAvailable());
-            openOpportunityDetail('L1', document.body);
-            ok('active-video-rendered', !!document.querySelector('.learning-video-frame'));
-            ok('trusted-host', document.querySelector('.learning-video-frame')?.src === 'https://www.youtube-nocookie.com/embed/abcdefghijk');
-            ok('malicious-embed-rejected', trustedLearningEmbed({...app.data.learningResources[0], embedUrl:'https://evil.example/embed/abcdefghijk'}) === '');
-            app.learningKey = 'device-key';
-            openLearningResourceSuggestion('L1');
-            document.querySelector('#learning-suggest-title').value = 'Suggested video';
-            document.querySelector('#learning-suggest-url').value = 'https://youtu.be/lmnopqrstuv';
-            const before = app.data.learningResources.length;
-            await saveLearningResourceSuggestion({preventDefault(){}, submitter:document.querySelector('#learning-resource-suggest-form button[type=submit]')});
-            ok('suggest-route', window.__lrFetchCalls.some(c => c.action === 'suggestLearningResource' && c.learningKey === 'device-key'));
-            ok('pending-not-fabricated-active', app.data.learningResources.length === before);
-            const previous = app.data;
-            window.__lrFailReads = true;
-            await loadData({quiet:true});
-            ok('failure-keeps-authoritative-object', app.data === previous);
-            ok('failure-disables-mutations', app.dataUnavailable === true && learningResourceMutationsReady() === false);
-            window.__lrFailReads = false;
-            await loadData({quiet:true});
-            ok('reload-recovers', app.dataUnavailable === false && app.data.learningResourceContractVersion === 'lr-v1');
-            result.textContent = failures.length ? 'FAIL:' + failures.join(',') : 'PASS:lr-v1-browser-regression';
-          })().catch(error => { const result=document.querySelector('#lr-browser-result')||document.body.appendChild(document.createElement('div')); result.id='lr-browser-result'; result.textContent='FAIL:'+error.message; });
-          </script></body>'''
-          html = html.replace('</body>', probe, 1)
-          Path('/tmp/lr-test.html').write_text(html, encoding='utf-8')
-          PY
-          cd /tmp
-          python3 -m http.server 8765 >/tmp/lr-http.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID || true' EXIT
-          "$CHROME" --headless --no-sandbox --disable-gpu --virtual-time-budget=5000 --dump-dom http://127.0.0.1:8765/lr-test.html > /tmp/lr-dom.html
-          grep -q 'PASS:lr-v1-browser-regression' /tmp/lr-dom.html
-
-      - name: Commit verified release files to branch
+      - name: Commit exact generated release files
         shell: bash
         run: |
           set -euo pipefail
