@@ -335,21 +335,48 @@
     .school-task-head h3 { margin: 4px 0 0; }
     .school-meta { color: var(--muted); font-size: .76rem; font-weight: 700; }
     .school-status { display: inline-flex; align-items: center; min-height: 30px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .7rem; font-weight: 800; white-space: nowrap; }
-    .school-next { margin: 13px 0; padding: 13px 14px; border-radius: 14px; background: var(--surface-2); }
-    .school-next span { display: block; margin-bottom: 4px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
-    .school-next strong { line-height: 1.4; }
+    .school-next { margin: 13px 0; padding: 16px; border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--line)); border-radius: 17px; background: linear-gradient(135deg, var(--brand-soft), var(--surface)); }
+    .school-next-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .school-next-label { display: block; margin-bottom: 5px; color: var(--muted); font-size: .7rem; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+    .school-next strong { display: block; font-size: clamp(1.02rem, 3.7vw, 1.2rem); line-height: 1.35; letter-spacing: -.015em; }
+    .school-next .text-button { flex: 0 0 auto; min-height: 44px; padding: 4px 2px; }
+    .school-next-note { margin: 9px 0 0; color: var(--muted); font-size: .76rem; line-height: 1.45; }
     .school-journey { margin: 14px 0; }
     .school-journey-label { margin-bottom: 7px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
     .school-journey-track { display: flex; gap: 6px; overflow-x: auto; padding: 2px 1px 5px; scrollbar-width: none; }
     .school-journey-track::-webkit-scrollbar { display: none; }
-    .journey-step { flex: 0 0 auto; min-height: 40px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); color: var(--muted); font-size: .72rem; font-weight: 800; cursor: pointer; }
+    .journey-step { flex: 0 0 auto; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); color: var(--muted); font-size: .72rem; font-weight: 800; cursor: pointer; }
     .journey-step.active { border-color: color-mix(in srgb, var(--brand) 38%, var(--line)); background: var(--brand-soft); color: var(--brand); }
     .journey-step:disabled { opacity: .48; cursor: not-allowed; }
     .school-support { margin: 14px 0 4px; }
     .school-support-label { margin-bottom: 7px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
     .school-support-options { display: flex; flex-wrap: wrap; gap: 7px; }
-    .support-choice { min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--muted); font-size: .75rem; font-weight: 800; cursor: pointer; }
+    .support-choice { min-height: 44px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--muted); font-size: .75rem; font-weight: 800; cursor: pointer; }
     .support-choice.active { border-color: color-mix(in srgb, var(--brand) 38%, var(--line)); background: var(--brand-soft); color: var(--brand); }
+    .school-support-explainer { margin: 7px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.45; }
+    .school-scaffold { margin: 12px 0 0; padding: 14px; border: 1px solid var(--line); border-radius: 15px; background: var(--bg); }
+    .school-scaffold.compact { padding: 12px 14px; }
+    .school-scaffold-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+    .school-scaffold-head h4 { margin: 0; font-size: .88rem; letter-spacing: -.01em; }
+    .school-scaffold-mode { flex: 0 0 auto; padding: 5px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .67rem; font-weight: 850; }
+    .school-scaffold p { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+    .school-scaffold-model { margin-top: 10px; padding: 11px 12px; border-left: 3px solid var(--subject-accent, var(--brand)); border-radius: 0 11px 11px 0; background: var(--surface); }
+    .school-scaffold-model strong { display: block; margin-bottom: 4px; font-size: .75rem; }
+    .school-scaffold-model p { color: var(--ink); }
+    .school-scaffold-steps { display: grid; gap: 7px; margin: 11px 0 0; padding: 0; list-style: none; }
+    .school-scaffold-steps li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; color: var(--ink); font-size: .78rem; line-height: 1.45; }
+    .school-scaffold-steps li span:first-child { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: var(--surface-2); color: var(--brand); font-size: .68rem; font-weight: 900; }
+    .school-coach-prompt { margin-top: 10px; padding: 13px; border-radius: 13px; background: var(--surface); }
+    .school-coach-progress { display: block; margin-bottom: 5px; color: var(--muted); font-size: .68rem; font-weight: 850; text-transform: uppercase; letter-spacing: .04em; }
+    .school-coach-prompt strong { display: block; font-size: .9rem; line-height: 1.45; }
+    .school-coach-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .school-coach-actions button { min-height: 44px; }
+    .school-stage-next { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--line); }
+    .school-stage-next p { margin: 0 0 8px; }
+    .school-help-zone { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding: 12px 13px; border: 1px dashed color-mix(in srgb, var(--brand) 28%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--brand-soft) 35%, var(--surface)); }
+    .school-help-zone strong { display: block; margin-bottom: 2px; font-size: .78rem; }
+    .school-help-zone p { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.4; }
+    .school-help-zone button { flex: 0 0 auto; min-height: 44px; }
     .school-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
     .school-actions button { min-height: 42px; flex: 0 0 auto; }
     .school-help-note { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg); font-size: .78rem; line-height: 1.45; }
@@ -513,6 +540,8 @@
       .job-side { grid-column: 2; display: flex; justify-content: space-between; align-items: center; text-align: left; }
       .job-value { margin: 0; }
       .skill-grid, .goal-grid { grid-template-columns: 1fr; }
+      .school-next-head, .school-help-zone { align-items: stretch; flex-direction: column; }
+      .school-help-zone button { width: 100%; }
       .parent-actions { grid-template-columns: 1fr 1fr; }
       .parent-actions .form-field { grid-column: 1 / -1; }
       .school-toolbar { align-items: stretch; flex-direction: column; }
@@ -675,10 +704,21 @@
     </form>
   </dialog>
 
+  <dialog id="school-action-dialog">
+    <form class="dialog-body" id="school-action-form">
+      <div class="dialog-head"><h2 id="school-action-dialog-title">Change what I'm working on</h2><button type="button" class="close-button" data-close-dialog="school-action-dialog" aria-label="Close">×</button></div>
+      <p id="school-action-dialog-copy" style="color:var(--muted);line-height:1.5">Keep this to one concrete, visible action.</p>
+      <input id="school-action-task-id" type="hidden">
+      <input id="school-action-stage" type="hidden">
+      <div class="form-field"><label for="school-action-input">Working on now</label><input id="school-action-input" maxlength="240" placeholder="Finish the results table" required></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="school-action-dialog">Cancel</button><button class="primary-button" type="submit">Save</button></div>
+    </form>
+  </dialog>
+
   <dialog id="school-help-dialog">
     <div class="dialog-body">
       <div class="dialog-head"><h2>I need help</h2><button type="button" class="close-button" data-close-dialog="school-help-dialog" aria-label="Close">×</button></div>
-      <p style="color:var(--muted);line-height:1.5">Asking early is part of managing the task. What kind of help would be useful?</p>
+      <p style="color:var(--muted);line-height:1.5"><strong>This is separate from your support setting.</strong> Use it when you want another person or extra explanation involved. Asking early is part of managing the task.</p>
       <div class="school-help-options">
         <button class="secondary-button" type="button" data-school-help-type="understand">I don't understand the task</button>
         <button class="secondary-button" type="button" data-school-help-type="stuck">I'm stuck on a step</button>
@@ -789,7 +829,8 @@
       schoolView: "now",
       schoolLoaded: false,
       schoolUnavailable: false,
-      activeSchoolTaskId: ""
+      activeSchoolTaskId: "",
+      schoolGuideSteps: {}
     };
 
     const $ = selector => document.querySelector(selector);
@@ -1087,6 +1128,56 @@
       ["prompt_me", "Prompt me"],
       ["got_this", "I've got this"]
     ];
+    const SCHOOL_STAGE_GUIDANCE = {
+      understand: {
+        purpose: "Make sure you know what the teacher is asking before you start doing the work.",
+        model: "Look for the thing you need to hand in and the instruction word. Example: ‘Compare two ideas in a report’ means make a report, cover two ideas, and explain similarities and differences.",
+        steps: ["What do I need to make, answer or hand in?", "Which instruction word tells me what to do — explain, compare, calculate, describe or something else?", "What part is still unclear?"],
+        coach: ["In your own words, what do you think the teacher wants you to produce?", "Which word or sentence in the instructions tells you what kind of thinking or work to do?", "Is there anything you still cannot explain clearly? If yes, use ‘I need help’."],
+        prompt: "Say the task in one sentence: ‘I need to…’",
+        independent: "If you can explain the task in your own words, move on to Plan."
+      },
+      plan: {
+        purpose: "Turn the assignment into a few manageable pieces and choose the next useful one.",
+        model: "A big task becomes easier when it is broken down. Example: read instructions → gather what you need → make a first version → check → submit.",
+        steps: ["What parts does this task have?", "What needs to happen first?", "What is small enough to finish or clearly progress in one sitting?"],
+        coach: ["What are the main pieces of this task? Keep the list short.", "Which piece should happen first because something else depends on it?", "What single action should appear in ‘Working on now’?"],
+        prompt: "What is the smallest useful thing you can do next?",
+        independent: "Keep ‘Working on now’ to one concrete action, not the whole assignment."
+      },
+      work: {
+        purpose: "Work on one visible piece at a time instead of carrying the whole assignment in your head.",
+        model: "Make the action specific. ‘Write the first paragraph’ or ‘complete questions 1–3’ is clearer than ‘do English’ or ‘do maths’.",
+        steps: ["Open the materials you need.", "Do the action shown in ‘Working on now’.", "When that action changes, update it instead of leaving an old instruction on the card."],
+        coach: ["What do you need open in front of you to do this action?", "Do only the action shown in ‘Working on now’ first.", "Finished that piece? Decide whether to set a new action, move to Check, or ask for help."],
+        prompt: "What can you make, solve, write or finish next?",
+        independent: "The app will stay out of the way. Keep the current action accurate and use help if you hit a real block."
+      },
+      check: {
+        purpose: "Check that the work answers the task before spending time polishing small details.",
+        model: "Check requirements first, then obvious mistakes. Missing a required section matters more than fixing one comma while a whole part is absent.",
+        steps: ["Read the task instructions again.", "Compare the work with what was actually asked for.", "Fix one missing or unclear part, then check obvious errors."],
+        coach: ["What did the teacher ask for that you can point to in your work?", "What is missing, unclear or unsupported right now?", "After the big pieces are there, what obvious spelling, working, units, labels or attachments need checking?"],
+        prompt: "What would the teacher notice is missing or unclear?",
+        independent: "When the required parts are there, move to Submit. The app will still offer a quick final submission check."
+      },
+      submit: {
+        purpose: "Finish the hand-in process, not just the schoolwork itself.",
+        model: "Submission is complete when the right work goes to the right place and you can tell it was received. The app keeps ‘Submitted’ and ‘Received’ separate for that reason.",
+        steps: ["Make sure you are sending the correct work or file.", "Check required attachments, names or formats.", "Submit it, then confirm Daymap or the teacher shows it was received."],
+        coach: ["What exactly are you about to submit?", "Where does it need to go, and are all required parts attached?", "After submitting, what will show you that it was actually received?"],
+        prompt: "Do I know exactly what I am submitting, where it goes, and how I will confirm receipt?",
+        independent: "Use Submit when you are ready. The final check is short and does not judge the quality of your work."
+      },
+      feedback: {
+        purpose: "Use feedback as information for the next task, not as a score about you.",
+        model: "Look for two things: what worked, and one useful thing to carry forward. A grade or mark is an outcome, not a reward or punishment in Sophie App.",
+        steps: ["Read the feedback without rushing to the mark.", "Notice one thing that worked or improved.", "Choose one thing you want to repeat or change next time."],
+        coach: ["What does the feedback say went well?", "What is one specific thing that could improve next time?", "What do you want to remember when a similar task appears again?"],
+        prompt: "What is one useful thing you want to repeat or change next time?",
+        independent: "Review the feedback when it is useful, then move the task to Past work when you are finished with it."
+      }
+    };
     const SUBJECT_COLOURS = {
       english: "#8b63c7", mathematics: "#4b79a8", maths: "#4b79a8", science: "#3b8a76",
       hass: "#a06f45", japanese: "#b76572", hpe: "#527f58", music: "#9b6a9a", art: "#a97546",
@@ -1169,16 +1260,76 @@
       return due.days;
     }
 
+    function schoolNextJourneyStage(stage) {
+      const order = SCHOOL_JOURNEY.map(([value]) => value);
+      const index = order.indexOf(String(stage || "understand"));
+      return index >= 0 && index < order.length - 1 ? order[index + 1] : "";
+    }
+
     function schoolJourneyMarkup(task) {
       const hasOutcome = schoolHasOutcome(task);
+      const submitted = task.submissionState && task.submissionState !== "not_submitted";
       return `<div class="school-journey"><div class="school-journey-label">Assignment journey</div><div class="school-journey-track">${SCHOOL_JOURNEY.map(([value, label]) => {
-        const disabled = value === "feedback" && !hasOutcome && task.journeyStage !== "feedback";
-        return `<button type="button" class="journey-step ${task.journeyStage === value ? "active" : ""}" data-school-stage="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${task.journeyStage === value ? "true" : "false"}" ${disabled ? 'disabled title="Available when feedback is recorded"' : ""}>${label}</button>`;
+        const disabledForOutcome = value === "feedback" && !hasOutcome && task.journeyStage !== "feedback";
+        const disabledAfterSubmit = submitted && !["submit", "feedback"].includes(value);
+        const disabled = disabledForOutcome || disabledAfterSubmit;
+        const title = disabledForOutcome ? "Available when feedback is recorded" : disabledAfterSubmit ? "Earlier stages are locked after submission" : "";
+        return `<button type="button" class="journey-step ${task.journeyStage === value ? "active" : ""}" data-school-stage="${value}" data-school-id="${safe(task.taskId)}" aria-current="${task.journeyStage === value ? "step" : "false"}" ${disabled ? `disabled title="${safe(title)}"` : ""}>${label}</button>`;
       }).join("")}</div></div>`;
     }
 
     function schoolSupportMarkup(task) {
-      return `<div class="school-support"><div class="school-support-label">Support I want right now</div><div class="school-support-options">${SCHOOL_SUPPORT.map(([value, label]) => `<button type="button" class="support-choice ${task.supportPreference === value ? "active" : ""}" data-school-support="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${task.supportPreference === value ? "true" : "false"}">${label}</button>`).join("")}</div><p class="school-neutral-note">You can change this at any time. Asking for help is always available.</p></div>`;
+      const support = String(task.supportPreference || "");
+      const explanation = ({
+        show_me: "The app shows an example and the whole process. It will not create assessed work for you.",
+        do_with_me: "The app gives one question at a time so you can work through the stage yourself.",
+        prompt_me: "The app gives one short prompt, then leaves the thinking and work to you.",
+        got_this: "The app keeps most guidance out of the way. Help is still one tap away."
+      })[support] || "Choose how much structure you want from the app for this stage. This does not send a help request.";
+      return `<div class="school-support"><div class="school-support-label">Support I want right now</div><div class="school-support-options">${SCHOOL_SUPPORT.map(([value, label]) => `<button type="button" class="support-choice ${support === value ? "active" : ""}" data-school-support="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${support === value ? "true" : "false"}">${label}</button>`).join("")}</div><p class="school-support-explainer">${safe(explanation)}</p></div>`;
+    }
+
+    function schoolGuideKey(task) {
+      return `${String(task.taskId)}:${String(task.journeyStage || "understand")}`;
+    }
+
+    function schoolGuideIndex(task, max) {
+      const raw = Number(app.schoolGuideSteps[schoolGuideKey(task)]) || 0;
+      return Math.max(0, Math.min(Math.max(0, max - 1), raw));
+    }
+
+    function schoolStageNextMarkup(task) {
+      const next = schoolNextJourneyStage(task.journeyStage);
+      if (!next) return "";
+      if (next === "feedback" && !schoolHasOutcome(task)) return "";
+      if (task.submissionState && task.submissionState !== "not_submitted" && next !== "feedback") return "";
+      return `<div class="school-stage-next"><p>Ready to move on?</p><button class="secondary-button" type="button" data-school-next-stage="${safe(next)}" data-school-id="${safe(task.taskId)}">Move to ${safe(schoolStageLabel(next))}</button></div>`;
+    }
+
+    function schoolScaffoldMarkup(task) {
+      const stage = String(task.journeyStage || "understand");
+      const support = String(task.supportPreference || "");
+      const guidance = SCHOOL_STAGE_GUIDANCE[stage] || SCHOOL_STAGE_GUIDANCE.understand;
+      if (!support) {
+        return `<section class="school-scaffold compact" aria-label="Stage guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: what this stage is for</h4><span class="school-scaffold-mode">Choose support</span></div><p>${safe(guidance.purpose)}</p><p style="margin-top:7px">Pick a support level above and the app will change how much guidance it shows.</p></section>`;
+      }
+
+      if (support === "show_me") {
+        return `<section class="school-scaffold" aria-label="Show me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: show me</h4><span class="school-scaffold-mode">Example + steps</span></div><p>${safe(guidance.purpose)}</p><div class="school-scaffold-model"><strong>Example of the process</strong><p>${safe(guidance.model)}</p></div><ol class="school-scaffold-steps">${guidance.steps.map((step, index) => `<li><span>${index + 1}</span><span>${safe(step)}</span></li>`).join("")}</ol>${schoolStageNextMarkup(task)}</section>`;
+      }
+
+      if (support === "do_with_me") {
+        const prompts = guidance.coach || [];
+        const index = schoolGuideIndex(task, prompts.length || 1);
+        const prompt = prompts[index] || guidance.prompt;
+        return `<section class="school-scaffold" aria-label="Do it with me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: do it with me</h4><span class="school-scaffold-mode">One step at a time</span></div><p>${safe(guidance.purpose)}</p><div class="school-coach-prompt"><span class="school-coach-progress">Prompt ${index + 1} of ${Math.max(1, prompts.length)}</span><strong>${safe(prompt)}</strong></div><div class="school-coach-actions">${index > 0 ? `<button class="text-button" type="button" data-school-guide-back="${safe(task.taskId)}">← Back</button>` : ""}${index < prompts.length - 1 ? `<button class="secondary-button" type="button" data-school-guide-next="${safe(task.taskId)}">Next prompt →</button>` : `<button class="secondary-button" type="button" data-school-action-edit="${safe(task.taskId)}">Set working on now</button>`}</div>${index >= prompts.length - 1 ? schoolStageNextMarkup(task) : ""}</section>`;
+      }
+
+      if (support === "prompt_me") {
+        return `<section class="school-scaffold compact" aria-label="Prompt me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: one prompt</h4><span class="school-scaffold-mode">Prompt only</span></div><div class="school-coach-prompt" style="margin-top:0"><strong>${safe(guidance.prompt)}</strong></div><div class="school-coach-actions"><button class="text-button" type="button" data-school-action-edit="${safe(task.taskId)}">Change working on now</button></div>${schoolStageNextMarkup(task)}</section>`;
+      }
+
+      return `<section class="school-scaffold compact" aria-label="I've got this guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: I've got this</h4><span class="school-scaffold-mode">Minimal guidance</span></div><p>${safe(guidance.independent)}</p>${schoolStageNextMarkup(task)}</section>`;
     }
 
     function schoolTaskMarkup(task) {
@@ -1200,16 +1351,20 @@
           <div><div class="school-meta">${safe(task.subject || "School")} · ${safe(due.label)}</div><h3>${safe(task.title)}</h3></div>
           <span class="school-status">${safe(schoolStatusLabel(task))}</span>
         </div>
+        <div class="school-next" role="group" aria-label="Working on now">
+          <div class="school-next-head"><div><span class="school-next-label">Working on now</span><strong>${safe(task.currentAction || task.nextAction || "Choose one useful next action")}</strong></div>${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-action-edit="${safe(task.taskId)}">Change</button>` : ""}</div>
+          <p class="school-next-note">This is the one action the app should help you keep in view right now.</p>
+        </div>
         ${schoolJourneyMarkup(task)}
-        <div class="school-next"><span>Working on now</span><strong>${safe(task.currentAction || task.nextAction || "Choose one useful next action")}</strong></div>
         ${schoolSupportMarkup(task)}
+        ${schoolScaffoldMarkup(task)}
         ${helpNote ? `<div class="school-help-note">${safe(helpNote)}</div>` : ""}
+        <div class="school-help-zone"><div><strong>Need another person or extra explanation?</strong><p>This is separate from how much app guidance you chose above.</p></div><button class="secondary-button" type="button" data-school-help="${safe(task.taskId)}">${task.helpType ? "Change help request" : "I need help"}</button></div>
         ${outcomePeek}
         <div class="school-actions">
           ${submissionAction}
-          <button class="secondary-button" type="button" data-school-help="${safe(task.taskId)}">I need help</button>
           ${hasOutcome ? `<button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">Feedback</button>` : ""}
-          ${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-edit="${safe(task.taskId)}">Edit details</button>` : ""}
+          ${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-edit="${safe(task.taskId)}">Edit task details</button>` : ""}
         </div>
       </article>`;
     }
@@ -1386,6 +1541,60 @@
         toast(error.message || "The task could not be updated");
         if (button) button.disabled = false;
       }
+    }
+
+    function schoolTaskById(taskId) {
+      return app.schoolTasks.find(item => String(item.taskId) === String(taskId)) || app.schoolHistory.find(item => String(item.taskId) === String(taskId)) || null;
+    }
+
+    function openSchoolActionEditor(taskId, stage = "") {
+      const task = schoolTaskById(taskId);
+      if (!task) return toast("That school task is no longer available");
+      const targetStage = stage || task.journeyStage || "understand";
+      const changingStage = Boolean(stage && stage !== task.journeyStage);
+      $("#school-action-form").reset();
+      $("#school-action-task-id").value = task.taskId;
+      $("#school-action-stage").value = changingStage ? targetStage : "";
+      $("#school-action-input").value = task.currentAction || task.nextAction || "";
+      $("#school-action-dialog-title").textContent = changingStage ? `Move to ${schoolStageLabel(targetStage)}` : "Change what I'm working on";
+      $("#school-action-dialog-copy").textContent = changingStage
+        ? `Choose the one concrete action you want visible while you are in ${schoolStageLabel(targetStage)}.`
+        : "Keep this to one concrete, visible action. Change it whenever the next useful step changes.";
+      $("#school-action-dialog").showModal();
+      setTimeout(() => { $("#school-action-input").focus(); $("#school-action-input").select(); }, 0);
+    }
+
+    async function saveSchoolAction(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-action-form button[type=submit]");
+      const taskId = $("#school-action-task-id").value;
+      const stage = $("#school-action-stage").value;
+      const currentAction = $("#school-action-input").value.trim();
+      if (!currentAction) return toast("Choose one concrete action first");
+      submit.disabled = true;
+      try {
+        const payload = { action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, currentAction };
+        if (stage) payload.journeyStage = stage;
+        await apiPost(payload);
+        $("#school-action-dialog").close();
+        toast(stage ? `Moved to ${schoolStageLabel(stage)}` : "Working on now updated");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The current action could not be saved");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    function changeSchoolGuideStep(taskId, delta) {
+      const task = schoolTaskById(taskId);
+      if (!task) return;
+      const guidance = SCHOOL_STAGE_GUIDANCE[task.journeyStage] || SCHOOL_STAGE_GUIDANCE.understand;
+      const max = Math.max(1, (guidance.coach || []).length);
+      const key = schoolGuideKey(task);
+      const current = schoolGuideIndex(task, max);
+      app.schoolGuideSteps[key] = Math.max(0, Math.min(max - 1, current + delta));
+      renderSchool();
     }
 
     function openSchoolHelp(taskId) {
@@ -1808,7 +2017,22 @@
       if (schoolView) setSchoolView(schoolView.dataset.schoolView, schoolView);
 
       const schoolStage = event.target.closest("[data-school-stage]");
-      if (schoolStage) updateSchoolTaskField(schoolStage.dataset.schoolId, "journeyStage", schoolStage.dataset.schoolStage, schoolStage, "Stage updated");
+      if (schoolStage) {
+        const task = schoolTaskById(schoolStage.dataset.schoolId);
+        if (task && task.journeyStage !== schoolStage.dataset.schoolStage) openSchoolActionEditor(task.taskId, schoolStage.dataset.schoolStage);
+      }
+
+      const schoolNextStage = event.target.closest("[data-school-next-stage]");
+      if (schoolNextStage) openSchoolActionEditor(schoolNextStage.dataset.schoolId, schoolNextStage.dataset.schoolNextStage);
+
+      const schoolActionEdit = event.target.closest("[data-school-action-edit]");
+      if (schoolActionEdit) openSchoolActionEditor(schoolActionEdit.dataset.schoolActionEdit);
+
+      const schoolGuideNext = event.target.closest("[data-school-guide-next]");
+      if (schoolGuideNext) changeSchoolGuideStep(schoolGuideNext.dataset.schoolGuideNext, 1);
+
+      const schoolGuideBack = event.target.closest("[data-school-guide-back]");
+      if (schoolGuideBack) changeSchoolGuideStep(schoolGuideBack.dataset.schoolGuideBack, -1);
 
       const schoolSupport = event.target.closest("[data-school-support]");
       if (schoolSupport) updateSchoolTaskField(schoolSupport.dataset.schoolId, "supportPreference", schoolSupport.dataset.schoolSupport, schoolSupport, "Support choice updated");
@@ -1854,6 +2078,7 @@
     $("#open-school-task").addEventListener("click", () => openSchoolTaskForm());
     $("#open-school-history").addEventListener("click", openSchoolHistory);
     $("#school-task-form").addEventListener("submit", saveSchoolTask);
+    $("#school-action-form").addEventListener("submit", saveSchoolAction);
     $("#school-check-form").addEventListener("submit", submitSchoolTask);
     $("#parent-school-feedback-form").addEventListener("submit", saveParentSchoolFeedback);
     $("#setup-school-device").addEventListener("click", setupSchoolDevice);
