@@ -23,32 +23,43 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .d006/index.*.b64 | base64 -d | gunzip > index.html
-          cat .d006/sw.b64 | base64 -d | gunzip > sw.js
+          cat _release_chunks/index.*.b64part | base64 -d | gunzip > index.html
+          cat _release_chunks/sw.*.b64part | base64 -d | gunzip > sw.js
 
-          echo "b18d4225dcb123cb298d955d92e947cda3613d99c7bb22a0ced4b29e760f4d65  index.html" | sha256sum -c -
+          echo "bf0db9019d1afef2004c1b35e6f18d06d2f20339ab74d2332edcbf0c1a9cc690  index.html" | sha256sum -c -
           echo "e0c1a1102f9335dc6b807ef1bd9601325e6e054c8606040cb20b63d237c30cf4  sw.js" | sha256sum -c -
 
           ! grep -q 'action: "claimJob"' index.html
           ! grep -q 'action: "approveJob"' index.html
           ! grep -q 'action: "rejectJob"' index.html
-          grep -q 'startOpportunity' index.html
-          grep -q 'finishOpportunity' index.html
-          grep -q 'withdrawEarn' index.html
-          grep -q 'stopLearn' index.html
-          grep -q 'reviewEarn' index.html
-          grep -q 'completeContributionReview' index.html
-          grep -q 'createOpportunity' index.html
+          grep -q 'action: "startOpportunity"' index.html
+          grep -q 'action: "finishOpportunity"' index.html
+          grep -q 'action: "withdrawEarn"' index.html
+          grep -q 'action: "stopLearn"' index.html
+          grep -q 'action: "reviewEarn"' index.html
+          grep -q 'action: "completeContributionReview"' index.html
+          grep -q 'action: "createOpportunity"' index.html
           grep -q 'sophie-app-v2-8-d006-opportunities' sw.js
+
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
+          Path('/tmp/sophie-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/sophie-inline.js
+          node --check sw.js
 
       - name: Commit clean release branch
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .d006
-          rm -f .github/workflows/d006-reconstruct.yml
+          rm -rf _release_chunks
+          rm -f .github/workflows/build-d006-release.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- index.html sw.js .d006 .github/workflows/d006-reconstruct.yml
-          git commit -m "Release D-006 Opportunity Board"
+          git add -- index.html sw.js
+          git add -A -- _release_chunks .github/workflows/build-d006-release.yml
+          git commit -m "Release D-006 Opportunity Board frontend"
           git push origin HEAD:release-d006-opportunity-board-v2.4
