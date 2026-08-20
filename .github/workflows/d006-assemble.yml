@@ -1,0 +1,77 @@
+name: Assemble D-006 release
+
+on:
+  push:
+    branches:
+      - release-d006-opportunity-board-v2.4
+    paths:
+      - .release-d006/READY
+
+permissions:
+  contents: write
+
+jobs:
+  assemble-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release-d006-opportunity-board-v2.4
+          fetch-depth: 0
+
+      - name: Verify baseline and assemble tested frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object index.html)" = "a2f302a621280e6f0fc831b29f8680f036e03eac"
+          test "$(git hash-object sw.js)" = "10d99e4bea1864acd684586d3f477383421b1520"
+          cat .release-d006/patch.part* | base64 --decode | gzip --decompress > /tmp/d006.patch
+          git apply --check /tmp/d006.patch
+          git apply /tmp/d006.patch
+          sed -i 's/sophie-app-v2-7-school/sophie-app-v2-8-d006-opportunities/g' sw.js
+
+      - name: Static D-006 contract checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          index = Path('index.html').read_text(encoding='utf-8')
+          sw = Path('sw.js').read_text(encoding='utf-8')
+
+          required = [
+              'startOpportunity', 'finishOpportunity', 'withdrawEarn', 'stopLearn',
+              'reviewEarn', 'completeContributionReview', 'createOpportunity'
+          ]
+          retired = ['claimJob', 'approveJob', 'rejectJob']
+          for name in required:
+              assert name in index, f'missing required D-006 action: {name}'
+          for name in retired:
+              assert name not in index, f'retired Opportunity action still present: {name}'
+          assert 'd006-v1' in index
+          assert 'sophie-app-v2-8-d006-opportunities' in sw
+
+          index_sha = hashlib.sha256(Path('index.html').read_bytes()).hexdigest()
+          sw_sha = hashlib.sha256(Path('sw.js').read_bytes()).hexdigest()
+          assert index_sha == 'bf0db9019d1afef2004c1b35e6f18d06d2f20339ab74d2332edcbf0c1a9cc690', index_sha
+          assert sw_sha == 'e0c1a1102f9335dc6b807ef1bd9601325e6e054c8606040cb20b63d237c30cf4', sw_sha
+
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', index, flags=re.S | re.I)
+          assert scripts, 'no inline JavaScript found'
+          Path('/tmp/index-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/index-inline.js
+
+      - name: Commit assembled release to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Sophie App Release"
+          git config user.email "actions@users.noreply.github.com"
+          git add -- index.html sw.js
+          git diff --cached --check
+          git commit -m "Release D-006 Opportunity Board frontend"
+          git push origin HEAD:release-d006-opportunity-board-v2.4
