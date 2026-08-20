@@ -557,6 +557,42 @@
       .school-outcome-grid { grid-template-columns: 1fr; }
       .school-task-head { flex-direction: column; }
     }
+    
+    /* D-006 Opportunity Board */
+    .job-card { position: relative; }
+    .job-open { border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; min-width: 0; padding: 17px; }
+    .job-open:focus-visible { border-radius: var(--radius-lg); }
+    .job-domain { display:inline-flex; margin-bottom:8px; font-size:.68rem; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--brand); }
+    .job-requiredness { display:block; margin:4px 0 7px; font-size:.8rem; font-weight:800; }
+    .job-purpose { color:var(--muted); font-size:.82rem; line-height:1.45; }
+    .job-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .job-side { min-width:150px; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:9px; padding:17px 17px 17px 0; }
+    .job-value { margin:0; }
+    .job-status-label { font-size:.75rem; font-weight:800; color:var(--muted); }
+    .opportunity-detail-domain { color:var(--brand); font-size:.72rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .opportunity-detail-value { font-size:1.5rem; font-weight:900; margin:.35rem 0 .6rem; }
+    .opportunity-detail-section { padding:14px 0; border-top:1px solid var(--line); }
+    .opportunity-detail-section h3 { margin:0 0 6px; font-size:.9rem; }
+    .opportunity-detail-section p { margin:0; color:var(--muted); line-height:1.5; }
+    .opportunity-status-line { padding:11px 13px; border-radius:13px; background:var(--surface-2); font-weight:800; }
+    .opportunity-review-feedback { padding:12px 13px; border-radius:13px; background:var(--sun); color:var(--sun-ink); margin-top:10px; line-height:1.45; }
+    .opportunity-detail-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:16px; padding-bottom:env(safe-area-inset-bottom); }
+    .opportunity-detail-actions button { min-height:44px; }
+    .opportunity-withdraw-actions { grid-template-columns:1fr; }
+    .opportunity-review-context { padding:14px; margin-bottom:15px; }
+    .opportunity-review-context p { margin:5px 0 0; color:var(--muted); line-height:1.45; }
+    .opportunity-form-note { color:var(--muted); line-height:1.5; }
+    .opportunity-error { margin-top:12px; padding:12px; border-radius:12px; background:var(--rose); color:var(--rose-ink); font-weight:700; }
+    .review-agreement { margin-top:8px; color:var(--muted); font-size:.8rem; line-height:1.45; }
+    .parent-review .parent-actions { align-items:end; }
+    #opportunity-detail-dialog { width:min(100% - 18px, 620px); }
+    @media (max-width: 600px) {
+      #opportunity-detail-dialog { width:100%; max-width:none; height:100dvh; max-height:100dvh; margin:0; border-radius:0; }
+      #opportunity-detail-dialog .dialog-body { min-height:100%; padding-bottom:calc(22px + env(safe-area-inset-bottom)); }
+      .job-card { grid-template-columns:1fr; }
+      .job-side { min-width:0; width:100%; padding:0 17px 17px; align-items:stretch; }
+      .job-side .job-value { text-align:left; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
@@ -582,7 +618,7 @@
         <div class="hero-content">
           <div class="hero-label">My money</div>
           <div class="money" id="balance">$0.00</div>
-          <div class="pending-pill"><span>◷</span><span id="pending">$0.00 awaiting approval</span></div>
+          <div class="pending-pill"><span>◷</span><span id="pending">$0.00 awaiting review</span></div>
         </div>
         <div class="hero-side"><span class="big-icon">🌈</span><span>Every step builds independence</span></div>
       </article>
@@ -617,13 +653,13 @@
     </section>
 
     <section class="view" id="view-opportunities" data-view="opportunities">
-      <div class="page-intro"><h2>Opportunities</h2><p>Some things earn money, some help the family, and some grow a skill. Each one matters differently.</p></div>
-      <div class="filter-row" id="opportunity-filters">
-        <button class="filter-chip active" data-filter="all">All</button>
-        <button class="filter-chip" data-filter="earn">💰 Earn</button>
-        <button class="filter-chip" data-filter="contribute">🤝 Contribute</button>
-        <button class="filter-chip" data-filter="learn">🌱 Learn</button>
-        <button class="filter-chip" data-filter="pending">◷ Awaiting approval</button>
+      <div class="page-intro"><h2>Opportunities</h2><p>Contribute, learn, or choose extra paid work.</p></div>
+      <div class="data-alert" id="opportunity-contract-alert" role="status"></div>
+      <div class="filter-row" id="opportunity-filters" role="group" aria-label="Filter opportunities">
+        <button class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-chip" data-filter="contribute" aria-pressed="false">Contribute</button>
+        <button class="filter-chip" data-filter="learn" aria-pressed="false">Learn</button>
+        <button class="filter-chip" data-filter="earn" aria-pressed="false">Earn</button>
       </div>
       <div class="cards" id="all-jobs"></div>
     </section>
@@ -677,7 +713,7 @@
       <div class="setting-row"><div><strong>Your character</strong><p>Choose a companion for the app.</p></div><div class="avatar-options" id="avatar-options"></div></div>
       <div class="setting-row"><div><strong>Colour theme</strong><p>Pick the style that feels most like you.</p></div><div class="theme-options" id="theme-options"></div></div>
       <div class="setting-row"><div><strong>Activity history</strong><p>Earnings, contributions and feedback.</p></div><button class="secondary-button" id="open-activity-history">View</button></div>
-      <div class="setting-row"><div><strong>Parent dashboard</strong><p>Approvals and helpful feedback.</p></div><button class="secondary-button" id="open-parent">Parent access</button></div>
+      <div class="setting-row"><div><strong>Parent support</strong><p>Review paid work, temporary checks and new opportunities.</p></div><button class="secondary-button" id="open-parent">Parent access</button></div>
     </div>
   </dialog>
 
@@ -694,6 +730,55 @@
   </dialog>
 
 
+
+  <dialog id="opportunity-detail-dialog">
+    <div class="dialog-body" id="opportunity-detail-body"></div>
+  </dialog>
+
+  <dialog id="earn-withdraw-dialog">
+    <form class="dialog-body" id="earn-withdraw-form">
+      <div class="dialog-head"><h2>Stop this job?</h2><button type="button" class="close-button" data-close-dialog="earn-withdraw-dialog" aria-label="Close">×</button></div>
+      <input type="hidden" id="earn-withdraw-id">
+      <p>You can stop. Full payment is for the agreed job. If part of what you've done is useful, it can be reviewed for partial payment.</p>
+      <div class="form-field"><label for="earn-partial-description">What part is finished? <span style="font-weight:500">(only if asking for partial-work review)</span></label><textarea id="earn-partial-description" maxlength="1000" placeholder="Describe the useful part that's complete."></textarea></div>
+      <div class="form-actions opportunity-withdraw-actions">
+        <button type="button" class="secondary-button" data-close-dialog="earn-withdraw-dialog">Keep working</button>
+        <button type="button" class="secondary-button" data-withdraw-no-review>Stop — no payment review</button>
+        <button type="submit" class="primary-button">Send for partial-work review</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="earn-review-dialog">
+    <form class="dialog-body" id="earn-review-form">
+      <div class="dialog-head"><h2 id="earn-review-title">Review paid work</h2><button type="button" class="close-button" data-close-dialog="earn-review-dialog" aria-label="Close">×</button></div>
+      <input type="hidden" id="earn-review-id">
+      <input type="hidden" id="earn-review-kind">
+      <div id="earn-review-context" class="surface opportunity-review-context"></div>
+      <div class="form-field"><label for="earn-review-outcome">Outcome</label><select id="earn-review-outcome" required></select></div>
+      <div class="form-field" id="earn-review-amount-field"><label for="earn-review-amount">Approved partial amount</label><input id="earn-review-amount" type="number" min="0.01" step="0.01" inputmode="decimal"></div>
+      <div class="form-field"><label for="earn-review-feedback">Factual feedback</label><textarea id="earn-review-feedback" maxlength="1000" placeholder="What was completed, or what still needs finishing?"></textarea></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="earn-review-dialog">Cancel</button><button class="primary-button" type="submit">Save review</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="opportunity-create-dialog">
+    <form class="dialog-body" id="opportunity-create-form">
+      <div class="dialog-head"><h2>Add an activity</h2><button type="button" class="close-button" data-close-dialog="opportunity-create-dialog" aria-label="Close">×</button></div>
+      <p class="opportunity-form-note">Create the real contract Sophie will see. Contribute and Learn are not $0 Earn jobs.</p>
+      <div class="form-field"><label for="opp-create-type">Type</label><select id="opp-create-type" required><option value="contribute">Contribute</option><option value="learn">Learn</option><option value="earn">Earn</option></select></div>
+      <div class="form-field"><label for="opp-create-title">Title</label><input id="opp-create-title" maxlength="120" required></div>
+      <div class="form-field"><label for="opp-create-requiredness">Requiredness</label><select id="opp-create-requiredness" required></select></div>
+      <div class="form-field"><label for="opp-create-why">Why it matters</label><textarea id="opp-create-why" maxlength="1000" required></textarea></div>
+      <div class="form-field"><label for="opp-create-scope">Scope / what is being practised</label><textarea id="opp-create-scope" maxlength="1500"></textarea></div>
+      <div class="form-field"><label for="opp-create-standard">What finished looks like / practice target</label><textarea id="opp-create-standard" maxlength="1500" required></textarea></div>
+      <div class="form-field" id="opp-create-skill-field"><label for="opp-create-skill">Linked Skill ID</label><input id="opp-create-skill" maxlength="80" placeholder="S003"></div>
+      <div class="form-field"><label for="opp-create-minutes">Estimated minutes <span style="font-weight:500">(optional)</span></label><input id="opp-create-minutes" type="number" min="0" max="1440" step="1"></div>
+      <div class="form-field" id="opp-create-value-field"><label for="opp-create-value">Agreed value</label><input id="opp-create-value" type="number" min="0.01" step="0.01" inputmode="decimal"></div>
+      <div class="form-field" id="opp-create-review-field"><label for="opp-create-review-reason">Temporary review reason <span style="font-weight:500">(optional for Contribute)</span></label><input id="opp-create-review-reason" maxlength="300"></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="opportunity-create-dialog">Cancel</button><button type="submit" class="primary-button">Create activity</button></div>
+    </form>
+  </dialog>
 
   <dialog id="school-task-dialog">
     <form class="dialog-body" id="school-task-form">
@@ -788,9 +873,10 @@
 
   <dialog id="parent-dialog">
     <div class="dialog-body">
-      <div class="dialog-head"><h2>Parent dashboard</h2><button class="close-button" data-close-dialog="parent-dialog" aria-label="Close">×</button></div>
+      <div class="dialog-head"><h2>Parent support</h2><button class="close-button" data-close-dialog="parent-dialog" aria-label="Close">×</button></div>
       <div class="parent-summary" id="parent-summary"></div>
       <div class="section-heading"><div><h3>Opportunities</h3><p>Work awaiting review</p></div></div>
+      <div class="section-heading" style="margin-top:18px"><div><h3>Things needing review</h3><p>Review the agreement or temporary check, not Sophie.</p></div><button class="secondary-button" type="button" id="open-create-opportunity">+ Add activity</button></div>
       <div id="parent-reviews"></div>
       <div class="section-heading" style="margin-top:22px"><div><h3>Goal proposals</h3><p>Sophie chooses; you check practical details.</p></div></div>
       <div id="parent-goal-reviews"></div>
@@ -811,6 +897,7 @@
 
     const emptyData = {
       appVersion: "unavailable",
+      opportunityContractVersion: "",
       balance: 0,
       pending: 0,
       impact: { contributionsThisWeek: 0, minutesThisWeek: 0, message: "Live data is unavailable." },
@@ -836,7 +923,11 @@
       schoolLoaded: false,
       schoolUnavailable: false,
       activeSchoolTaskId: "",
-      schoolGuideSteps: {}
+      schoolGuideSteps: {},
+      activeOpportunityId: "",
+      opportunityReturnFocus: null,
+      opportunityMutationError: "",
+      opportunityCreateType: "contribute"
     };
 
     const $ = selector => document.querySelector(selector);
@@ -859,21 +950,40 @@
     function normaliseData(raw = {}) {
       return {
         appVersion: raw.appVersion || "1-compatible",
+        opportunityContractVersion: String(raw.opportunityContractVersion || ""),
         balance: Number(raw.balance) || 0,
         pending: Number(raw.pending) || 0,
         impact: raw.impact || { contributionsThisWeek: 0, minutesThisWeek: 0, message: "Your contributions will appear here as you help make family life easier." },
         goals: Array.isArray(raw.goals) ? raw.goals : [],
-        jobs: (Array.isArray(raw.jobs) ? raw.jobs : []).map(job => ({
-          ...job,
-          value: Number(job.value) || 0,
-          tier: Number(job.tier) || 1,
-          status: String(job.status || "open").toLowerCase(),
-          type: String(job.type || ((Number(job.value) || 0) > 0 ? "earn" : "contribute")).toLowerCase(),
-          category: job.category || "Home",
-          skill: job.skill || "Independence",
-          estimatedMinutes: Number(job.estimatedMinutes) || 0,
-          icon: job.icon || iconFor(job.type || ((Number(job.value) || 0) > 0 ? "earn" : "contribute"))
-        })),
+        jobs: (Array.isArray(raw.jobs) ? raw.jobs : []).map(job => {
+          const type = String(job.type || "").toLowerCase();
+          return {
+            ...job,
+            id: String(job.id ?? ""),
+            type,
+            requiredness: String(job.requiredness || "").toLowerCase(),
+            status: String(job.status || "available").toLowerCase(),
+            value: type === "earn" ? Number(job.value ?? job.agreedValue) || 0 : 0,
+            agreedValue: type === "earn" ? Number(job.agreedValue ?? job.value) || 0 : 0,
+            category: job.category || "Home",
+            tier: Number(job.tier) || 1,
+            skill: job.capabilityLabel || job.skill || "",
+            skillId: job.skillId || "",
+            estimatedMinutes: Number(job.estimatedMinutes) || 0,
+            icon: job.icon || iconFor(type),
+            whyItMatters: job.whyItMatters || "",
+            scope: job.scope || "",
+            completionStandard: job.completionStandard || "",
+            approvalRequired: Boolean(job.approvalRequired),
+            reviewState: String(job.reviewState || "none").toLowerCase(),
+            reviewKind: String(job.reviewKind || "").toLowerCase(),
+            reviewOutcome: String(job.reviewOutcome || "").toLowerCase(),
+            approvedAmount: Number(job.approvedAmount) || 0,
+            reviewFeedback: job.reviewFeedback || "",
+            withdrawalReviewRequested: Boolean(job.withdrawalReviewRequested),
+            partialWorkDescription: job.partialWorkDescription || ""
+          };
+        }),
         skills: Array.isArray(raw.skills) ? raw.skills : [],
         transactions: Array.isArray(raw.transactions) ? raw.transactions : []
       };
@@ -901,7 +1011,11 @@
       });
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
       const result = await response.json();
-      if (!result.success) throw new Error(result.error || "Request failed");
+      if (!result.success) {
+        const error = new Error(result.error || "Request failed");
+        error.code = result.code || "REQUEST_FAILED";
+        throw error;
+      }
       return result.data || result;
     }
 
@@ -909,19 +1023,31 @@
       const refresh = $("#refresh-button");
       refresh.disabled = true;
       refresh.textContent = "…";
+      const hadAuthoritativeData = !app.dataUnavailable && app.data.appVersion !== "unavailable";
+      const previous = app.data;
       try {
-        app.data = normaliseData(await apiGet("getData"));
+        const next = normaliseData(await apiGet("getData"));
+        if (next.opportunityContractVersion !== "d006-v1") {
+          const mismatch = new Error("Opportunity Board needs the v2.4.0 / d006-v1 backend. Reload after the backend update.");
+          mismatch.code = "CLIENT_UPDATE_REQUIRED";
+          throw mismatch;
+        }
+        app.data = next;
         app.dataUnavailable = false;
         $("#sync-dot").classList.remove("offline");
         $("#data-alert").classList.remove("show");
         if (!quiet) toast("Everything is up to date");
       } catch (error) {
         console.warn("Live data unavailable:", error);
-        app.data = normaliseData(emptyData);
+        app.data = hadAuthoritativeData ? previous : normaliseData(emptyData);
         app.dataUnavailable = true;
         $("#sync-dot").classList.add("offline");
-        $("#data-alert").classList.add("show");
-        if (!quiet) toast("Live data unavailable — nothing shown is a fake balance");
+        const alert = $("#data-alert");
+        alert.textContent = hadAuthoritativeData
+          ? "Connection lost. The last loaded information is still shown, but changes are disabled until you reload successfully."
+          : "Live data is unavailable. Your real balance, opportunities and goals cannot be loaded yet.";
+        alert.classList.add("show");
+        if (!quiet) toast(hadAuthoritativeData ? "Connection lost — last loaded state kept" : "Live data unavailable — no fake data shown");
       } finally {
         refresh.disabled = false;
         refresh.textContent = "↻";
@@ -931,7 +1057,7 @@
 
     function renderAll() {
       $("#balance").textContent = app.dataUnavailable ? "—" : money(app.data.balance);
-      $("#pending").textContent = app.dataUnavailable ? "Live data unavailable" : `${money(app.data.pending)} awaiting approval`;
+      $("#pending").textContent = app.dataUnavailable ? "Live data unavailable" : `${money(app.data.pending)} awaiting review`;
       renderGoal();
       renderJobs();
       renderImpact();
@@ -988,34 +1114,90 @@
     </article>`;
 }
 
+    const OPPORTUNITY_STATUS_LABELS = {
+      available: "Available",
+      in_progress: "In progress",
+      waiting_for_review: "Waiting for review",
+      returned_for_completion: "Needs finishing",
+      completed: "Complete",
+      withdrawn: "Stopped",
+      cancelled: "Cancelled"
+    };
+
+    function opportunityStatusLabel(job) {
+      if (job.type === "learn" && job.status === "completed") return "Practice complete for now";
+      if (job.type === "learn" && job.status === "withdrawn") return "Stopped for now";
+      if (job.type === "contribute" && job.status === "waiting_for_review") return "Waiting for a quick check";
+      if (job.type === "earn" && job.status === "completed" && job.reviewOutcome === "full_payment") return "Payment approved";
+      if (job.type === "earn" && job.status === "completed" && job.reviewOutcome === "partial_payment") return "Partial payment approved";
+      if (job.type === "earn" && job.status === "waiting_for_review" && job.reviewKind === "partial_work_withdrawal") return "Stopped — partial work waiting for review";
+      return OPPORTUNITY_STATUS_LABELS[job.status] || job.status || "Available";
+    }
+
+    function opportunityRequiredness(job) {
+      if (job.type === "earn") return "Your choice";
+      if (job.requiredness === "expected") return "Part of my responsibilities";
+      if (job.requiredness === "negotiated") return "Agreed together";
+      if (job.type === "learn" && job.requiredness === "optional") return "Optional practice";
+      return "";
+    }
+
+    function opportunityPrimaryAction(job) {
+      if (app.dataUnavailable) return "";
+      if (job.status === "available") {
+        if (job.type === "earn") return `<button class="primary-button" data-opportunity-action="start" data-opportunity-id="${safe(job.id)}">Take this job</button>`;
+        if (job.type === "learn") return `<button class="primary-button" data-opportunity-action="start" data-opportunity-id="${safe(job.id)}">Practise</button>`;
+        return `<button class="primary-button" data-opportunity-action="start" data-opportunity-id="${safe(job.id)}">Start</button>`;
+      }
+      if (job.status === "in_progress") {
+        if (job.type === "earn") return `<button class="primary-button" data-opportunity-action="finish" data-opportunity-id="${safe(job.id)}">I'm finished</button>`;
+        if (job.type === "learn") return `<button class="primary-button" data-opportunity-action="finish" data-opportunity-id="${safe(job.id)}">Done for now</button>`;
+        return `<button class="primary-button" data-opportunity-action="finish" data-opportunity-id="${safe(job.id)}">Done</button>`;
+      }
+      if (job.type === "earn" && job.status === "returned_for_completion") return `<button class="primary-button" data-opportunity-action="start" data-opportunity-id="${safe(job.id)}">Keep working</button>`;
+      return "";
+    }
+
     function jobMarkup(job) {
-      const pending = job.status === "pending" || job.status === "claimed";
-      const completed = job.status === "completed" || job.status === "approved";
-      const typeLabel = ({ earn: "Earn", contribute: "Contribute", learn: "Learn" })[job.type] || job.type;
-      const value = job.value > 0 ? money(job.value) : typeLabel;
-      const button = pending
-        ? `<span class="status pending">Awaiting approval</span>`
-        : completed
-          ? `<span class="status completed">Completed</span>`
-          : `<button class="primary-button" data-claim-job="${safe(job.id)}">I'll do this</button>`;
-      return `<article class="surface job-card">
-        <div class="job-icon">${safe(job.icon)}</div>
-        <div class="job-info"><h3>${safe(job.title)}</h3><p>${safe(job.description || job.whyItMatters || "A step towards greater independence.")}</p>
-          <div style="margin-top:8px"><span class="pill">${safe(job.category)}</span><span class="pill">Level ${safe(job.tier)}</span>${job.estimatedMinutes ? `<span class="pill">${safe(job.estimatedMinutes)} min</span>` : ""}</div>
-        </div>
-        <div class="job-side"><span class="job-value">${safe(value)}</span>${button}</div>
+      const typeLabel = ({ earn: "EARN", contribute: "CONTRIBUTE", learn: "LEARN" })[job.type] || String(job.type || "ACTIVITY").toUpperCase();
+      const requiredness = opportunityRequiredness(job);
+      const purpose = job.type === "earn" ? (job.scope || job.description || job.whyItMatters) : (job.whyItMatters || job.description || job.completionStandard);
+      const value = job.type === "earn" ? `<span class="job-value">${money(job.agreedValue || job.value)}</span>` : "";
+      const action = opportunityPrimaryAction(job);
+      return `<article class="surface job-card" data-opportunity-card="${safe(job.id)}">
+        <button type="button" class="job-open" data-open-opportunity="${safe(job.id)}" aria-label="Open ${safe(job.title)} details">
+          <span class="job-domain">${safe(typeLabel)}</span>
+          <h3>${safe(job.title)}</h3>
+          ${requiredness ? `<span class="job-requiredness">${safe(requiredness)}</span>` : ""}
+          <div class="job-purpose">${safe(purpose || "Open to see the details.")}</div>
+          <div class="job-meta">${job.estimatedMinutes ? `<span class="pill">About ${safe(job.estimatedMinutes)} min</span>` : ""}${job.skill ? `<span class="pill">${safe(job.skill)}</span>` : ""}<span class="pill">${safe(opportunityStatusLabel(job))}</span></div>
+        </button>
+        <div class="job-side">${value}<span class="job-status-label">${safe(opportunityStatusLabel(job))}</span>${action}</div>
       </article>`;
     }
 
+    function opportunitySort(a, b) {
+      const rank = { in_progress: 0, returned_for_completion: 1, waiting_for_review: 2, available: 3, completed: 4, withdrawn: 5, cancelled: 6 };
+      return (rank[a.status] ?? 9) - (rank[b.status] ?? 9) || String(a.title).localeCompare(String(b.title));
+    }
+
     function renderJobs() {
-      const suggestions = app.data.jobs.filter(job => job.status === "open").slice(0, 2);
-      $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing open right now.</div>`;
-      const filtered = app.data.jobs.filter(job => {
-        if (app.jobFilter === "all") return true;
-        if (app.jobFilter === "pending") return ["pending", "claimed"].includes(job.status);
-        return job.type === app.jobFilter;
-      });
-      $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No opportunities in this group yet.</div>`;
+      const alert = $("#opportunity-contract-alert");
+      if (alert) {
+        if (app.dataUnavailable) {
+          alert.innerHTML = `Opportunities cannot be changed until the live backend reloads successfully. <button class="text-button" type="button" data-opportunity-retry>Try again</button>`;
+          alert.classList.add("show");
+        } else {
+          alert.classList.remove("show");
+          alert.textContent = "";
+        }
+      }
+      const jobs = [...app.data.jobs].filter(job => job.status !== "cancelled").sort(opportunitySort);
+      const suggestions = jobs.filter(job => ["in_progress", "returned_for_completion", "available"].includes(job.status)).slice(0, 2);
+      $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing needs attention right now.</div>`;
+      const filtered = jobs.filter(job => app.jobFilter === "all" || job.type === app.jobFilter);
+      $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
+      $$("#opportunity-filters .filter-chip").forEach(chip => chip.setAttribute("aria-pressed", chip.dataset.filter === app.jobFilter ? "true" : "false"));
     }
 
     function renderImpact() {
@@ -1763,22 +1945,114 @@
 
     function setFilter(filter) {
       app.jobFilter = filter;
-      $$(".filter-chip").forEach(chip => chip.classList.toggle("active", chip.dataset.filter === filter));
+      $$(".filter-chip").forEach(chip => { const active = chip.dataset.filter === filter; chip.classList.toggle("active", active); chip.setAttribute("aria-pressed", active ? "true" : "false"); });
       renderJobs();
     }
 
-    async function claimJob(jobId, button) {
-      button.disabled = true;
-      button.textContent = "Claiming…";
+    function opportunityById(id) {
+      return app.data.jobs.find(job => String(job.id) === String(id));
+    }
+
+    function announceOpportunity(message) {
+      toast(message);
+      const live = $("#toast");
+      if (live) live.setAttribute("aria-live", "polite");
+    }
+
+    function opportunityDetailSection(title, text) {
+      return text ? `<section class="opportunity-detail-section"><h3>${safe(title)}</h3><p>${safe(text)}</p></section>` : "";
+    }
+
+    function renderOpportunityDetail(job) {
+      const host = $("#opportunity-detail-body");
+      if (!job || !host) return;
+      const typeLabel = ({ earn: "EARN", contribute: "CONTRIBUTE", learn: "LEARN" })[job.type] || String(job.type).toUpperCase();
+      const value = job.type === "earn" ? `<div class="opportunity-detail-value">${money(job.agreedValue || job.value)}</div>` : "";
+      const agreementScope = job.type === "earn" && job.acceptedAt ? (job.agreedScope || job.scope) : job.scope;
+      const agreementStandard = job.type === "earn" && job.acceptedAt ? (job.agreedCompletionStandard || job.completionStandard) : job.completionStandard;
+      let actions = opportunityPrimaryAction(job);
+      if (!app.dataUnavailable && job.type === "earn" && ["in_progress", "returned_for_completion"].includes(job.status)) {
+        actions += `<button class="secondary-button" type="button" data-open-withdraw="${safe(job.id)}">I want to stop this job</button>`;
+      }
+      if (!app.dataUnavailable && job.type === "learn" && job.status === "in_progress") {
+        actions += `<button class="secondary-button" type="button" data-opportunity-action="stop-learn" data-opportunity-id="${safe(job.id)}">Stop for now</button>`;
+      }
+      const reviewNote = job.reviewFeedback ? `<div class="opportunity-review-feedback"><strong>${job.status === "returned_for_completion" ? "What still needs finishing" : "Review note"}</strong><br>${safe(job.reviewFeedback)}</div>` : "";
+      host.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(typeLabel)}</span><h2>${safe(job.title)}</h2></div><button type="button" class="close-button" data-close-dialog="opportunity-detail-dialog" aria-label="Close">×</button></div>
+        <strong>${safe(opportunityRequiredness(job))}</strong>${value}
+        <div class="opportunity-status-line">${safe(opportunityStatusLabel(job))}</div>
+        ${job.type === "learn" ? opportunityDetailSection("Capability I'm building", job.skill || job.skillId) : ""}
+        ${opportunityDetailSection("Why it matters", job.whyItMatters)}
+        ${job.type === "earn" ? opportunityDetailSection("What the job includes", agreementScope) : opportunityDetailSection(job.type === "learn" ? "What I'm practising" : "What done looks like", job.completionStandard)}
+        ${job.type === "earn" ? opportunityDetailSection("What finished looks like", agreementStandard) : ""}
+        ${job.instructions ? opportunityDetailSection("Useful details", job.instructions) : ""}
+        ${job.estimatedMinutes ? opportunityDetailSection("About how long", `${job.estimatedMinutes} minutes`) : ""}
+        ${job.type === "learn" && job.supportPreference ? opportunityDetailSection("Support I want", schoolSupportLabel(job.supportPreference)) : ""}
+        ${job.type === "earn" && job.partialWorkDescription ? opportunityDetailSection("Partial work described", job.partialWorkDescription) : ""}
+        ${reviewNote}
+        ${app.opportunityMutationError ? `<div class="opportunity-error">${safe(app.opportunityMutationError)} <button class="text-button" type="button" data-opportunity-retry>Reload</button></div>` : ""}
+        <div class="opportunity-detail-actions">${actions || (app.dataUnavailable ? `<button class="secondary-button" type="button" data-opportunity-retry>Reload live state</button>` : "")}</div>`;
+    }
+
+    function openOpportunityDetail(id, trigger) {
+      const job = opportunityById(id);
+      if (!job) return;
+      app.activeOpportunityId = String(id);
+      app.opportunityReturnFocus = trigger || document.activeElement;
+      app.opportunityMutationError = "";
+      renderOpportunityDetail(job);
+      $("#opportunity-detail-dialog").showModal();
+    }
+
+    async function opportunityMutation(kind, id, button) {
+      if (app.dataUnavailable) return toast("Reload live data before changing an activity.");
+      const job = opportunityById(id);
+      if (!job) return toast("That activity is no longer loaded.");
+      if (button) button.disabled = true;
+      const action = kind === "start" ? "startOpportunity" : kind === "finish" ? "finishOpportunity" : kind === "stop-learn" ? "stopLearn" : "";
+      if (!action) return;
       try {
-        if (app.dataUnavailable) throw new Error("Reconnect before claiming an opportunity.");
-        await apiPost({ action: "claimJob", jobId });
-        toast("Sent for parent approval");
+        app.opportunityMutationError = "";
+        await apiPost({ action, opportunityId: id });
+        const stateText = kind === "start" ? "in progress" : kind === "finish" ? (job.type === "earn" ? "waiting for payment review" : opportunityStatusLabel({ ...job, status: "completed" }).toLowerCase()) : "stopped for now";
+        announceOpportunity(`${job.title} is now ${stateText}.`);
         await loadData({ quiet: true });
+        const refreshed = opportunityById(id);
+        if ($("#opportunity-detail-dialog").open && refreshed) renderOpportunityDetail(refreshed);
       } catch (error) {
-        toast(error.message || "Could not claim this opportunity");
-        button.disabled = false;
-        button.textContent = "I'll do this";
+        app.opportunityMutationError = error.message || "The activity could not be updated.";
+        renderOpportunityDetail(job);
+        toast(app.opportunityMutationError);
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openEarnWithdraw(id) {
+      const job = opportunityById(id);
+      if (!job || job.type !== "earn") return;
+      $("#earn-withdraw-id").value = id;
+      $("#earn-partial-description").value = "";
+      $("#earn-withdraw-dialog").showModal();
+    }
+
+    async function withdrawEarn(requestPartialReview, button) {
+      const id = $("#earn-withdraw-id").value;
+      const description = $("#earn-partial-description").value.trim();
+      if (requestPartialReview && !description) return toast("Describe the useful part that's complete.");
+      if (app.dataUnavailable) return toast("Reload live data before stopping this job.");
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "withdrawEarn", opportunityId: id, requestPartialReview, partialWorkDescription: requestPartialReview ? description : "" });
+        $("#earn-withdraw-dialog").close();
+        announceOpportunity(requestPartialReview ? "Job stopped. Partial work is waiting for review." : "This job is stopped.");
+        await loadData({ quiet: true });
+        const refreshed = opportunityById(id);
+        if ($("#opportunity-detail-dialog").open && refreshed) renderOpportunityDetail(refreshed);
+      } catch (error) {
+        toast(error.message || "The job could not be stopped.");
+      } finally {
+        if (button) button.disabled = false;
       }
     }
 
@@ -1858,15 +2132,22 @@
     }
 
     function renderParent(data) {
-      const pendingJobs = data.jobs.filter(job => ["pending", "claimed"].includes(job.status));
+      const reviewJobs = data.jobs.filter(job => job.status === "waiting_for_review" && (job.type === "earn" || (job.type === "contribute" && job.approvalRequired)));
       const pendingGoals = data.goals.filter(goal => String(goal.status).toLowerCase() === "pending");
-      const totalPending = pendingJobs.length + pendingGoals.length;
-      $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${totalPending}</strong><span>Total awaiting review</span></article>`;
-      $("#parent-reviews").innerHTML = pendingJobs.length ? pendingJobs.map(job => `<article class="surface parent-review" data-review-card="${safe(job.id)}"><div class="parent-review-head"><div><h3>${safe(job.icon)} ${safe(job.title)}</h3><p>${safe(job.skill)} · Level ${safe(job.tier)}</p></div><strong>${job.value > 0 ? money(job.value) : "Contribution"}</strong></div><div class="parent-actions"><div class="form-field"><label for="feedback-${safe(job.id)}">Helpful feedback</label><input id="feedback-${safe(job.id)}" data-feedback-for="${safe(job.id)}" placeholder="What went well?"></div><button class="danger-button" data-review-action="reject" data-job-id="${safe(job.id)}">Needs work</button><button class="primary-button" data-review-action="approve" data-job-id="${safe(job.id)}">Approve</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No opportunities need review.</p></div>`;
+      const totalPending = reviewJobs.length + pendingGoals.length;
+      $("#parent-summary").innerHTML = `<article class="surface parent-stat"><strong>${money(data.balance)}</strong><span>Current balance</span></article><article class="surface parent-stat"><strong>${totalPending}</strong><span>Items needing review</span></article>`;
+      $("#parent-reviews").innerHTML = reviewJobs.length ? reviewJobs.map(job => {
+        const earn = job.type === "earn";
+        const full = job.reviewKind === "full_completion";
+        const state = earn ? (full ? "Says finished" : "Stopped — partial review requested") : "Waiting for a quick check";
+        const agreement = earn ? `<div class="review-agreement"><strong>Agreed value:</strong> ${money(job.agreedValue)}<br><strong>Scope:</strong> ${safe(job.agreedScope || job.scope)}<br><strong>Finished looks like:</strong> ${safe(job.agreedCompletionStandard || job.completionStandard)}${job.partialWorkDescription ? `<br><strong>Partial work:</strong> ${safe(job.partialWorkDescription)}` : ""}</div>` : `<div class="review-agreement">${safe(job.completionStandard)}${job.reviewReason ? `<br>${safe(job.reviewReason)}` : ""}</div>`;
+        const actions = earn
+          ? `<button class="primary-button" type="button" data-open-earn-review="${safe(job.reviewKind)}" data-job-id="${safe(job.id)}">Review</button>`
+          : `<button class="primary-button" type="button" data-complete-contribution="${safe(job.id)}">Complete check</button>`;
+        return `<article class="surface parent-review"><div class="parent-review-head"><div><span class="job-domain">${earn ? "EARN" : "CONTRIBUTE"}</span><h3>${safe(job.title)}</h3><p>${safe(state)}</p></div>${earn ? `<strong>${money(job.agreedValue)}</strong>` : ""}</div>${agreement}<div class="form-actions">${actions}</div></article>`;
+      }).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No activities need review.</p></div>`;
       $("#parent-goal-reviews").innerHTML = pendingGoals.length ? pendingGoals.map(goal => `<article class="surface parent-review"><div class="parent-review-head"><div><h3>${safe(goal.icon || "🎯")} ${safe(goal.title)}</h3><p>Target: ${money(goal.targetAmount)}</p></div><span class="status pending">Sophie chose this</span></div><p>Check practical details such as the amount, link and suitability. The goal remains Sophie's choice.</p><div class="form-actions"><button class="danger-button" data-goal-review="reject" data-goal-id="${safe(goal.goalId)}">Decline</button><button class="primary-button" data-goal-review="approve" data-goal-id="${safe(goal.goalId)}">Make active</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>No goal proposals waiting</strong></div>`;
     }
-
-
 
     async function loadParentSchoolSupport() {
       const supportHost = $("#parent-school-support");
@@ -1992,21 +2273,121 @@
     }
 
 
-    async function reviewJob(action, jobId, button) {
-      const feedback = document.querySelector(`[data-feedback-for="${CSS.escape(String(jobId))}"]`)?.value || "";
+    function openEarnReview(jobId, kind) {
+      const job = opportunityById(jobId);
+      if (!job || !parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      $("#earn-review-id").value = jobId;
+      $("#earn-review-kind").value = kind || job.reviewKind;
+      $("#earn-review-feedback").value = "";
+      $("#earn-review-amount").value = "";
+      $("#earn-review-context").innerHTML = `<strong>${safe(job.title)} · ${money(job.agreedValue)}</strong><p>${safe(job.agreedScope || job.scope)}<br>${safe(job.agreedCompletionStandard || job.completionStandard)}${job.partialWorkDescription ? `<br><br><strong>Partial work described:</strong> ${safe(job.partialWorkDescription)}` : ""}</p>`;
+      const select = $("#earn-review-outcome");
+      select.innerHTML = (kind === "partial_work_withdrawal" || job.reviewKind === "partial_work_withdrawal")
+        ? `<option value="partial_payment">Approve partial payment</option><option value="no_partial_payment">No partial payment</option>`
+        : `<option value="full_payment">Approve full payment</option><option value="returned_for_completion">Needs finishing</option><option value="partial_payment">Approve partial payment</option>`;
+      updateEarnReviewFields();
+      $("#earn-review-dialog").showModal();
+    }
+
+    function updateEarnReviewFields() {
+      const outcome = $("#earn-review-outcome").value;
+      $("#earn-review-amount-field").style.display = outcome === "partial_payment" ? "grid" : "none";
+      $("#earn-review-feedback").required = ["returned_for_completion", "partial_payment", "no_partial_payment"].includes(outcome);
+    }
+
+    async function saveEarnReview(event) {
+      event.preventDefault();
+      const button = event.submitter || $("#earn-review-form button[type=submit]");
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      const opportunityId = $("#earn-review-id").value;
+      const outcome = $("#earn-review-outcome").value;
+      const feedback = $("#earn-review-feedback").value.trim();
+      const approvedAmount = outcome === "partial_payment" ? Number($("#earn-review-amount").value) : undefined;
+      if (["returned_for_completion", "partial_payment", "no_partial_payment"].includes(outcome) && !feedback) return toast("Add factual feedback for this outcome.");
+      if (outcome === "partial_payment" && !(approvedAmount > 0)) return toast("Enter the agreed partial amount.");
       button.disabled = true;
       try {
-        if (!parentSessionValid()) throw new Error("Parent Mode is locked. Sign in again.");
         extendParentSession();
-        await apiPost({ action: action === "approve" ? "approveJob" : "rejectJob", jobId, feedback, adminKey: app.adminKey });
-        toast(action === "approve" ? "Approved with feedback" : "Returned for another try");
+        await apiPost({ action: "reviewEarn", adminKey: app.adminKey, opportunityId, outcome, approvedAmount, feedback, approvedBy: "Parent" });
+        $("#earn-review-dialog").close();
+        announceOpportunity(outcome === "full_payment" ? "Payment approved." : outcome === "returned_for_completion" ? "Job returned with what still needs finishing." : outcome === "partial_payment" ? "Partial payment approved." : "Partial-work review settled with no payment.");
         const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
+        app.data = data;
+        app.dataUnavailable = false;
         renderParent(data);
-        await loadData({ quiet: true });
+        renderAll();
       } catch (error) {
-        toast(error.message || "The review could not be saved");
+        toast(error.message || "The review could not be saved.");
+      } finally {
         button.disabled = false;
       }
+    }
+
+    async function completeContributionReview(opportunityId, button) {
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      button.disabled = true;
+      try {
+        extendParentSession();
+        await apiPost({ action: "completeContributionReview", adminKey: app.adminKey, opportunityId, feedback: "", approvedBy: "Parent" });
+        announceOpportunity("Contribution check completed.");
+        const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
+        app.data = data;
+        app.dataUnavailable = false;
+        renderParent(data);
+        renderAll();
+      } catch (error) {
+        toast(error.message || "The contribution check could not be completed.");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function configureOpportunityCreateFields() {
+      const type = $("#opp-create-type").value;
+      const req = $("#opp-create-requiredness");
+      req.innerHTML = type === "contribute" ? `<option value="expected">Expected — part of normal personal/family responsibility</option><option value="negotiated">Agreed together</option>` : type === "learn" ? `<option value="negotiated">Agreed together</option><option value="optional">Optional practice</option>` : `<option value="optional">Your choice — Sophie can say no or stop</option>`;
+      $("#opp-create-value-field").style.display = type === "earn" ? "grid" : "none";
+      $("#opp-create-skill-field").style.display = type === "learn" ? "grid" : "none";
+      $("#opp-create-review-field").style.display = type === "contribute" ? "grid" : "none";
+      $("#opp-create-scope").required = type === "earn";
+      $("#opp-create-value").required = type === "earn";
+      $("#opp-create-skill").required = type === "learn";
+    }
+
+    function openCreateOpportunity() {
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      $("#opportunity-create-form").reset();
+      $("#opp-create-type").value = "contribute";
+      configureOpportunityCreateFields();
+      $("#opportunity-create-dialog").showModal();
+    }
+
+    async function saveOpportunityCreate(event) {
+      event.preventDefault();
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      const button = event.submitter || $("#opportunity-create-form button[type=submit]");
+      const type = $("#opp-create-type").value;
+      const reviewReason = $("#opp-create-review-reason").value.trim();
+      const payload = {
+        action: "createOpportunity", adminKey: app.adminKey, type,
+        title: $("#opp-create-title").value.trim(), requiredness: $("#opp-create-requiredness").value,
+        whyItMatters: $("#opp-create-why").value.trim(), instructions: "",
+        scope: $("#opp-create-scope").value.trim(), completionStandard: $("#opp-create-standard").value.trim(),
+        skillId: $("#opp-create-skill").value.trim(), approvalRequired: type === "earn" || Boolean(reviewReason),
+        reviewReason, estimatedMinutes: Number($("#opp-create-minutes").value) || 0,
+        repeatable: false, frequency: "", value: type === "earn" ? Number($("#opp-create-value").value) : 0
+      };
+      button.disabled = true;
+      try {
+        extendParentSession();
+        await apiPost(payload);
+        $("#opportunity-create-dialog").close();
+        toast("Activity created");
+        const data = normaliseData(await apiPost({ action: "getParentData", adminKey: app.adminKey }));
+        app.data = data; app.dataUnavailable = false; renderParent(data); renderAll();
+      } catch (error) {
+        toast(error.message || "The activity could not be created.");
+      } finally { button.disabled = false; }
     }
 
     async function reviewGoal(action, goalId, button) {
@@ -2044,8 +2425,20 @@
       const filter = event.target.closest("[data-filter]");
       if (filter) setFilter(filter.dataset.filter);
 
-      const claim = event.target.closest("[data-claim-job]");
-      if (claim) claimJob(claim.dataset.claimJob, claim);
+      const opportunityOpen = event.target.closest("[data-open-opportunity]");
+      if (opportunityOpen) openOpportunityDetail(opportunityOpen.dataset.openOpportunity, opportunityOpen);
+
+      const opportunityAction = event.target.closest("[data-opportunity-action]");
+      if (opportunityAction) opportunityMutation(opportunityAction.dataset.opportunityAction, opportunityAction.dataset.opportunityId, opportunityAction);
+
+      const opportunityRetry = event.target.closest("[data-opportunity-retry]");
+      if (opportunityRetry) loadData();
+
+      const openWithdraw = event.target.closest("[data-open-withdraw]");
+      if (openWithdraw) openEarnWithdraw(openWithdraw.dataset.openWithdraw);
+
+      const withdrawNoReview = event.target.closest("[data-withdraw-no-review]");
+      if (withdrawNoReview) withdrawEarn(false, withdrawNoReview);
 
       const close = event.target.closest("[data-close-dialog]");
       if (close) document.getElementById(close.dataset.closeDialog).close();
@@ -2062,8 +2455,11 @@
         setupPersonalisation();
       }
 
-      const review = event.target.closest("[data-review-action]");
-      if (review) reviewJob(review.dataset.reviewAction, review.dataset.jobId, review);
+      const earnReview = event.target.closest("[data-open-earn-review]");
+      if (earnReview) openEarnReview(earnReview.dataset.jobId, earnReview.dataset.openEarnReview);
+
+      const contributionReview = event.target.closest("[data-complete-contribution]");
+      if (contributionReview) completeContributionReview(contributionReview.dataset.completeContribution, contributionReview);
 
       const goalReview = event.target.closest("[data-goal-review]");
       if (goalReview) reviewGoal(goalReview.dataset.goalReview, goalReview.dataset.goalId, goalReview);
@@ -2133,6 +2529,11 @@
     $("#open-school-task").addEventListener("click", () => openSchoolTaskForm());
     $("#open-school-history").addEventListener("click", openSchoolHistory);
     $("#school-task-form").addEventListener("submit", saveSchoolTask);
+    $("#earn-withdraw-form").addEventListener("submit", event => { event.preventDefault(); withdrawEarn(true, event.submitter || event.currentTarget.querySelector('button[type="submit"]')); });
+    $("#earn-review-form").addEventListener("submit", saveEarnReview);
+    $("#earn-review-outcome").addEventListener("change", updateEarnReviewFields);
+    $("#opportunity-create-form").addEventListener("submit", saveOpportunityCreate);
+    $("#opp-create-type").addEventListener("change", configureOpportunityCreateFields);
     $("#school-action-form").addEventListener("submit", saveSchoolAction);
     $("#school-check-form").addEventListener("submit", submitSchoolTask);
     $("#parent-school-feedback-form").addEventListener("submit", saveParentSchoolFeedback);
@@ -2146,6 +2547,8 @@
       $("#goal-dialog").showModal();
     });
     $("#goal-form").addEventListener("submit", createGoal);
+    $("#open-create-opportunity").addEventListener("click", openCreateOpportunity);
+    $("#opportunity-detail-dialog").addEventListener("close", () => { const target = app.opportunityReturnFocus; app.activeOpportunityId = ""; app.opportunityMutationError = ""; if (target && document.body.contains(target)) target.focus(); });
     $("#lock-parent").addEventListener("click", () => lockParentMode());
     $("#open-parent").addEventListener("click", () => {
       $("#settings-dialog").close();
