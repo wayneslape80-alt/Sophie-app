@@ -392,8 +392,14 @@
     .school-subject-heading h3 { margin: 0; }
     .school-history-list { display: grid; gap: 10px; }
     .school-history-item { padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
-    .school-history-item strong { display: block; margin: 4px 0 5px; }
+    .school-history-item strong { display: block; margin: 7px 0 5px; }
     .school-history-item p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.45; }
+    .school-history-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    .school-history-timing { display: inline-flex; align-items: center; min-height: 28px; padding: 5px 9px; border-radius: 99px; font-size: .7rem; font-weight: 800; line-height: 1.2; }
+    .school-history-timing.on-time { background: var(--mint); color: var(--mint-ink); }
+    .school-history-timing.late { background: var(--sun); color: var(--sun-ink); }
+    .school-history-timing.unknown { background: var(--surface-2); color: var(--muted); }
+    .school-history-dates { margin-top: 7px !important; font-size: .7rem !important; }
     .school-checklist { display: grid; gap: 12px; margin: 18px 0; }
     .school-check { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
     .school-check input { width: auto; margin-top: 2px; }
@@ -1221,6 +1227,45 @@
       return { label: `Due ${new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(due)}`, days };
     }
 
+    function schoolSubmissionTiming(task) {
+      const due = parseDateOnly(task.dueDate);
+      const submitted = task.submittedAt ? new Date(task.submittedAt) : null;
+      const shortDate = date => new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(date);
+
+      if (!due) {
+        if (submitted && !Number.isNaN(submitted.getTime())) {
+          return { label: "Handed in", detail: `Handed in ${shortDate(submitted)} · due date not recorded`, state: "unknown" };
+        }
+        return { label: "Submission timing not recorded", detail: "Due date not recorded", state: "unknown" };
+      }
+
+      const dueLabel = shortDate(due);
+      if (!submitted || Number.isNaN(submitted.getTime())) {
+        return { label: "Submission timing not recorded", detail: `Due ${dueLabel}`, state: "unknown" };
+      }
+
+      const calendarDay = date => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000;
+      const daysFromDue = Math.round(calendarDay(submitted) - calendarDay(due));
+      const submittedLabel = shortDate(submitted);
+
+      if (daysFromDue < 0) {
+        const days = Math.abs(daysFromDue);
+        return {
+          label: `Handed in ${days} day${days === 1 ? "" : "s"} early`,
+          detail: `Due ${dueLabel} · Handed in ${submittedLabel}`,
+          state: "on-time"
+        };
+      }
+      if (daysFromDue === 0) {
+        return { label: "Handed in on time", detail: `Due ${dueLabel} · Handed in ${submittedLabel}`, state: "on-time" };
+      }
+      return {
+        label: `Handed in ${daysFromDue} day${daysFromDue === 1 ? "" : "s"} late`,
+        detail: `Due ${dueLabel} · Handed in ${submittedLabel}`,
+        state: "late"
+      };
+    }
+
     function schoolStageLabel(stage) {
       return Object.fromEntries(SCHOOL_JOURNEY)[String(stage || "understand")] || "Understand";
     }
@@ -1397,7 +1442,17 @@
       const history = app.schoolHistory || [];
       host.innerHTML = history.length ? history.map(task => {
         const outcome = [task.gradeOrResult, task.mark].filter(Boolean).join(" · ");
-        return `<article class="school-history-item"><span class="school-meta">${safe(task.subject || "School")} · ${safe(task.dueDate ? schoolDueInfo(task.dueDate).label : "Past work")}</span><strong>${safe(task.title)}</strong><p>${safe(outcome || task.carryForwardSuggestion || task.teacherComment || "Completed school work")}</p>${schoolHasOutcome(task) ? `<div class="form-actions"><button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">View feedback</button></div>` : ""}</article>`;
+        const timing = schoolSubmissionTiming(task);
+        return `<article class="school-history-item">
+          <div class="school-history-meta">
+            <span class="school-meta">${safe(task.subject || "School")}</span>
+            <span class="school-history-timing ${safe(timing.state)}">${safe(timing.label)}</span>
+          </div>
+          <strong>${safe(task.title)}</strong>
+          <p>${safe(outcome || task.carryForwardSuggestion || task.teacherComment || "Completed school work")}</p>
+          <p class="school-history-dates">${safe(timing.detail)}</p>
+          ${schoolHasOutcome(task) ? `<div class="form-actions"><button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">View feedback</button></div>` : ""}
+        </article>`;
       }).join("") : `<div class="empty"><span class="empty-icon">▣</span><strong>No past work yet</strong><p>Completed tasks can move here without becoming a scorecard.</p></div>`;
     }
 
