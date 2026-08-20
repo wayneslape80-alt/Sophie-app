@@ -1,12 +1,12 @@
-# SOPHIE APP — D-006 OPPORTUNITY BACKEND CONTRACT
+# SOPHIE APP - D-006 OPPORTUNITY BACKEND CONTRACT
 
-**Status:** IMPLEMENTATION-READY CONTRACT — OD-008 / D-006  
-**Owner:** 00.03 — Backend, Sheets & Security  
+**Status:** IMPLEMENTATION-READY CONTRACT - OD-008 / D-006  
+**Owner:** 00.03 - Backend, Sheets & Security  
 **Date:** 2026-08-20  
 **Behavioural authority:** D-006 / OPP-D1 through OPP-D7  
 **UX source:** `OPPORTUNITY_UX.md` Section 16  
 **Current backend baseline reconciled:** deployed Apps Script v2.3.0 + live `Sophies app` spreadsheet  
-**Implementation recipient:** 00.02 — Frontend & PWA Development  
+**Implementation recipient:** 00.02 - Frontend & PWA Development  
 
 This contract finalises the minimum backend/API semantics that 00.02 may implement against. It does **not** itself deploy or migrate the live Opportunity backend. The current v2.3.0 Opportunity implementation remains legacy until a coordinated D-006 backend/frontend release is staged.
 
@@ -528,7 +528,7 @@ At contract-issue time the live sheet is favourable: all six rows are `open` and
 
 ## 11.2 Mapping
 
-### ID 1 — Load & Unload Dishwasher
+### ID 1 - Load & Unload Dishwasher
 
 One-to-one migration may preserve ID `1`.
 
@@ -538,7 +538,7 @@ One-to-one migration may preserve ID `1`.
 - requiredness must be confirmed as `expected` or `negotiated` before live migration; do not guess.
 - completion standard must be parent-confirmed from the approved reasonable-standard direction.
 
-### ID 2 — Cook Family Dinner
+### ID 2 - Cook Family Dinner
 
 Do **not** preserve one row as both contracts.
 
@@ -547,7 +547,7 @@ Do **not** preserve one row as both contracts.
 - create a separate optional Earn dinner record with another new ID and `SourceOpportunityID=2` only after parent confirms genuinely additional scope, value and completion standard;
 - do not assume the old `$5` is the new agreement without confirmation.
 
-### ID 3 — Dog poo
+### ID 3 - Dog poo
 
 One-to-one migration may preserve ID `3` only if confirmed as Sophie's ordinary pet-care share.
 
@@ -558,7 +558,7 @@ One-to-one migration may preserve ID `3` only if confirmed as Sophie's ordinary 
 
 If it is additional paid pet work instead, migration must stop for that row rather than guess.
 
-### ID 4 — Having a tidy room
+### ID 4 - Having a tidy room
 
 One-to-one migration may preserve ID `4`.
 
@@ -568,7 +568,7 @@ One-to-one migration may preserve ID `4`.
 - rationale from approved UX: `Practise keeping your space workable so you can find things and look after your belongings.`
 - requiredness (`negotiated|optional`) and concrete functional completion/practice standard must be parent-confirmed.
 
-### ID 5 — Wash your clothes
+### ID 5 - Wash your clothes
 
 One-to-one migration may preserve ID `5`.
 
@@ -578,7 +578,7 @@ One-to-one migration may preserve ID `5`.
 - approved practice direction: sorting, washing, drying and putting clothes away
 - requiredness must be parent-confirmed.
 
-### ID 6 — Recycling and bins
+### ID 6 - Recycling and bins
 
 The current row contains materially different timing points. Do not preserve the false `daily` bundled lifecycle.
 
