@@ -319,35 +319,80 @@
     .level { color: var(--brand); font-size: .75rem; font-weight: 850; }
     .skill-card h3, .full-goal-card h3 { margin-bottom: 7px; }
     .skill-card p, .full-goal-card p { color: var(--muted); font-size: .8rem; line-height: 1.45; }
-    .activity-list { overflow: hidden; }
 
-    .school-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+
+    /* School v2.3 — approved D-004/D-005 experience */
+    .school-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .school-toolbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .school-view-toggle { display: inline-grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+    .school-view-toggle button { min-height: 42px; padding: 8px 14px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-size: .78rem; font-weight: 800; cursor: pointer; }
+    .school-view-toggle button.active { background: var(--brand-soft); color: var(--brand); }
     .school-stack { display: grid; gap: 12px; }
-    .school-task { padding: 18px; }
-    .school-task-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-    .school-task-head h3 { margin: 3px 0 0; }
+    .school-section { margin-top: 24px; }
+    .school-task { position: relative; overflow: hidden; padding: 18px; }
+    .school-task::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--subject-accent, var(--brand)); }
+    .school-task-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding-left: 3px; }
+    .school-task-head h3 { margin: 4px 0 0; }
     .school-meta { color: var(--muted); font-size: .76rem; font-weight: 700; }
+    .school-status { display: inline-flex; align-items: center; min-height: 30px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .7rem; font-weight: 800; white-space: nowrap; }
     .school-next { margin: 13px 0; padding: 13px 14px; border-radius: 14px; background: var(--surface-2); }
     .school-next span { display: block; margin-bottom: 4px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
     .school-next strong { line-height: 1.4; }
-    .school-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .school-actions button { flex: 0 0 auto; }
-    .school-help-note { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg); font-size: .78rem; }
-    .school-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-size: .7rem; font-weight: 800; white-space: nowrap; }
+    .school-journey { margin: 14px 0; }
+    .school-journey-label { margin-bottom: 7px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .school-journey-track { display: flex; gap: 6px; overflow-x: auto; padding: 2px 1px 5px; scrollbar-width: none; }
+    .school-journey-track::-webkit-scrollbar { display: none; }
+    .journey-step { flex: 0 0 auto; min-height: 40px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); color: var(--muted); font-size: .72rem; font-weight: 800; cursor: pointer; }
+    .journey-step.active { border-color: color-mix(in srgb, var(--brand) 38%, var(--line)); background: var(--brand-soft); color: var(--brand); }
+    .journey-step:disabled { opacity: .48; cursor: not-allowed; }
+    .school-support { margin: 14px 0 4px; }
+    .school-support-label { margin-bottom: 7px; color: var(--muted); font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .school-support-options { display: flex; flex-wrap: wrap; gap: 7px; }
+    .support-choice { min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--muted); font-size: .75rem; font-weight: 800; cursor: pointer; }
+    .support-choice.active { border-color: color-mix(in srgb, var(--brand) 38%, var(--line)); background: var(--brand-soft); color: var(--brand); }
+    .school-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+    .school-actions button { min-height: 42px; flex: 0 0 auto; }
+    .school-help-note { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--bg); font-size: .78rem; line-height: 1.45; }
+    .school-feedback-peek { margin-top: 11px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
+    .school-feedback-peek strong { display: block; margin-bottom: 4px; font-size: .8rem; }
+    .school-feedback-peek p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.45; }
     .school-access { padding: 20px; margin-bottom: 18px; }
     .school-access h3 { margin-bottom: 6px; }
     .school-access p { margin: 0; color: var(--muted); line-height: 1.5; }
-    .school-section { margin-top: 24px; }
+    .school-subject-group { margin-bottom: 22px; }
+    .school-subject-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+    .school-subject-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--subject-accent, var(--brand)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--subject-accent, var(--brand)) 14%, transparent); }
+    .school-subject-heading h3 { margin: 0; }
+    .school-history-list { display: grid; gap: 10px; }
+    .school-history-item { padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+    .school-history-item strong { display: block; margin: 4px 0 5px; }
+    .school-history-item p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.45; }
     .school-checklist { display: grid; gap: 12px; margin: 18px 0; }
     .school-check { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
     .school-check input { width: auto; margin-top: 2px; }
     .school-check label { margin: 0; font-weight: 700; line-height: 1.4; }
     .school-help-options { display: grid; gap: 9px; }
-    .school-help-options button { width: 100%; text-align: left; }
+    .school-help-options button { width: 100%; min-height: 44px; text-align: left; }
+    .school-outcome-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .school-outcome { padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
+    .school-outcome span { display: block; margin-bottom: 4px; color: var(--muted); font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .school-outcome strong { font-size: .88rem; }
+    .school-feedback-block { margin: 13px 0; padding: 13px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+    .school-feedback-block h3 { margin-bottom: 7px; font-size: .9rem; }
+    .school-feedback-block p { margin: 0; color: var(--muted); line-height: 1.5; font-size: .8rem; white-space: pre-wrap; }
+    .school-rubric { display: grid; gap: 9px; margin-top: 12px; }
+    .school-rubric-row { padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); }
+    .school-rubric-row strong { display: block; margin-bottom: 4px; }
+    .school-rubric-row p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.45; }
+    .school-neutral-note { margin: 8px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.45; }
     .parent-school-task { padding: 14px; margin-bottom: 9px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
     .parent-school-task strong { display: block; margin-bottom: 4px; }
     .parent-school-task p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.4; }
+    .parent-school-profile { margin-bottom: 12px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); color: var(--muted); font-size: .76rem; line-height: 1.45; }
+    select { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 13px; color: var(--ink); background: var(--bg); font: inherit; }
+    select:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 35%, transparent); outline-offset: 2px; }
 
+    .activity-list { overflow: hidden; }
     .activity-row { display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: center; padding: 15px 17px; border-bottom: 1px solid var(--line); }
     .activity-row:last-child { border-bottom: 0; }
     .activity-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: var(--surface-2); }
@@ -470,6 +515,12 @@
       .skill-grid, .goal-grid { grid-template-columns: 1fr; }
       .parent-actions { grid-template-columns: 1fr 1fr; }
       .parent-actions .form-field { grid-column: 1 / -1; }
+      .school-toolbar { align-items: stretch; flex-direction: column; }
+      .school-toolbar-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .school-toolbar-actions button { width: 100%; min-height: 44px; }
+      .school-view-toggle { width: 100%; }
+      .school-outcome-grid { grid-template-columns: 1fr; }
+      .school-task-head { flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -553,16 +604,22 @@
       <div class="skill-grid" id="skills-list"></div>
     </section>
 
-    <section class="view" id="view-school" data-view="school">
-      <div class="page-intro"><h2>School</h2><p>Turn schoolwork into one clear next step. The goal is to need less help over time.</p></div>
-      <div class="section-heading"><div><h2>What matters next</h2><p>Keep the next action small and clear.</p></div><button class="primary-button" id="open-school-task">+ Add task</button></div>
-      <div id="school-access-state"></div>
-      <div class="school-stack" id="school-priority"></div>
 
-      <section class="school-section">
-        <div class="section-heading"><div><h2>Coming up</h2><p>Later work, without turning this into a giant calendar.</p></div></div>
-        <div class="school-stack" id="school-upcoming"></div>
-      </section>
+
+    <section class="view" id="view-school" data-view="school">
+      <div class="page-intro"><h2>School</h2><p>Keep the work clear, choose the support you need, and carry each task through to submission.</p></div>
+      <div class="school-toolbar">
+        <div class="school-view-toggle" id="school-view-toggle" role="group" aria-label="School view">
+          <button class="active" type="button" data-school-view="now" aria-pressed="true">Now</button>
+          <button type="button" data-school-view="subjects" aria-pressed="false">Subjects</button>
+        </div>
+        <div class="school-toolbar-actions">
+          <button class="secondary-button" type="button" id="open-school-history">Past work</button>
+          <button class="primary-button" type="button" id="open-school-task">+ Add task</button>
+        </div>
+      </div>
+      <div id="school-access-state"></div>
+      <div id="school-workspace"></div>
     </section>
 
     <section class="view" id="view-activity" data-view="activity">
@@ -601,15 +658,19 @@
     </form>
   </dialog>
 
+
+
   <dialog id="school-task-dialog">
     <form class="dialog-body" id="school-task-form">
       <div class="dialog-head"><h2 id="school-task-dialog-title">Add a school task</h2><button type="button" class="close-button" data-close-dialog="school-task-dialog" aria-label="Close">×</button></div>
-      <p style="color:var(--muted);line-height:1.5">Keep this quick. The important part is choosing one useful next step.</p>
+      <p style="color:var(--muted);line-height:1.5">Keep this quick. Capture the task, then choose the stage and support that fit where you are now.</p>
       <input id="school-task-id" type="hidden">
       <div class="form-field"><label for="school-subject">Subject</label><input id="school-subject" maxlength="60" placeholder="Science" required></div>
       <div class="form-field"><label for="school-title">Task</label><input id="school-title" maxlength="120" placeholder="Solubility Investigation" required></div>
       <div class="form-field"><label for="school-due">Due date</label><input id="school-due" type="date" required></div>
-      <div class="form-field"><label for="school-next-action">My next step</label><input id="school-next-action" maxlength="240" placeholder="Finish the results table" required></div>
+      <div class="form-field"><label for="school-stage">Where am I in the task?</label><select id="school-stage"><option value="understand">Understand</option><option value="plan">Plan</option><option value="work">Work</option><option value="check">Check</option><option value="submit">Submit</option><option value="feedback">Feedback</option></select></div>
+      <div class="form-field"><label for="school-current-action">Working on now</label><input id="school-current-action" maxlength="240" placeholder="Finish the results table" required></div>
+      <div class="form-field"><label for="school-support-preference">Support I want right now <span style="font-weight:500">(optional)</span></label><select id="school-support-preference"><option value="">No preference yet</option><option value="show_me">Show me</option><option value="do_with_me">Do it with me</option><option value="prompt_me">Prompt me</option><option value="got_this">I've got this</option></select></div>
       <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="school-task-dialog">Cancel</button><button class="primary-button" type="submit">Save task</button></div>
     </form>
   </dialog>
@@ -631,13 +692,42 @@
   <dialog id="school-check-dialog">
     <form class="dialog-body" id="school-check-form">
       <div class="dialog-head"><h2>Quick check before submitting</h2><button type="button" class="close-button" data-close-dialog="school-check-dialog" aria-label="Close">×</button></div>
-      <p style="color:var(--muted);line-height:1.5">This isn't about making it perfect. Make sure the work actually answers the task and is ready to hand in.</p>
+      <p style="color:var(--muted);line-height:1.5">This is not about making it perfect. Check that the work answers the task and is ready to hand in.</p>
       <div class="school-checklist">
         <div class="school-check"><input id="school-check-asked" type="checkbox" required><label for="school-check-asked">I answered what the teacher asked me to do.</label></div>
         <div class="school-check"><input id="school-check-work" type="checkbox" required><label for="school-check-work">I checked for obvious missing parts or mistakes.</label></div>
         <div class="school-check"><input id="school-check-how" type="checkbox" required><label for="school-check-how">I know where and how this needs to be submitted.</label></div>
       </div>
       <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="school-check-dialog">Not yet</button><button class="primary-button" type="submit">Mark submitted</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="school-feedback-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><h2>Feedback</h2><button type="button" class="close-button" data-close-dialog="school-feedback-dialog" aria-label="Close">×</button></div>
+      <div id="school-feedback-content"></div>
+    </div>
+  </dialog>
+
+  <dialog id="school-history-dialog">
+    <div class="dialog-body">
+      <div class="dialog-head"><h2>Past school work</h2><button type="button" class="close-button" data-close-dialog="school-history-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">A factual history of completed school work. It is not a scorecard.</p>
+      <div class="school-history-list" id="school-history-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="parent-school-feedback-dialog">
+    <form class="dialog-body" id="parent-school-feedback-form">
+      <div class="dialog-head"><h2>Record school feedback</h2><button type="button" class="close-button" data-close-dialog="parent-school-feedback-dialog" aria-label="Close">×</button></div>
+      <p style="color:var(--muted);line-height:1.5">Record the outcome as information. This does not change money, rewards, points or task completion.</p>
+      <input id="parent-school-feedback-task-id" type="hidden">
+      <div class="form-field"><label for="parent-school-grade">Grade / result <span style="font-weight:500">(optional)</span></label><input id="parent-school-grade" maxlength="80" placeholder="C"></div>
+      <div class="form-field"><label for="parent-school-mark">Mark <span style="font-weight:500">(optional)</span></label><input id="parent-school-mark" maxlength="80" placeholder="16 / 20"></div>
+      <div class="form-field"><label for="parent-school-teacher-comment">Teacher feedback <span style="font-weight:500">(optional)</span></label><textarea id="parent-school-teacher-comment" maxlength="4000"></textarea></div>
+      <div class="form-field"><label for="parent-school-coach-comment">Parent / coach note <span style="font-weight:500">(optional)</span></label><textarea id="parent-school-coach-comment" maxlength="4000"></textarea></div>
+      <div class="form-field"><label for="parent-school-carry">Keep for next time <span style="font-weight:500">(optional)</span></label><textarea id="parent-school-carry" maxlength="1000" placeholder="One useful strategy to carry forward"></textarea></div>
+      <div class="form-actions"><button type="button" class="secondary-button" data-close-dialog="parent-school-feedback-dialog">Cancel</button><button class="primary-button" type="submit">Save informational feedback</button></div>
     </form>
   </dialog>
 
@@ -658,8 +748,11 @@
       <div id="parent-reviews"></div>
       <div class="section-heading" style="margin-top:22px"><div><h3>Goal proposals</h3><p>Sophie chooses; you check practical details.</p></div></div>
       <div id="parent-goal-reviews"></div>
-      <div class="section-heading" style="margin-top:22px"><div><h3>School support</h3><p>Help requests and things worth a conversation — not a productivity score.</p></div></div>
+      <div class="section-heading" style="margin-top:22px"><div><h3>School support</h3><p>Help requests and useful exceptions — not a productivity score.</p></div></div>
+      <div id="parent-school-profile"></div>
       <div id="parent-school-support"></div>
+      <div class="section-heading" style="margin-top:22px"><div><h3>Recent school outcomes</h3><p>Optional informational feedback after assessment.</p></div></div>
+      <div id="parent-school-outcomes"></div>
       <div class="form-actions"><button class="secondary-button" type="button" id="setup-school-device">Set up School on this device</button><button class="secondary-button" type="button" id="lock-parent">Lock Parent Mode</button></div>
     </div>
   </dialog>
@@ -691,6 +784,9 @@
       adminExpiresAt: Number(sessionStorage.getItem("sophie_admin_expires_at")) || 0,
       schoolKey: localStorage.getItem("sophie_school_key") || "",
       schoolTasks: [],
+      schoolHistory: [],
+      schoolProfile: { scaffoldMode: "guided", preferredSchoolView: "now", suggestedScaffoldMode: "" },
+      schoolView: "now",
       schoolLoaded: false,
       schoolUnavailable: false,
       activeSchoolTaskId: ""
@@ -976,6 +1072,43 @@
     }
 
 
+
+    const SCHOOL_JOURNEY = [
+      ["understand", "Understand"],
+      ["plan", "Plan"],
+      ["work", "Work"],
+      ["check", "Check"],
+      ["submit", "Submit"],
+      ["feedback", "Feedback"]
+    ];
+    const SCHOOL_SUPPORT = [
+      ["show_me", "Show me"],
+      ["do_with_me", "Do it with me"],
+      ["prompt_me", "Prompt me"],
+      ["got_this", "I've got this"]
+    ];
+    const SUBJECT_COLOURS = {
+      english: "#8b63c7", mathematics: "#4b79a8", maths: "#4b79a8", science: "#3b8a76",
+      hass: "#a06f45", japanese: "#b76572", hpe: "#527f58", music: "#9b6a9a", art: "#a97546",
+      technology: "#4d7f8d", default: "#7564ff"
+    };
+
+    function schoolSubjectKey(task) {
+      return String(task.subjectKey || task.subject || "default").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    }
+
+    function schoolSubjectColour(task) {
+      const key = schoolSubjectKey(task);
+      if (SUBJECT_COLOURS[key]) return SUBJECT_COLOURS[key];
+      if (key.includes("math")) return SUBJECT_COLOURS.mathematics;
+      if (key.includes("english")) return SUBJECT_COLOURS.english;
+      if (key.includes("science")) return SUBJECT_COLOURS.science;
+      if (key.includes("japan")) return SUBJECT_COLOURS.japanese;
+      if (key.includes("health") || key.includes("physical")) return SUBJECT_COLOURS.hpe;
+      if (key.includes("music")) return SUBJECT_COLOURS.music;
+      return SUBJECT_COLOURS.default;
+    }
+
     function parseDateOnly(value) {
       const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
       if (!match) return null;
@@ -984,22 +1117,29 @@
 
     function schoolDueInfo(value) {
       const due = parseDateOnly(value);
-      if (!due) return { label: "No due date", overdue: false, days: 9999 };
+      if (!due) return { label: "No due date", days: 9999 };
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       due.setHours(0, 0, 0, 0);
       const days = Math.round((due - today) / 86400000);
-      if (days === 0) return { label: "Due today", overdue: false, days };
-      if (days === 1) return { label: "Due tomorrow", overdue: false, days };
-      if (days === -1) return { label: "Due yesterday", overdue: true, days };
-      if (days < -1) return { label: `Due ${Math.abs(days)} days ago`, overdue: true, days };
-      if (days <= 6) return { label: `Due ${new Intl.DateTimeFormat("en-AU", { weekday: "short" }).format(due)}`, overdue: false, days };
-      return { label: `Due ${new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(due)}`, overdue: false, days };
+      if (days === 0) return { label: "Due today", days };
+      if (days === 1) return { label: "Due tomorrow", days };
+      if (days === -1) return { label: "1 day overdue", days };
+      if (days < -1) return { label: `${Math.abs(days)} days overdue`, days };
+      if (days > 1 && days <= 14) return { label: `${days} days until due`, days };
+      return { label: `Due ${new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(due)}`, days };
     }
 
-    function schoolStatusLabel(task) {
-      if (task.receiptConfirmedAt) return "Received ✓";
-      return ({ todo: "To do", working: "Working on it", ready: "Ready to submit", submitted: "Submitted" })[task.status] || "To do";
+    function schoolStageLabel(stage) {
+      return Object.fromEntries(SCHOOL_JOURNEY)[String(stage || "understand")] || "Understand";
+    }
+
+    function schoolSupportLabel(value) {
+      return Object.fromEntries(SCHOOL_SUPPORT)[String(value || "")] || "Choose when useful";
+    }
+
+    function schoolScaffoldLabel(value) {
+      return ({ guided: "Guided", shared: "Shared", self_managed: "Self-managed", light: "Light" })[String(value || "guided")] || "Guided";
     }
 
     function schoolHelpLabel(type) {
@@ -1007,104 +1147,160 @@
         understand: "You asked for help understanding the task.",
         stuck: "You asked for help with a step.",
         feedback: "You asked for feedback on your work.",
-        submitting: "You asked for help submitting."
+        submitting: "You asked for help submitting it."
       })[type] || "";
+    }
+
+    function schoolHasOutcome(task) {
+      return Boolean(task.journeyStage === "feedback" || task.gradeOrResult || task.mark || task.teacherComment || task.coachComment || task.carryForwardSuggestion);
+    }
+
+    function schoolStatusLabel(task) {
+      if (task.submissionState === "received" || task.receiptConfirmedAt) return "Received";
+      if (task.submissionState === "submitted" || task.submittedAt) return "Submitted";
+      return schoolStageLabel(task.journeyStage);
     }
 
     function schoolTaskPriority(task) {
       const due = schoolDueInfo(task.dueDate);
-      if (task.helpType) return -2000 + due.days;
-      if (task.status === "submitted" && !task.receiptConfirmedAt) return -1000 + due.days;
+      if (task.helpType) return -3000 + due.days;
+      if (task.submissionState === "submitted") return -2000 + due.days;
+      if (task.submissionState === "received") return 2000 + due.days;
       return due.days;
+    }
+
+    function schoolJourneyMarkup(task) {
+      const hasOutcome = schoolHasOutcome(task);
+      return `<div class="school-journey"><div class="school-journey-label">Assignment journey</div><div class="school-journey-track">${SCHOOL_JOURNEY.map(([value, label]) => {
+        const disabled = value === "feedback" && !hasOutcome && task.journeyStage !== "feedback";
+        return `<button type="button" class="journey-step ${task.journeyStage === value ? "active" : ""}" data-school-stage="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${task.journeyStage === value ? "true" : "false"}" ${disabled ? 'disabled title="Available when feedback is recorded"' : ""}>${label}</button>`;
+      }).join("")}</div></div>`;
+    }
+
+    function schoolSupportMarkup(task) {
+      return `<div class="school-support"><div class="school-support-label">Support I want right now</div><div class="school-support-options">${SCHOOL_SUPPORT.map(([value, label]) => `<button type="button" class="support-choice ${task.supportPreference === value ? "active" : ""}" data-school-support="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${task.supportPreference === value ? "true" : "false"}">${label}</button>`).join("")}</div><p class="school-neutral-note">You can change this at any time. Asking for help is always available.</p></div>`;
     }
 
     function schoolTaskMarkup(task) {
       const due = schoolDueInfo(task.dueDate);
       const helpNote = schoolHelpLabel(task.helpType);
-      let mainAction = "";
-      if (task.status === "todo") mainAction = `<button class="primary-button" data-school-status="working" data-school-id="${safe(task.taskId)}">Start</button>`;
-      if (task.status === "working") mainAction = `<button class="primary-button" data-school-status="ready" data-school-id="${safe(task.taskId)}">Ready to submit</button>`;
-      if (task.status === "ready") mainAction = `<button class="primary-button" data-school-submit="${safe(task.taskId)}">Submit</button>`;
-      if (task.status === "submitted" && !task.receiptConfirmedAt) mainAction = `<button class="primary-button" data-school-received="${safe(task.taskId)}">Confirm received</button>`;
-      if (task.receiptConfirmedAt) mainAction = `<button class="secondary-button" data-school-archive="${safe(task.taskId)}">Archive</button>`;
-
-      return `<article class="surface school-task">
+      const hasOutcome = schoolHasOutcome(task);
+      const accent = schoolSubjectColour(task);
+      let submissionAction = "";
+      if (task.journeyStage === "submit" && task.submissionState === "not_submitted") {
+        submissionAction = `<button class="primary-button" type="button" data-school-submit="${safe(task.taskId)}">Submit</button>`;
+      } else if (task.submissionState === "submitted") {
+        submissionAction = `<button class="primary-button" type="button" data-school-received="${safe(task.taskId)}">Confirm received</button>`;
+      } else if (task.submissionState === "received" && task.recordState === "active") {
+        submissionAction = `<button class="secondary-button" type="button" data-school-history="${safe(task.taskId)}">Move to past work</button>`;
+      }
+      const outcomePeek = hasOutcome ? `<div class="school-feedback-peek"><strong>Feedback is available</strong><p>${safe(task.gradeOrResult || task.mark || task.carryForwardSuggestion || "Open the feedback to review it.")}</p></div>` : "";
+      return `<article class="surface school-task" style="--subject-accent:${accent}">
         <div class="school-task-head">
-          <div><div class="school-meta">${safe(task.subject)} · ${safe(due.label)}</div><h3>${safe(task.title)}</h3></div>
+          <div><div class="school-meta">${safe(task.subject || "School")} · ${safe(due.label)}</div><h3>${safe(task.title)}</h3></div>
           <span class="school-status">${safe(schoolStatusLabel(task))}</span>
         </div>
-        <div class="school-next"><span>My next step</span><strong>${safe(task.nextAction || "Choose a next step")}</strong></div>
+        ${schoolJourneyMarkup(task)}
+        <div class="school-next"><span>Working on now</span><strong>${safe(task.currentAction || task.nextAction || "Choose one useful next action")}</strong></div>
+        ${schoolSupportMarkup(task)}
         ${helpNote ? `<div class="school-help-note">${safe(helpNote)}</div>` : ""}
+        ${outcomePeek}
         <div class="school-actions">
-          ${mainAction}
-          ${!task.receiptConfirmedAt ? `<button class="secondary-button" data-school-help="${safe(task.taskId)}">I need help</button>` : ""}
-          ${task.status !== "submitted" && !task.receiptConfirmedAt ? `<button class="text-button" data-school-edit="${safe(task.taskId)}">Edit</button>` : ""}
+          ${submissionAction}
+          <button class="secondary-button" type="button" data-school-help="${safe(task.taskId)}">I need help</button>
+          ${hasOutcome ? `<button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">Feedback</button>` : ""}
+          ${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-edit="${safe(task.taskId)}">Edit details</button>` : ""}
         </div>
       </article>`;
     }
 
+    function renderSchoolNow(tasks) {
+      const ordered = [...tasks].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b));
+      if (!ordered.length) return `<div class="surface empty"><span class="empty-icon">▣</span><strong>No current school tasks</strong><p>Add the next task you need to manage. Daymap remains the official school record.</p></div>`;
+      const now = ordered.slice(0, 3);
+      const later = ordered.slice(3);
+      return `<section><div class="section-heading"><div><h2>What matters now</h2><p>Across subjects, with one clear action at a time.</p></div></div><div class="school-stack">${now.map(schoolTaskMarkup).join("")}</div></section>${later.length ? `<section class="school-section"><div class="section-heading"><div><h2>Later</h2><p>Still visible, without turning this into a giant calendar.</p></div></div><div class="school-stack">${later.map(schoolTaskMarkup).join("")}</div></section>` : ""}`;
+    }
+
+    function renderSchoolSubjects(tasks) {
+      if (!tasks.length) return renderSchoolNow(tasks);
+      const groups = new Map();
+      [...tasks].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b)).forEach(task => {
+        const key = task.subject || "Other";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(task);
+      });
+      return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([subject, items]) => {
+        const accent = schoolSubjectColour(items[0]);
+        return `<section class="school-subject-group" style="--subject-accent:${accent}"><div class="school-subject-heading"><span class="school-subject-dot" aria-hidden="true"></span><h3>${safe(subject)}</h3></div><div class="school-stack">${items.map(schoolTaskMarkup).join("")}</div></section>`;
+      }).join("");
+    }
+
+    function renderSchoolHistory() {
+      const host = $("#school-history-list");
+      if (!host) return;
+      const history = app.schoolHistory || [];
+      host.innerHTML = history.length ? history.map(task => {
+        const outcome = [task.gradeOrResult, task.mark].filter(Boolean).join(" · ");
+        return `<article class="school-history-item"><span class="school-meta">${safe(task.subject || "School")} · ${safe(task.dueDate ? schoolDueInfo(task.dueDate).label : "Past work")}</span><strong>${safe(task.title)}</strong><p>${safe(outcome || task.carryForwardSuggestion || task.teacherComment || "Completed school work")}</p>${schoolHasOutcome(task) ? `<div class="form-actions"><button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">View feedback</button></div>` : ""}</article>`;
+      }).join("") : `<div class="empty"><span class="empty-icon">▣</span><strong>No past work yet</strong><p>Completed tasks can move here without becoming a scorecard.</p></div>`;
+    }
+
+    function syncSchoolViewControls() {
+      $$("[data-school-view]").forEach(button => {
+        const active = button.dataset.schoolView === app.schoolView;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
     function renderSchool() {
       const access = $("#school-access-state");
-      const priority = $("#school-priority");
-      const upcoming = $("#school-upcoming");
-      if (!access || !priority || !upcoming) return;
+      const workspace = $("#school-workspace");
+      if (!access || !workspace) return;
+      syncSchoolViewControls();
 
       if (!app.schoolKey) {
         access.innerHTML = `<article class="surface school-access"><h3>School needs setup on this device</h3><p>A parent can open Parent access and choose <strong>Set up School on this device</strong>. No school login or Daymap password is stored here.</p></article>`;
-        priority.innerHTML = "";
-        upcoming.innerHTML = "";
+        workspace.innerHTML = "";
         return;
       }
-
       if (app.schoolUnavailable) {
         access.innerHTML = `<article class="surface school-access"><h3>School data is unavailable</h3><p>Your school tasks are private and are not replaced with fake or stale data. Reconnect and try again.</p></article>`;
-        priority.innerHTML = "";
-        upcoming.innerHTML = "";
+        workspace.innerHTML = "";
         return;
       }
-
       access.innerHTML = "";
       if (!app.schoolLoaded) {
-        priority.innerHTML = `<div class="skeleton"></div>`;
-        upcoming.innerHTML = "";
+        workspace.innerHTML = `<div class="skeleton"></div>`;
         return;
       }
-
-      const active = app.schoolTasks.filter(task => !task.archivedAt);
-      if (!active.length) {
-        priority.innerHTML = `<div class="surface empty"><span class="empty-icon">▣</span><strong>No school tasks here yet</strong><p>Add the next task you need to manage. Daymap stays the official school record.</p></div>`;
-        upcoming.innerHTML = "";
-        return;
-      }
-
-      const ordered = [...active].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b));
-      const top = ordered.slice(0, 3);
-      const later = ordered.slice(3);
-      priority.innerHTML = top.map(schoolTaskMarkup).join("");
-      upcoming.innerHTML = later.length
-        ? later.map(schoolTaskMarkup).join("")
-        : `<div class="surface empty"><strong>Nothing else is waiting</strong><p>Keep the list small enough to be useful.</p></div>`;
+      workspace.innerHTML = app.schoolView === "subjects" ? renderSchoolSubjects(app.schoolTasks) : renderSchoolNow(app.schoolTasks);
+      renderSchoolHistory();
     }
 
-    async function loadSchoolData({ quiet = false, adminKey = "" } = {}) {
+    async function loadSchoolWorkspace({ quiet = false, adminKey = "" } = {}) {
       if (!app.schoolKey && !adminKey) {
         app.schoolLoaded = false;
         app.schoolUnavailable = false;
         renderSchool();
-        return [];
+        return null;
       }
       try {
-        const payload = { action: "getSchoolTasks" };
+        const payload = { action: "getSchoolWorkspace" };
         if (adminKey) payload.adminKey = adminKey;
         else payload.schoolKey = app.schoolKey;
-        const tasks = await apiPost(payload);
-        app.schoolTasks = Array.isArray(tasks) ? tasks : [];
+        const result = await apiPost(payload);
+        app.schoolTasks = Array.isArray(result?.tasks) ? result.tasks : [];
+        app.schoolHistory = Array.isArray(result?.history) ? result.history : [];
+        app.schoolProfile = result?.profile || app.schoolProfile;
+        app.schoolView = ["now", "subjects"].includes(app.schoolProfile.preferredSchoolView) ? app.schoolProfile.preferredSchoolView : app.schoolView;
         app.schoolLoaded = true;
         app.schoolUnavailable = false;
         renderSchool();
-        return app.schoolTasks;
+        return result;
       } catch (error) {
-        console.warn("School data unavailable:", error);
+        console.warn("School workspace unavailable:", error);
         app.schoolLoaded = false;
         app.schoolUnavailable = true;
         if (/not authorised|not set up/i.test(String(error.message || "")) && !adminKey) {
@@ -1113,7 +1309,23 @@
         }
         renderSchool();
         if (!quiet) toast(error.message || "School data is unavailable");
-        return [];
+        return null;
+      }
+    }
+
+    async function setSchoolView(view, button) {
+      if (!["now", "subjects"].includes(view)) return;
+      app.schoolView = view;
+      app.schoolProfile = { ...app.schoolProfile, preferredSchoolView: view };
+      renderSchool();
+      if (!app.schoolKey) return;
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "updateSchoolProfile", schoolKey: app.schoolKey, preferredSchoolView: view });
+      } catch (error) {
+        toast(error.message || "School view preference could not be saved");
+      } finally {
+        if (button) button.disabled = false;
       }
     }
 
@@ -1126,7 +1338,12 @@
         $("#school-subject").value = task.subject || "";
         $("#school-title").value = task.title || "";
         $("#school-due").value = task.dueDate || "";
-        $("#school-next-action").value = task.nextAction || "";
+        $("#school-stage").value = task.journeyStage || "understand";
+        $("#school-current-action").value = task.currentAction || task.nextAction || "";
+        $("#school-support-preference").value = task.supportPreference || "";
+      } else {
+        $("#school-stage").value = "understand";
+        $("#school-support-preference").value = "";
       }
       $("#school-task-dialog").showModal();
     }
@@ -1143,13 +1360,15 @@
           subject: $("#school-subject").value.trim(),
           title: $("#school-title").value.trim(),
           dueDate: $("#school-due").value,
-          nextAction: $("#school-next-action").value.trim()
+          journeyStage: $("#school-stage").value,
+          currentAction: $("#school-current-action").value.trim(),
+          supportPreference: $("#school-support-preference").value
         };
         if (taskId) payload.taskId = taskId;
         await apiPost(payload);
         $("#school-task-dialog").close();
         toast(taskId ? "Task updated" : "Task added");
-        await loadSchoolData({ quiet: true });
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "The school task could not be saved");
       } finally {
@@ -1157,11 +1376,12 @@
       }
     }
 
-    async function updateSchoolStatus(taskId, status, button) {
+    async function updateSchoolTaskField(taskId, field, value, button, successMessage = "Task updated") {
       if (button) button.disabled = true;
       try {
-        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, status });
-        await loadSchoolData({ quiet: true });
+        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, [field]: value });
+        if (successMessage) toast(successMessage);
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "The task could not be updated");
         if (button) button.disabled = false;
@@ -1177,15 +1397,10 @@
       if (!app.activeSchoolTaskId) return;
       if (button) button.disabled = true;
       try {
-        await apiPost({
-          action: "requestSchoolHelp",
-          schoolKey: app.schoolKey,
-          taskId: app.activeSchoolTaskId,
-          helpType
-        });
+        await apiPost({ action: "requestSchoolHelp", schoolKey: app.schoolKey, taskId: app.activeSchoolTaskId, helpType });
         $("#school-help-dialog").close();
         toast(helpType ? "Help request saved" : "Help request cleared");
-        await loadSchoolData({ quiet: true });
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "The help request could not be saved");
         if (button) button.disabled = false;
@@ -1206,7 +1421,7 @@
         await apiPost({ action: "markSchoolSubmitted", schoolKey: app.schoolKey, taskId: app.activeSchoolTaskId });
         $("#school-check-dialog").close();
         toast("Marked submitted — confirm when Daymap or the teacher shows it was received");
-        await loadSchoolData({ quiet: true });
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "The task could not be marked submitted");
       } finally {
@@ -1219,33 +1434,66 @@
       try {
         await apiPost({ action: "confirmSchoolReceipt", schoolKey: app.schoolKey, taskId });
         toast("Receipt confirmed");
-        await loadSchoolData({ quiet: true });
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "Receipt could not be confirmed");
         if (button) button.disabled = false;
       }
     }
 
-    async function archiveSchoolTask(taskId, button) {
+    async function moveSchoolTaskToHistory(taskId, button) {
       if (button) button.disabled = true;
       try {
-        await apiPost({ action: "archiveSchoolTask", schoolKey: app.schoolKey, taskId });
-        toast("Task archived");
-        await loadSchoolData({ quiet: true });
+        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, recordState: "history" });
+        toast("Moved to past work");
+        await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
-        toast(error.message || "Task could not be archived");
+        toast(error.message || "Task could not be moved to past work");
         if (button) button.disabled = false;
       }
     }
 
+    async function openSchoolFeedback(taskId) {
+      const task = [...app.schoolTasks, ...app.schoolHistory].find(item => String(item.taskId) === String(taskId));
+      if (!task) return toast("Feedback is unavailable for this task");
+      const host = $("#school-feedback-content");
+      host.innerHTML = `<div class="skeleton"></div>`;
+      $("#school-feedback-dialog").showModal();
+      let rubric = [];
+      try {
+        rubric = await apiPost({ action: "getSchoolRubric", schoolKey: app.schoolKey, taskId });
+        if (!Array.isArray(rubric)) rubric = [];
+      } catch (error) {
+        console.warn("Rubric unavailable:", error);
+      }
+      const outcomeCards = [
+        task.gradeOrResult ? `<div class="school-outcome"><span>Grade / result</span><strong>${safe(task.gradeOrResult)}</strong></div>` : "",
+        task.mark ? `<div class="school-outcome"><span>Mark</span><strong>${safe(task.mark)}</strong></div>` : ""
+      ].filter(Boolean).join("");
+      const rubricMarkup = rubric.length ? `<div class="school-feedback-block"><h3>Rubric</h3><div class="school-rubric">${rubric.map(item => `<div class="school-rubric-row"><strong>${safe(item.criterionName)}</strong><p>${safe([item.rating, item.mark && item.maxMark ? `${item.mark} / ${item.maxMark}` : item.mark, item.selectedDescriptor].filter(Boolean).join(" · "))}</p></div>`).join("")}</div></div>` : "";
+      host.innerHTML = `${outcomeCards ? `<div class="school-outcome-grid">${outcomeCards}</div>` : ""}${task.teacherComment ? `<div class="school-feedback-block"><h3>Teacher feedback</h3><p>${safe(task.teacherComment)}</p></div>` : ""}${task.coachComment ? `<div class="school-feedback-block"><h3>Support note</h3><p>${safe(task.coachComment)}</p></div>` : ""}${rubricMarkup}<div class="school-feedback-block"><h3>Keep for next time</h3><p>${safe(task.carryForwardSuggestion || "Nothing to save this time.")}</p></div><p class="school-neutral-note">Grades, marks and rubric information are shown as factual feedback. They do not affect money, points, privileges or status.</p>`;
+    }
+
+    function openSchoolHistory() {
+      if (!app.schoolKey) return toast("School is not set up on this device");
+      renderSchoolHistory();
+      $("#school-history-dialog").showModal();
+    }
+
+
     function setView(view) {
       app.activeView = view;
       $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === view));
-      $$(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.viewTarget === view));
+      $$(".nav-button").forEach(button => {
+        const active = button.dataset.viewTarget === view;
+        button.classList.toggle("active", active);
+        if (active) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      });
       window.scrollTo({ top: 0, behavior: "smooth" });
       if (view === "school") {
         renderSchool();
-        if (app.schoolKey && !app.schoolLoaded) loadSchoolData({ quiet: true });
+        if (app.schoolKey && !app.schoolLoaded) loadSchoolWorkspace({ quiet: true });
       }
     }
 
@@ -1355,33 +1603,48 @@
     }
 
 
+
     async function loadParentSchoolSupport() {
-      const host = $("#parent-school-support");
-      if (!host || !parentSessionValid()) return;
-      host.innerHTML = `<div class="skeleton"></div>`;
+      const supportHost = $("#parent-school-support");
+      const outcomeHost = $("#parent-school-outcomes");
+      const profileHost = $("#parent-school-profile");
+      if (!supportHost || !outcomeHost || !profileHost || !parentSessionValid()) return;
+      supportHost.innerHTML = `<div class="skeleton"></div>`;
+      outcomeHost.innerHTML = `<div class="skeleton"></div>`;
       try {
         extendParentSession();
-        const tasks = await apiPost({ action: "getSchoolTasks", adminKey: app.adminKey });
-        renderParentSchoolSupport(Array.isArray(tasks) ? tasks : []);
+        const workspace = await apiPost({ action: "getSchoolWorkspace", adminKey: app.adminKey });
+        const tasks = Array.isArray(workspace?.tasks) ? workspace.tasks : [];
+        const history = Array.isArray(workspace?.history) ? workspace.history : [];
+        const profile = workspace?.profile || {};
+        renderParentSchoolSupport(tasks, history, profile);
       } catch (error) {
-        host.innerHTML = `<div class="empty"><strong>School support unavailable</strong><p>${safe(error.message || "The school workspace is not available yet.")}</p></div>`;
+        profileHost.innerHTML = "";
+        supportHost.innerHTML = `<div class="empty"><strong>School support unavailable</strong><p>${safe(error.message || "The school workspace is not available.")}</p></div>`;
+        outcomeHost.innerHTML = "";
       }
     }
 
-    function renderParentSchoolSupport(tasks) {
-      const host = $("#parent-school-support");
-      const active = tasks.filter(task => !task.archivedAt);
-      const help = active.filter(task => task.helpType);
-      const dueSoon = active.filter(task => {
-        if (task.status === "submitted" || task.receiptConfirmedAt) return false;
-        const days = schoolDueInfo(task.dueDate).days;
-        return days <= 2;
-      });
-      const combined = [...help, ...dueSoon.filter(task => !help.some(item => item.taskId === task.taskId))].slice(0, 6);
+    function renderParentSchoolSupport(tasks, history, profile) {
+      const supportHost = $("#parent-school-support");
+      const outcomeHost = $("#parent-school-outcomes");
+      const profileHost = $("#parent-school-profile");
+      profileHost.innerHTML = `<div class="parent-school-profile"><strong>Current app scaffold:</strong> ${safe(schoolScaffoldLabel(profile.scaffoldMode))}${profile.suggestedScaffoldMode ? `<br><strong>Suggested review:</strong> ${safe(schoolScaffoldLabel(profile.suggestedScaffoldMode))}` : ""}<br>This system scaffold is separate from Sophie's per-task support choice.</div>`;
 
-      host.innerHTML = combined.length
-        ? combined.map(task => `<article class="parent-school-task"><strong>${safe(task.subject)} · ${safe(task.title)}</strong><p>${safe(task.helpType ? schoolHelpLabel(task.helpType) : schoolDueInfo(task.dueDate).label)}<br>Next: ${safe(task.nextAction || "No next step yet")}</p>${task.helpType ? `<div class="form-actions"><button class="secondary-button" data-parent-clear-school-help="${safe(task.taskId)}">Help discussed</button></div>` : ""}</article>`).join("")
+      const help = tasks.filter(task => task.helpType);
+      const dueSoon = tasks.filter(task => {
+        if (task.submissionState === "submitted" || task.submissionState === "received") return false;
+        return schoolDueInfo(task.dueDate).days <= 2;
+      });
+      const supportItems = [...help, ...dueSoon.filter(task => !help.some(item => item.taskId === task.taskId))].slice(0, 6);
+      supportHost.innerHTML = supportItems.length
+        ? supportItems.map(task => `<article class="parent-school-task"><strong>${safe(task.subject)} · ${safe(task.title)}</strong><p>${safe(task.helpType ? schoolHelpLabel(task.helpType) : schoolDueInfo(task.dueDate).label)}<br>Working on now: ${safe(task.currentAction || task.nextAction || "No current action")}</p>${task.helpType ? `<div class="form-actions"><button class="secondary-button" type="button" data-parent-clear-school-help="${safe(task.taskId)}">Help discussed</button></div>` : ""}</article>`).join("")
         : `<div class="empty"><span class="empty-icon">✓</span><strong>No school support requests</strong><p>Nothing here needs a parent conversation right now.</p></div>`;
+
+      const recent = [...tasks.filter(task => task.submissionState === "received"), ...history].sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0) - new Date(a.updatedAt || a.submittedAt || 0)).slice(0, 6);
+      outcomeHost.innerHTML = recent.length
+        ? recent.map(task => `<article class="parent-school-task"><strong>${safe(task.subject)} · ${safe(task.title)}</strong><p>${safe([task.gradeOrResult, task.mark].filter(Boolean).join(" · ") || "No outcome recorded yet")}</p><div class="form-actions"><button class="secondary-button" type="button" data-parent-school-feedback="${safe(task.taskId)}">Record outcome</button></div></article>`).join("")
+        : `<div class="empty"><strong>No recent received work</strong><p>Outcome information can be added after assessment when it is useful.</p></div>`;
     }
 
     async function setupSchoolDevice() {
@@ -1397,7 +1660,7 @@
         app.schoolLoaded = false;
         app.schoolUnavailable = false;
         toast("School is set up on this device");
-        await loadSchoolData({ quiet: true });
+        await loadSchoolWorkspace({ quiet: true });
         await loadParentSchoolSupport();
       } catch (error) {
         toast(error.message || "School could not be set up on this device");
@@ -1414,12 +1677,56 @@
         await apiPost({ action: "requestSchoolHelp", adminKey: app.adminKey, taskId, helpType: "" });
         toast("Help request cleared");
         await loadParentSchoolSupport();
-        if (app.schoolKey) await loadSchoolData({ quiet: true });
+        if (app.schoolKey) await loadSchoolWorkspace({ quiet: true });
       } catch (error) {
         toast(error.message || "The help request could not be cleared");
         button.disabled = false;
       }
     }
+
+    function openParentSchoolFeedback(taskId) {
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      const task = [...app.schoolTasks, ...app.schoolHistory].find(item => String(item.taskId) === String(taskId));
+      $("#parent-school-feedback-form").reset();
+      $("#parent-school-feedback-task-id").value = taskId;
+      if (task) {
+        $("#parent-school-grade").value = task.gradeOrResult || "";
+        $("#parent-school-mark").value = task.mark || "";
+        $("#parent-school-teacher-comment").value = task.teacherComment || "";
+        $("#parent-school-coach-comment").value = task.coachComment || "";
+        $("#parent-school-carry").value = task.carryForwardSuggestion || "";
+      }
+      $("#parent-school-feedback-dialog").showModal();
+    }
+
+    async function saveParentSchoolFeedback(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#parent-school-feedback-form button[type=submit]");
+      submit.disabled = true;
+      try {
+        if (!parentSessionValid()) throw new Error("Parent Mode is locked. Sign in again.");
+        extendParentSession();
+        await apiPost({
+          action: "saveSchoolFeedback",
+          adminKey: app.adminKey,
+          taskId: $("#parent-school-feedback-task-id").value,
+          gradeOrResult: $("#parent-school-grade").value.trim(),
+          mark: $("#parent-school-mark").value.trim(),
+          teacherComment: $("#parent-school-teacher-comment").value.trim(),
+          coachComment: $("#parent-school-coach-comment").value.trim(),
+          carryForwardSuggestion: $("#parent-school-carry").value.trim()
+        });
+        $("#parent-school-feedback-dialog").close();
+        toast("School feedback saved as information");
+        await loadParentSchoolSupport();
+        if (app.schoolKey) await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "School feedback could not be saved");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
 
     async function reviewJob(action, jobId, button) {
       const feedback = document.querySelector(`[data-feedback-for="${CSS.escape(String(jobId))}"]`)?.value || "";
@@ -1497,8 +1804,14 @@
       const goalReview = event.target.closest("[data-goal-review]");
       if (goalReview) reviewGoal(goalReview.dataset.goalReview, goalReview.dataset.goalId, goalReview);
 
-      const schoolStatus = event.target.closest("[data-school-status]");
-      if (schoolStatus) updateSchoolStatus(schoolStatus.dataset.schoolId, schoolStatus.dataset.schoolStatus, schoolStatus);
+      const schoolView = event.target.closest("[data-school-view]");
+      if (schoolView) setSchoolView(schoolView.dataset.schoolView, schoolView);
+
+      const schoolStage = event.target.closest("[data-school-stage]");
+      if (schoolStage) updateSchoolTaskField(schoolStage.dataset.schoolId, "journeyStage", schoolStage.dataset.schoolStage, schoolStage, "Stage updated");
+
+      const schoolSupport = event.target.closest("[data-school-support]");
+      if (schoolSupport) updateSchoolTaskField(schoolSupport.dataset.schoolId, "supportPreference", schoolSupport.dataset.schoolSupport, schoolSupport, "Support choice updated");
 
       const schoolHelp = event.target.closest("[data-school-help]");
       if (schoolHelp) openSchoolHelp(schoolHelp.dataset.schoolHelp);
@@ -1518,23 +1831,36 @@
       const schoolReceived = event.target.closest("[data-school-received]");
       if (schoolReceived) confirmSchoolReceived(schoolReceived.dataset.schoolReceived, schoolReceived);
 
-      const schoolArchive = event.target.closest("[data-school-archive]");
-      if (schoolArchive) archiveSchoolTask(schoolArchive.dataset.schoolArchive, schoolArchive);
+      const schoolHistory = event.target.closest("[data-school-history]");
+      if (schoolHistory) moveSchoolTaskToHistory(schoolHistory.dataset.schoolHistory, schoolHistory);
+
+      const schoolFeedback = event.target.closest("[data-school-feedback]");
+      if (schoolFeedback) openSchoolFeedback(schoolFeedback.dataset.schoolFeedback);
 
       const parentClearHelp = event.target.closest("[data-parent-clear-school-help]");
       if (parentClearHelp) clearParentSchoolHelp(parentClearHelp.dataset.parentClearSchoolHelp, parentClearHelp);
+
+      const parentSchoolFeedback = event.target.closest("[data-parent-school-feedback]");
+      if (parentSchoolFeedback) openParentSchoolFeedback(parentSchoolFeedback.dataset.parentSchoolFeedback);
+
     });
 
     $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+
     $("#open-activity-history").addEventListener("click", () => {
       $("#settings-dialog").close();
       setView("activity");
     });
     $("#open-school-task").addEventListener("click", () => openSchoolTaskForm());
+    $("#open-school-history").addEventListener("click", openSchoolHistory);
     $("#school-task-form").addEventListener("submit", saveSchoolTask);
     $("#school-check-form").addEventListener("submit", submitSchoolTask);
+    $("#parent-school-feedback-form").addEventListener("submit", saveParentSchoolFeedback);
     $("#setup-school-device").addEventListener("click", setupSchoolDevice);
-    $("#refresh-button").addEventListener("click", () => loadData());
+    $("#refresh-button").addEventListener("click", () => {
+      loadData();
+      if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
+    });
     $("#open-goal-form").addEventListener("click", () => {
       if (app.dataUnavailable) return toast("Reconnect before creating a goal");
       $("#goal-dialog").showModal();
