@@ -170,6 +170,14 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "An adult will be nearby" }).click();
   await page.getByRole("button", { name: "Show me some ideas" }).click();
   await page.getByRole("heading", { name: "A few Cooking ideas" }).waitFor();
+  await page.getByRole("button", { name: "Not now", exact: true }).click();
+  await page.locator("#recommendation-dialog").waitFor({ state: "hidden" });
+  await page.getByRole("heading", { name: "Cooking", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Find a Cooking idea" }).click();
+  await page.getByRole("button", { name: "About the same" }).click();
+  await page.getByRole("button", { name: "An adult will be nearby" }).click();
+  await page.getByRole("button", { name: "Show me some ideas" }).click();
+  await page.getByRole("heading", { name: "A few Cooking ideas" }).waitFor();
   await page.getByRole("button", { name: "Browse more ideas" }).click();
   await page.getByRole("heading", { name: "Browse more Cooking ideas" }).waitFor();
   await page.getByText(/First establish Set Up Sharp Tools Safely/).waitFor();
@@ -191,6 +199,9 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("heading", { name: "Currently learning" }).waitFor();
   await page.locator("#skills-workspace").getByText("Caprese-style salad", { exact: true }).waitFor();
+  await page.evaluate(() => history.back());
+  await page.getByRole("heading", { name: "Cooking", exact: true }).waitFor();
+  assert.strictEqual(await page.locator("#recommendation-dialog[open]").count(), 0, "stale recommendation history reopened after Learn conversion");
 
   await page.getByRole("button", { name: "Opportunities", exact: true }).click();
   await page.getByRole("button", { name: "Open Clear the dinner table details" }).click();

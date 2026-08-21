@@ -2617,7 +2617,7 @@
         app.rec.recommendations = next;
         app.rec.view = "results";
         app.rec.retry = null;
-        writeNavigationState("push", { overlay: "recommendation", recView: "results" });
+        writeNavigationState("replace", { overlay: "recommendation", recView: "results" });
       } catch (error) {
         if (error.code !== "UNAUTHORISED") {
           app.rec.error = hadSet ? "Couldn't load different ideas. Your current choices are still here." : (error.message || "Couldn't load learning ideas.");
@@ -2647,7 +2647,7 @@
         const rows = Array.isArray(result) ? result : Array.isArray(result?.candidates) ? result.candidates : [];
         app.rec.catalogue = rows.map(normaliseCatalogueCandidate);
         app.rec.retry = null;
-        writeNavigationState("push", { overlay: "recommendation", recView: "catalogue" });
+        writeNavigationState("replace", { overlay: "recommendation", recView: "catalogue" });
       } catch (error) {
         if (error.code !== "UNAUTHORISED") {
           app.rec.error = error.message || "Couldn't load more ideas.";
@@ -2703,7 +2703,7 @@
       app.rec.retry = null;
       app.rec.view = "support";
       renderRecommendationDialog();
-      writeNavigationState("push", { overlay: "recommendation", recView: "support", candidateId: candidate.candidateId, candidateSource: source });
+      writeNavigationState("replace", { overlay: "recommendation", recView: "support", candidateId: candidate.candidateId, candidateSource: source });
     }
 
     async function chooseRecommendation(existingOperation = null) {
@@ -3795,7 +3795,7 @@
       if (recRequest) requestRecommendationSet(recRequest.dataset.recRequest);
 
       const recPreview = event.target.closest("[data-rec-preview]");
-      if (recPreview) { app.rec.currentCandidate = recommendationCandidateById(recPreview.dataset.recPreview); app.rec.currentSource = "recommendation"; app.rec.view = "preview"; app.rec.error = ""; renderRecommendationDialog(); writeNavigationState("push", { overlay: "recommendation", recView: "preview", candidateId: recPreview.dataset.recPreview, candidateSource: "recommendation" }); }
+      if (recPreview) { app.rec.currentCandidate = recommendationCandidateById(recPreview.dataset.recPreview); app.rec.currentSource = "recommendation"; app.rec.view = "preview"; app.rec.error = ""; renderRecommendationDialog(); writeNavigationState("replace", { overlay: "recommendation", recView: "preview", candidateId: recPreview.dataset.recPreview, candidateSource: "recommendation" }); }
 
       const recNotNow = event.target.closest("[data-rec-not-now]");
       if (recNotNow) recordRecommendationNotNow(recNotNow.dataset.recNotNow);
@@ -3816,13 +3816,13 @@
       if (recCatalogueAdd) openRecommendationSupport(recCatalogueAdd.dataset.recCatalogueAdd, "catalogue");
 
       const recChangeSetup = event.target.closest("[data-rec-change-setup]");
-      if (recChangeSetup) { app.rec.view = "setup"; app.rec.error = ""; app.rec.retry = null; renderRecommendationDialog(); writeNavigationState("push", { overlay: "recommendation", recView: "setup" }); }
+      if (recChangeSetup) { app.rec.view = "setup"; app.rec.error = ""; app.rec.retry = null; renderRecommendationDialog(); writeNavigationState("replace", { overlay: "recommendation", recView: "setup" }); }
 
       const recBackResults = event.target.closest("[data-rec-back-results]");
-      if (recBackResults) { if (history.state?.overlay === "recommendation") history.back(); else { app.rec.view = "results"; app.rec.currentCandidate = null; app.rec.error = ""; renderRecommendationDialog(); } }
+      if (recBackResults) { app.rec.view = "results"; app.rec.currentCandidate = null; app.rec.error = ""; renderRecommendationDialog(); if (history.state?.overlay === "recommendation") writeNavigationState("replace", { overlay: "recommendation", recView: "results" }); }
 
       const recBackSupport = event.target.closest("[data-rec-back-from-support]");
-      if (recBackSupport) { if (history.state?.overlay === "recommendation") history.back(); else { app.rec.view = app.rec.currentSource === "catalogue" ? "catalogue" : "preview"; app.rec.error = ""; renderRecommendationDialog(); } }
+      if (recBackSupport) { const returnView = app.rec.currentSource === "catalogue" ? "catalogue" : "preview"; app.rec.view = returnView; app.rec.error = ""; renderRecommendationDialog(); if (history.state?.overlay === "recommendation") { const nav = { overlay: "recommendation", recView: returnView }; if (returnView === "preview" && app.rec.currentCandidate) { nav.candidateId = app.rec.currentCandidate.candidateId; nav.candidateSource = app.rec.currentSource; } writeNavigationState("replace", nav); } }
 
       const recRetry = event.target.closest("[data-rec-retry]");
       if (recRetry) retryRecommendationOperation();
