@@ -74,9 +74,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R --exclude='REC_V1_FRONTEND_TEST_RESULTS.txt' 'SOPHIE_LEARNING_RECOMMENDATION_DEVICE_KEY' index.html sw.js tools tests docs/staging || false
-          ! grep -E 'recommendationKey=[^"[:space:]]+' index.html sw.js
-          ! grep -E 'recommendationKey:[[:space:]]*"(?!MOCK_REC_KEY_TEST_ONLY)' index.html 2>/dev/null || true
+          if grep -R 'SOPHIE_LEARNING_RECOMMENDATION_DEVICE_KEY' index.html sw.js docs/staging; then
+            echo 'Backend recommendation secret property name leaked into candidate/evidence.' >&2
+            exit 1
+          fi
+          if grep -E 'recommendationKey=[^"[:space:]]+' index.html sw.js; then
+            echo 'Recommendation credential-like query-string pattern found.' >&2
+            exit 1
+          fi
           grep -q 'sophie-app-v2-10-rec-v1' sw.js
           grep -q 'event.request.method !== "GET"' sw.js
           echo 'PASS: no real recommendation credential requested/provisioned/embedded by staging workflow' | tee -a docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
@@ -88,7 +93,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- index.html sw.js tools/apply_rec_v1_frontend.py tests/test_rec_v1_frontend.py tests/browser_rec_v1_probe.py docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
+          git add -- index.html sw.js docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
           if git diff --cached --quiet; then
             echo 'Staged candidate already matches tested output.'
             exit 0
