@@ -26,7 +26,7 @@ jobs:
         run: |
           grep -F './assets/android-first.css' index.html
           grep -F 'width=device-width, initial-scale=1, viewport-fit=cover' index.html
-          grep -F 'sophie-app-v2-13-android-viewport-hotfix-stage' sw.js
+          grep -F 'sophie-app-v2-13-android-viewport-hotfix' sw.js
           grep -F '"id": "./"' manifest.webmanifest
       - name: Run static contract tests
         run: node tests/static-contracts.cjs

@@ -33,7 +33,7 @@ assert(css.includes("100dvh"), "dynamic viewport support missing");
 assert(css.includes("html.compact-device .bottom-nav"), "real-phone navigation fallback missing");
 assert(css.includes("html.compact-device .learning-domain-grid"), "real-phone single-column fallback missing");
 assert(sw.includes('event.request.method !== "GET"'), "service worker does not exclude POST/non-GET requests");
-assert(/CACHE_NAME\s*=\s*"sophie-app-v2-13-android-viewport-hotfix-stage"/.test(sw), "service-worker cache is not versioned for the viewport hotfix stage");
+assert(/CACHE_NAME\s*=\s*"sophie-app-v2-13-android-viewport-hotfix"/.test(sw), "service-worker cache is not versioned for the viewport hotfix");
 assert.strictEqual(manifest.id, "./");
 assert.strictEqual(manifest.scope, "./");
 assert.strictEqual(manifest.start_url, "./index.html");
@@ -41,6 +41,6 @@ assert.strictEqual(manifest.display, "standalone");
 assert(manifest.icons.some(icon => icon.sizes === "192x192"));
 assert(manifest.icons.some(icon => icon.sizes === "512x512"));
 assert(manifest.icons.every(icon => !String(icon.purpose || "").includes("maskable")));
-assert(!code.includes("sophie-app-v2-13-android-viewport-hotfix-stage"), "backend unexpectedly modified for frontend cache version");
+assert(!code.includes("sophie-app-v2-13-android-viewport-hotfix"), "backend unexpectedly modified for frontend cache version");
 
 console.log("static-contracts: PASS");

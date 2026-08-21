@@ -21,7 +21,7 @@
         const screenHeight = Number(window.screen?.height) || Infinity;
         const shortScreenSide = Math.min(screenWidth, screenHeight);
         const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
-        const isPhoneScreen = isTouchDevice && shortScreenSide <= 600;
+        const isPhoneScreen = isTouchDevice && shortScreenSide < 600;
         root.classList.toggle("compact-device", isPhoneScreen);
         if (isPhoneScreen && (viewportRepairActive || window.innerWidth > screenWidth * 1.25)) {
           viewportRepairActive = true;
