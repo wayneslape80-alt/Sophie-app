@@ -244,7 +244,10 @@ async function runAccessibility(browser, baseUrl) {
     const style = getComputedStyle(view);
     return { animationDuration: style.animationDuration, transitionDuration: style.transitionDuration };
   });
-  assert(["0s", "0.001ms"].includes(motion.animationDuration), `reduced animation remains ${motion.animationDuration}`);
+  const reducedSeconds = motion.animationDuration.endsWith("ms")
+    ? Number.parseFloat(motion.animationDuration) / 1000
+    : Number.parseFloat(motion.animationDuration);
+  assert(Number.isFinite(reducedSeconds) && reducedSeconds <= 0.000001, `reduced animation remains ${motion.animationDuration}`);
   await page.keyboard.press("Tab");
   const focus = await page.evaluate(() => {
     const element = document.activeElement;
