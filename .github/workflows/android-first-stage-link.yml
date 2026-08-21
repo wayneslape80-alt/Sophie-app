@@ -1,0 +1,38 @@
+name: Android-first staging link
+
+on:
+  push:
+    branches:
+      - stage-skills-android-first-v2.6.0
+    paths:
+      - '.github/workflows/android-first-stage-link.yml'
+      - 'scripts/ensure_android_first_link.py'
+
+permissions:
+  contents: write
+
+jobs:
+  link-stylesheet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stage-skills-android-first-v2.6.0
+      - name: Link Android-first stylesheet
+        run: python scripts/ensure_android_first_link.py
+      - name: Verify product files
+        run: |
+          grep -F './assets/android-first.css' index.html
+          grep -F 'sophie-app-v2-11-android-first-stage' sw.js
+          grep -F '"id": "./"' manifest.webmanifest
+      - name: Commit generated index change
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No generated index change needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Link Android-first staging stylesheet'
+          git push origin HEAD:stage-skills-android-first-v2.6.0
