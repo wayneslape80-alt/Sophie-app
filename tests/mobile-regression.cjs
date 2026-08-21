@@ -181,8 +181,10 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "Choose this" }).click();
   await page.getByRole("button", { name: "Prompt me" }).click();
   await page.getByRole("button", { name: "Add to Learn" }).click();
-  await page.getByRole("heading", { name: "Caprese-style salad" }).waitFor();
-  assert(await page.locator("#opportunity-detail-dialog").getByText("Available", { exact: true }).isVisible(), "new Learn is not available/unstarted");
+  const learnDetail = page.locator("#opportunity-detail-dialog[open]");
+  await learnDetail.waitFor();
+  await learnDetail.getByRole("heading", { name: "Caprese-style salad" }).waitFor();
+  assert(await learnDetail.getByText("Available", { exact: true }).isVisible(), "new Learn is not available/unstarted");
   assert.strictEqual(calls.some(call => call.action === "chooseRecommendedLearn"), true, "chooseRecommendedLearn was not used");
   assert.strictEqual(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "L3"), false, "Learn auto-started");
   await page.getByRole("button", { name: "Close" }).click();
