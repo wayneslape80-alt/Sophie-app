@@ -198,7 +198,7 @@ async function runFunctional(browser, baseUrl) {
   assert(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "C1"), "Contribute lifecycle did not use D-006 action");
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("button", { name: "Open Wash the family car details" }).click();
-  await page.locator("#opportunity-detail-dialog[open]").getByRole("button", { name: "Start", exact: true }).click();
+  await page.locator("#opportunity-detail-dialog[open]").getByRole("button", { name: "Take this job", exact: true }).click();
   assert(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "E1"), "Earn lifecycle did not use D-006 action");
   await page.getByRole("button", { name: "Close" }).click();
 
