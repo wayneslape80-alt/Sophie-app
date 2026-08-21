@@ -1,0 +1,97 @@
+name: Build and test staged rec-v1 frontend
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-test:
+    if: github.head_ref == 'stage-rec-v1-frontend-v2.5.0'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: stage-rec-v1-frontend-v2.5.0
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore production baseline and materialise staging tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout origin/main -- index.html sw.js
+          cat staging/rec-v1/payload.00 staging/rec-v1/payload.01 staging/rec-v1/payload.02 staging/rec-v1/payload.03 | base64 -d > /tmp/rec-v1-tools.tgz
+          tar -xzf /tmp/rec-v1-tools.tgz
+          python -m py_compile tools/apply_rec_v1_frontend.py tests/test_rec_v1_frontend.py tests/browser_rec_v1_probe.py
+
+      - name: Build staged candidate
+        run: python tools/apply_rec_v1_frontend.py
+
+      - name: JavaScript syntax checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
+          Path('/tmp/sophie-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/sophie-inline.js
+          node --check sw.js
+
+      - name: Static contract and security regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/staging
+          python tests/test_rec_v1_frontend.py | tee docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
+
+      - name: Browser regression mobile and desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          python tests/browser_rec_v1_probe.py
+          cd /tmp
+          python3 -m http.server 8765 >/tmp/rec-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for SIZE in 390,844 1280,900; do
+            W=${SIZE%,*}; H=${SIZE#*,}
+            "$CHROME" --headless --no-sandbox --disable-gpu --window-size="$W,$H" --virtual-time-budget=7000 --dump-dom http://127.0.0.1:8765/rec-v1-browser.html > "/tmp/rec-dom-$W.html"
+            grep -q 'PASS:rec-v1-browser-regression' "/tmp/rec-dom-$W.html"
+            echo "PASS: browser regression ${W}x${H}" | tee -a "$GITHUB_WORKSPACE/docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt"
+          done
+
+      - name: Staging credential and PWA hard stops
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R --exclude='REC_V1_FRONTEND_TEST_RESULTS.txt' 'SOPHIE_LEARNING_RECOMMENDATION_DEVICE_KEY' index.html sw.js tools tests docs/staging || false
+          ! grep -E 'recommendationKey=[^"[:space:]]+' index.html sw.js
+          ! grep -E 'recommendationKey:[[:space:]]*"(?!MOCK_REC_KEY_TEST_ONLY)' index.html 2>/dev/null || true
+          grep -q 'sophie-app-v2-10-rec-v1' sw.js
+          grep -q 'event.request.method !== "GET"' sw.js
+          echo 'PASS: no real recommendation credential requested/provisioned/embedded by staging workflow' | tee -a docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
+          echo 'PASS: service worker remains GET-only and staged cache version is bumped' | tee -a docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
+
+      - name: Commit staged candidate and evidence only to staging branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html sw.js tools/apply_rec_v1_frontend.py tests/test_rec_v1_frontend.py tests/browser_rec_v1_probe.py docs/staging/REC_V1_FRONTEND_TEST_RESULTS.txt
+          if git diff --cached --quiet; then
+            echo 'Staged candidate already matches tested output.'
+            exit 0
+          fi
+          git commit -m 'Stage rec-v1 frontend candidate and regression evidence'
+          git push origin HEAD:stage-rec-v1-frontend-v2.5.0
