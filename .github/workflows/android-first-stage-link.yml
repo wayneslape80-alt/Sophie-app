@@ -25,6 +25,14 @@ jobs:
           grep -F './assets/android-first.css' index.html
           grep -F 'sophie-app-v2-12-skills-android-stage' sw.js
           grep -F '"id": "./"' manifest.webmanifest
+      - name: Run static contract tests
+        run: node tests/static-contracts.cjs
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run responsive and functional browser matrix
+        run: node tests/mobile-regression.cjs
       - name: Commit generated index change
         run: |
           if git diff --quiet -- index.html; then
