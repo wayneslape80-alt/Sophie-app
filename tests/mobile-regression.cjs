@@ -189,7 +189,7 @@ async function runFunctional(browser, baseUrl) {
   assert.strictEqual(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "L3"), false, "Learn auto-started");
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("heading", { name: "Currently learning" }).waitFor();
-  await page.getByText("Caprese-style salad", { exact: true }).waitFor();
+  await page.locator("#skills-workspace").getByText("Caprese-style salad", { exact: true }).waitFor();
 
   await page.getByRole("button", { name: "Opportunities", exact: true }).click();
   await page.getByRole("button", { name: "Open Clear the dinner table details" }).click();
