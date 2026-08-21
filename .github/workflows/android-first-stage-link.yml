@@ -6,7 +6,12 @@ on:
       - stage-skills-android-first-v2.6.0
     paths:
       - '.github/workflows/android-first-stage-link.yml'
+      - 'assets/android-first.css'
+      - 'index.html'
+      - 'manifest.webmanifest'
       - 'scripts/ensure_android_first_link.py'
+      - 'sw.js'
+      - 'tests/**'
 
 permissions:
   contents: write
