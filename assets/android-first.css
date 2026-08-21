@@ -1,0 +1,332 @@
+/*
+ * Sophie App Android-first responsive baseline
+ * Primary target: compact Android phone PWA, desktop-capable.
+ * See docs/ANDROID_FIRST_PWA_DESIGN_BASELINE.md
+ */
+
+:root {
+  --mobile-gutter: 16px;
+  --tap-target: 48px;
+}
+
+html {
+  min-width: 100%;
+  overflow-x: hidden;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: 1rem;
+}
+
+button,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* Android recommends a 48dp focusable/touch target. */
+.icon-button,
+.avatar-button,
+.primary-button,
+.secondary-button,
+.danger-button,
+.close-button,
+.filter-chip,
+.nav-button,
+.rec-choice,
+.school-view-toggle button,
+.school-toolbar button,
+.form-actions button,
+.setting-row button {
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+}
+
+.icon-button {
+  width: var(--tap-target);
+  height: var(--tap-target);
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.text-button,
+.filter-chip,
+.nav-button {
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.job-card p,
+.rec-card p,
+.rec-entry p,
+.rec-unavailable,
+.rec-helper,
+.rec-reason,
+.rec-safety-note,
+.rec-eligibility,
+.data-alert,
+.learning-resource-admin-copy,
+.section-heading p,
+.learn-workspace-section > p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Allow long labels and 200% text zoom to reflow rather than clip. */
+button,
+.pill,
+.status,
+.job-requiredness,
+.goal-amount,
+.nav-button,
+.rec-choice {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+/* Keep modal content reachable when browser chrome or the soft keyboard changes height. */
+dialog {
+  max-width: min(720px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+}
+
+.dialog-body {
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 599px) {
+  :root {
+    --nav-height: 84px;
+  }
+
+  .app-shell {
+    width: 100%;
+    padding-left: max(var(--mobile-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--mobile-gutter), env(safe-area-inset-right));
+    padding-bottom: calc(var(--nav-height) + 28px + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    gap: 10px;
+  }
+
+  .top-actions {
+    flex: 0 0 auto;
+  }
+
+  .quick-grid,
+  .cards,
+  .skill-grid,
+  .goal-grid,
+  .learning-resource-grid,
+  .rec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-grid {
+    gap: 10px;
+  }
+
+  .quick-card {
+    min-height: 88px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .job-card {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .job-side {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .job-side .primary-button,
+  .job-side .secondary-button {
+    flex: 1 1 150px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .section-heading > button {
+    min-height: var(--tap-target);
+  }
+
+  .bottom-nav {
+    left: 12px;
+    right: 12px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    min-height: var(--nav-height);
+    transform: none;
+    padding: 6px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .nav-button {
+    min-width: 0;
+    min-height: 64px;
+    padding: 6px 3px;
+    font-size: 0.75rem;
+  }
+
+  .nav-button .nav-icon {
+    font-size: 1.25rem;
+  }
+
+  dialog {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    margin: auto 0 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .dialog-body {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-left: -2px;
+    margin-right: -2px;
+    padding-top: 12px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .form-actions > button {
+    flex: 1 1 140px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: var(--tap-target);
+  }
+
+  textarea {
+    min-height: 112px;
+  }
+}
+
+/* Medium windows: more breathing room without stretching compact UI. */
+@media (min-width: 600px) and (max-width: 839px) {
+  .app-shell {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .skill-grid,
+  .goal-grid,
+  .learning-resource-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Expanded windows: turn the five-destination bottom bar into a navigation rail. */
+@media (min-width: 840px) {
+  :root {
+    --nav-height: 0px;
+  }
+
+  .app-shell {
+    width: min(calc(100% - 120px), 1200px);
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-bottom: 42px;
+  }
+
+  .bottom-nav {
+    left: max(18px, calc((100vw - 1320px) / 2));
+    top: 50%;
+    bottom: auto;
+    width: 82px;
+    height: auto;
+    min-height: 0;
+    padding: 8px;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, minmax(68px, auto));
+    transform: translateY(-50%);
+  }
+
+  .nav-button {
+    min-height: 64px;
+    padding: 8px 5px;
+    font-size: 0.75rem;
+  }
+
+  .home-columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .app-shell {
+    width: min(calc(100% - 160px), 1240px);
+  }
+}
+
+/* Touch devices should not depend on hover-only affordances. */
+@media (hover: none) and (pointer: coarse) {
+  .quick-card:hover,
+  .product-link:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
