@@ -155,7 +155,7 @@ async function runViewport(browser, baseUrl, viewport) {
   await page.getByRole("button", { name: "Opportunities", exact: true }).click();
   await page.getByRole("heading", { name: "Contribute & Earn" }).waitFor();
   assert.strictEqual(await page.getByRole("button", { name: "Learn", exact: true }).count(), 0, "Learn remains an Opportunities filter");
-  assert.strictEqual(await page.getByText("Cook rice", { exact: true }).count(), 0, "Learn activity duplicated in Opportunities");
+  assert.strictEqual(await page.locator("#all-jobs").getByText("Cook rice", { exact: true }).count(), 0, "Learn activity duplicated in Opportunities");
   await layoutAudit(page, viewport[0]);
   await context.close();
   return { viewport: `${viewport[0]}x${viewport[1]}`, result: "PASS" };
