@@ -748,6 +748,72 @@
     @media (min-width: 760px) {
       .learning-resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
+
+
+    /* rec-v1 staged Learn recommendation UI */
+    .learn-workspace-section { margin: 22px 0; }
+    .learn-workspace-section > h3 { margin: 0 0 5px; }
+    .learn-workspace-section > p { margin: 0 0 12px; color: var(--muted); font-size: .84rem; line-height: 1.45; }
+    .rec-entry {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow-soft);
+    }
+    .rec-entry h3 { margin: 0 0 5px; }
+    .rec-entry p { margin: 0 0 13px; color: var(--muted); font-size: .84rem; line-height: 1.5; }
+    .rec-unavailable {
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+    .rec-dialog-body { width: min(100%, 720px); }
+    .rec-copy { color: var(--muted); line-height: 1.55; }
+    .rec-option-group { display: grid; gap: 9px; margin: 15px 0 19px; }
+    .rec-option-group[role="group"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .rec-option-group.rec-safety { grid-template-columns: 1fr; }
+    .rec-choice {
+      min-height: 48px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 750;
+      text-align: left;
+      cursor: pointer;
+    }
+    .rec-choice[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-strong); }
+    .rec-helper { margin: -8px 0 15px; color: var(--muted); font-size: .78rem; line-height: 1.45; }
+    .rec-loading { padding: 20px; border-radius: 16px; background: var(--surface-2); text-align: center; color: var(--muted); }
+    .rec-grid { display: grid; gap: 12px; }
+    .rec-card { padding: 17px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); }
+    .rec-card h3, .rec-card h4 { margin: 0 0 7px; }
+    .rec-card p { margin: 0 0 10px; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+    .rec-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0; }
+    .rec-reason, .rec-safety-note, .rec-eligibility {
+      margin: 10px 0 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+      font-size: .8rem;
+      line-height: 1.45;
+    }
+    .rec-reason { background: var(--surface-2); }
+    .rec-safety-note { background: var(--sun); color: var(--sun-ink); }
+    .rec-eligibility { background: var(--surface-2); color: var(--muted); }
+    .rec-controls { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 15px; }
+    .rec-error { margin: 12px 0; padding: 11px 12px; border-radius: 12px; background: var(--rose); color: var(--rose-ink); font-size: .8rem; line-height: 1.45; }
+    .rec-consequence { margin: 14px 0; padding: 12px 13px; border-radius: 13px; background: var(--brand-soft); color: var(--ink); font-size: .82rem; line-height: 1.5; }
+    .rec-parent-access { padding: 13px 14px; border-radius: 14px; background: var(--surface-2); font-size: .8rem; line-height: 1.5; }
+    .rec-parent-access strong { display: block; margin-bottom: 4px; }
+    @media (max-width: 560px) {
+      .rec-option-group[role="group"] { grid-template-columns: 1fr; }
+      .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
+    }
   </style>
 </head>
 <body>
@@ -1057,6 +1123,12 @@
     </form>
   </dialog>
 
+
+
+  <dialog id="recommendation-dialog">
+    <div class="dialog-body rec-dialog-body" id="recommendation-dialog-body"></div>
+  </dialog>
+
   <dialog id="parent-login-dialog">
     <form class="dialog-body" id="parent-login-form">
       <div class="dialog-head"><h2>Parent access</h2><button type="button" class="close-button" data-close-dialog="parent-login-dialog" aria-label="Close">×</button></div>
@@ -1078,6 +1150,9 @@
       <div class="section-heading" style="margin-top:22px"><div><h3>Learning resources</h3><p>Videos that support Learn activities without becoming a completion score.</p></div><button class="secondary-button" type="button" id="open-create-learning-resource">+ Add resource</button></div>
       <div id="parent-learning-resource-access"></div>
       <div id="parent-learning-resources"></div>
+
+      <div class="section-heading" style="margin-top:22px"><div><h3>Learning recommendations</h3><p>Parent-only device access for Sophie's recommendation discovery.</p></div></div>
+      <div id="parent-recommendation-access"></div>
       <div class="section-heading" style="margin-top:22px"><div><h3>School support</h3><p>Help requests and useful exceptions — not a productivity score.</p></div></div>
       <div id="parent-school-profile"></div>
       <div id="parent-school-support"></div>
@@ -1097,6 +1172,7 @@
       appVersion: "unavailable",
       opportunityContractVersion: "",
       learningResourceContractVersion: "",
+      learningRecommendationContractVersion: "",
       learningResources: [],
       balance: 0,
       pending: 0,
@@ -1121,6 +1197,22 @@
       learningResourceAdminLoaded: false,
       learningResourceAdminUnavailable: false,
       parentData: null,
+      rec: {
+        view: "entry",
+        recommendations: [],
+        catalogue: [],
+        recommendationSessionId: "",
+        recommendationSetId: "",
+        challengePreference: "",
+        availableSafetySupport: "none",
+        supportChoice: "",
+        currentCandidate: null,
+        currentSource: "recommendation",
+        loading: false,
+        error: "",
+        retry: null,
+        unauthorised: false
+      },
       schoolTasks: [],
       schoolHistory: [],
       schoolProfile: { scaffoldMode: "guided", preferredSchoolView: "now", suggestedScaffoldMode: "" },
@@ -1152,6 +1244,75 @@
     const formatDate = value => value ? new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(new Date(value)) : "Recently";
     const clampPercent = value => Math.max(0, Math.min(100, Number(value) || 0));
 
+
+
+
+    const RECOMMENDATION_STORAGE_KEY = "sophie_learning_recommendation_key";
+    const REC_SAFETY_OPTIONS = [
+      ["none", "No adult available right now"],
+      ["adult_available", "An adult can come if I need them"],
+      ["adult_nearby", "An adult will be nearby"],
+      ["direct_supervision", "An adult will stay with me"]
+    ];
+    const REC_SUPPORT_OPTIONS = [
+      ["show_me", "Show me"],
+      ["do_with_me", "Do it with me"],
+      ["prompt_me", "Prompt me"],
+      ["got_this", "I've got this"]
+    ];
+
+    function recommendationCredential() {
+      return localStorage.getItem(RECOMMENDATION_STORAGE_KEY) || "";
+    }
+
+    function learningRecommendationContractAvailable(data = app.data) {
+      return String(data?.learningRecommendationContractVersion || "") === "rec-v1";
+    }
+
+    function recommendationInteractionReady() {
+      return !app.dataUnavailable && learningRecommendationContractAvailable() && Boolean(recommendationCredential()) && !app.rec.unauthorised;
+    }
+
+    function recRequestId() {
+      if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+      return `rec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    }
+
+    function normaliseRecEligibility(value = {}) {
+      return { status: String(value.status || ""), reason: String(value.reason || "") };
+    }
+
+    function normaliseRecommendationCandidate(value = {}) {
+      return {
+        candidateId: String(value.candidateId || ""),
+        title: String(value.title || ""),
+        whyItMatters: String(value.whyItMatters || ""),
+        practiceDescription: String(value.practiceDescription || ""),
+        estimatedMinutes: Number(value.estimatedMinutes) || 0,
+        safety: {
+          required: value.safety?.required === true,
+          minimumSupport: String(value.safety?.minimumSupport || "none"),
+          note: String(value.safety?.note || "")
+        },
+        eligibility: normaliseRecEligibility(value.eligibility),
+        reasons: (Array.isArray(value.reasons) ? value.reasons : []).filter(item => typeof item === "string"),
+        recommendationEventId: String(value.recommendationEventId || "")
+      };
+    }
+
+    function normaliseCatalogueCandidate(value = {}) {
+      return {
+        candidateId: String(value.candidateId || ""),
+        title: String(value.title || ""),
+        estimatedMinutes: Number(value.estimatedMinutes) || 0,
+        preferenceSuppressed: value.preferenceSuppressed === true,
+        eligibility: normaliseRecEligibility(value.eligibility)
+      };
+    }
+
+    function recommendationUnavailableMessage() {
+      return "Learning ideas aren't available on this device right now. Your Learn activities still work normally.";
+    }
 
     function normaliseLearningResource(resource = {}) {
       return {
@@ -1199,6 +1360,7 @@
         appVersion: raw.appVersion || "1-compatible",
         opportunityContractVersion: String(raw.opportunityContractVersion || ""),
         learningResourceContractVersion: String(raw.learningResourceContractVersion || ""),
+        learningRecommendationContractVersion: String(raw.learningRecommendationContractVersion || ""),
         learningResources: (Array.isArray(raw.learningResources) ? raw.learningResources : []).map(normaliseLearningResource),
         balance: Number(raw.balance) || 0,
         pending: Number(raw.pending) || 0,
@@ -1230,7 +1392,8 @@
             approvedAmount: Number(job.approvedAmount) || 0,
             reviewFeedback: job.reviewFeedback || "",
             withdrawalReviewRequested: Boolean(job.withdrawalReviewRequested),
-            partialWorkDescription: job.partialWorkDescription || ""
+            partialWorkDescription: job.partialWorkDescription || "",
+            sourceCandidateId: String(job.sourceCandidateId || "")
           };
         }),
         skills: Array.isArray(raw.skills) ? raw.skills : [],
@@ -1263,6 +1426,7 @@
       if (!result.success) {
         const error = new Error(result.error || "Request failed");
         error.code = result.code || "REQUEST_FAILED";
+        error.eligibility = result.eligibility || result.data?.eligibility || null;
         throw error;
       }
       return result.data || result;
@@ -1386,6 +1550,7 @@
     function opportunityRequiredness(job) {
       if (job.type === "earn") return "Your choice";
       if (job.requiredness === "expected") return "Part of my responsibilities";
+      if (job.type === "learn" && job.requiredness === "negotiated" && job.sourceCandidateId) return "Your learning choice";
       if (job.requiredness === "negotiated") return "Agreed together";
       if (job.type === "learn" && job.requiredness === "optional") return "Optional practice";
       return "";
@@ -1445,7 +1610,23 @@
       const suggestions = jobs.filter(job => ["in_progress", "returned_for_completion", "available"].includes(job.status)).slice(0, 2);
       $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing needs attention right now.</div>`;
       const filtered = jobs.filter(job => app.jobFilter === "all" || job.type === app.jobFilter);
-      $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
+      if (app.jobFilter === "learn") {
+        const activeLearn = filtered.filter(job => !["completed", "withdrawn"].includes(job.status));
+        const learnHistory = filtered.filter(job => ["completed", "withdrawn"].includes(job.status));
+        $("#all-jobs").innerHTML = `
+          <section class="learn-workspace-section" aria-labelledby="active-learn-heading">
+            <h3 id="active-learn-heading">Active Learn</h3><p>Things already in Learn, whether you have started them yet or not.</p>
+            <div class="cards">${activeLearn.length ? activeLearn.map(jobMarkup).join("") : `<div class="surface empty"><strong>Nothing active in Learn</strong><p>You can choose something when it feels useful.</p></div>`}</div>
+          </section>
+          <section class="learn-workspace-section" aria-labelledby="find-practice-heading"><div id="learn-recommendation-host"></div></section>
+          <section class="learn-workspace-section" aria-labelledby="learn-history-heading">
+            <h3 id="learn-history-heading">Completed / stopped Learn</h3><p>Past practice stays informational. One completed activity is not mastery.</p>
+            <div class="cards">${learnHistory.length ? learnHistory.map(jobMarkup).join("") : `<div class="surface empty"><strong>No past Learn activity yet</strong></div>`}</div>
+          </section>`;
+        renderLearningRecommendationEntry();
+      } else {
+        $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
+      }
       $$("#opportunity-filters .filter-chip").forEach(chip => chip.setAttribute("aria-pressed", chip.dataset.filter === app.jobFilter ? "true" : "false"));
     }
 
@@ -2176,6 +2357,397 @@
     }
 
 
+
+
+    function renderLearningRecommendationEntry() {
+      const host = $("#learn-recommendation-host");
+      if (!host) return;
+      if (!learningRecommendationContractAvailable()) {
+        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">Recommendation discovery is not live because the expected rec-v1 capability is unavailable. Existing Learn activities still work normally.</div></div>`;
+        return;
+      }
+      if (!recommendationCredential() || app.rec.unauthorised) {
+        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">${safe(recommendationUnavailableMessage())}</div></div>`;
+        return;
+      }
+      if (app.dataUnavailable) {
+        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">The last loaded Learn activities are still shown. Reconnect before asking for new ideas.</div></div>`;
+        return;
+      }
+      host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><button class="primary-button" type="button" data-rec-open>Find something to practise</button></div>`;
+    }
+
+    function resetRecommendationSession() {
+      app.rec.view = "setup";
+      app.rec.recommendations = [];
+      app.rec.catalogue = [];
+      app.rec.recommendationSessionId = "";
+      app.rec.recommendationSetId = "";
+      app.rec.challengePreference = "";
+      app.rec.availableSafetySupport = "none";
+      app.rec.supportChoice = "";
+      app.rec.currentCandidate = null;
+      app.rec.currentSource = "recommendation";
+      app.rec.loading = false;
+      app.rec.error = "";
+      app.rec.retry = null;
+    }
+
+    function openRecommendationDiscovery() {
+      if (!recommendationInteractionReady()) return toast(recommendationUnavailableMessage());
+      resetRecommendationSession();
+      renderRecommendationDialog();
+      $("#recommendation-dialog").showModal();
+    }
+
+    function recSafetyMessage(candidate) {
+      const minimum = candidate?.safety?.minimumSupport || "none";
+      const label = ({
+        adult_available: "An adult needs to be available if you need them for this one.",
+        adult_nearby: "An adult needs to be nearby for this one.",
+        direct_supervision: "An adult needs to stay with you for this one."
+      })[minimum] || "";
+      if (!candidate?.safety?.required && !label && !candidate?.safety?.note) return "";
+      return `<div class="rec-safety-note"><strong>Safety for this one</strong>${label ? `<br>${safe(label)}` : ""}${candidate?.safety?.note ? `<br>${safe(candidate.safety.note)}` : ""}</div>`;
+    }
+
+    function recReasonMarkup(candidate) {
+      const reason = (candidate?.reasons || []).join(" ").trim();
+      return reason ? `<div class="rec-reason"><strong>Why this idea</strong><br>${safe(reason)}</div>` : "";
+    }
+
+    function recErrorMarkup() {
+      if (!app.rec.error) return "";
+      const retry = app.rec.retry ? `<button class="text-button" type="button" data-rec-retry>Try again</button>` : "";
+      return `<div class="rec-error" role="status">${safe(app.rec.error)} ${retry}</div>`;
+    }
+
+    function renderRecSetup() {
+      const challenge = [["easier", "Keep it easy"], ["similar", "About the same"], ["more_challenging", "Push me"]];
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>What feels right today?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        <p class="rec-copy">Choose a direction for this recommendation session. None of these changes your skill level.</p>
+        <h3>How much challenge?</h3>
+        <div class="rec-option-group" role="group" aria-label="Challenge preference">${challenge.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-challenge="${value}" aria-pressed="${app.rec.challengePreference === value}">${safe(label)}</button>`).join("")}</div>
+        <p class="rec-helper">This changes the ideas you see. It doesn't change your skill level.</p>
+        <h3>Who's around while you cook?</h3>
+        <div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-safety="${value}" aria-pressed="${app.rec.availableSafetySupport === value}">${safe(label)}</button>`).join("")}</div>
+        <p class="rec-helper">This is about the setup for this cooking session, not how good you are at cooking.</p>
+        ${recErrorMarkup()}
+        <div class="rec-controls"><button class="primary-button" type="button" data-rec-request="normal" ${app.rec.loading ? "disabled" : ""}>Show me some ideas</button><button class="secondary-button" type="button" data-rec-request="surprise_me" ${app.rec.loading ? "disabled" : ""}>Surprise me</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>
+        ${app.rec.loading ? `<div class="rec-loading" role="status">Finding a few things you could try…</div>` : ""}`;
+    }
+
+    function recRecommendationCard(candidate) {
+      return `<article class="rec-card">
+        <h3>${safe(candidate.title)}</h3>
+        ${candidate.practiceDescription ? `<p>${safe(candidate.practiceDescription)}</p>` : ""}
+        <div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${candidate.estimatedMinutes} min</span>` : ""}</div>
+        ${recReasonMarkup(candidate)}${recSafetyMessage(candidate)}
+        <div class="rec-controls"><button class="primary-button" type="button" data-rec-preview="${safe(candidate.candidateId)}">See this idea</button><button class="secondary-button" type="button" data-rec-not-now="${safe(candidate.candidateId)}">Not this one for now</button></div>
+      </article>`;
+    }
+
+    function renderRecResults() {
+      const cards = app.rec.recommendations.slice(0, 3);
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>A few ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        <p class="rec-copy">Pick whichever sounds good.</p>
+        ${recErrorMarkup()}
+        ${app.rec.loading ? `<div class="rec-loading" role="status">Finding a few different ideas… Your current choices stay here until a new set arrives.</div>` : ""}
+        <div class="rec-grid">${cards.length ? cards.map(recRecommendationCard).join("") : `<div class="rec-unavailable">No ideas are available in this setup. You can change who's around or try again later.</div>`}</div>
+        <div class="rec-controls"><button class="secondary-button" type="button" data-rec-request="show_something_else" ${app.rec.loading ? "disabled" : ""}>Show me something else</button><button class="secondary-button" type="button" data-rec-request="repeat_or_refine" ${app.rec.loading ? "disabled" : ""}>Repeat or refine something</button><button class="secondary-button" type="button" data-rec-catalogue ${app.rec.loading ? "disabled" : ""}>Browse more ideas</button><button class="secondary-button" type="button" data-rec-change-setup>Change setup</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+    }
+
+    function renderRecPreview(candidate) {
+      if (!candidate) return renderRecResults();
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>${safe(candidate.title)}</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        ${candidate.practiceDescription ? `<section class="opportunity-detail-section"><h3>What you'll practise</h3><p>${safe(candidate.practiceDescription)}</p></section>` : ""}
+        ${candidate.whyItMatters ? `<section class="opportunity-detail-section"><h3>Why it could be useful</h3><p>${safe(candidate.whyItMatters)}</p></section>` : ""}
+        ${candidate.estimatedMinutes ? `<section class="opportunity-detail-section"><h3>About how long</h3><p>${candidate.estimatedMinutes} minutes</p></section>` : ""}
+        ${recReasonMarkup(candidate)}${recSafetyMessage(candidate)}${candidate.eligibility?.reason && candidate.eligibility.status !== "eligible" ? `<div class="rec-eligibility"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason)}</div>` : ""}
+        <div class="rec-controls">${candidate.eligibility?.status === "eligible" || !candidate.eligibility?.status ? `<button class="primary-button" type="button" data-rec-support-step>Choose this</button>` : ""}<button class="secondary-button" type="button" data-rec-back-results>Back</button>${candidate.recommendationEventId ? `<button class="secondary-button" type="button" data-rec-not-now="${safe(candidate.candidateId)}">Not this one for now</button>` : ""}</div>`;
+    }
+
+    function renderRecSupport(candidate) {
+      if (!candidate) return renderRecResults();
+      const sparse = app.rec.currentSource === "catalogue";
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>How do you want help this time?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        <h3>${safe(candidate.title)}</h3>
+        ${sparse ? `<p class="rec-copy">This is a compact catalogue item. The backend has not supplied a richer practice preview for it.</p>` : candidate.practiceDescription ? `<p class="rec-copy">${safe(candidate.practiceDescription)}</p>` : ""}
+        <div class="rec-option-group rec-safety" role="group" aria-label="Learning support choice">${REC_SUPPORT_OPTIONS.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-support="${value}" aria-pressed="${app.rec.supportChoice === value}">${safe(label)}</button>`).join("")}</div>
+        <p class="rec-helper">You can ask for more or less help whenever you need it. This choice is for the current app session and is not saved as competence.</p>
+        ${candidate.safety?.required ? `<div class="rec-safety-note">Safety support stays the same even if you choose less learning help.</div>` : ""}
+        <div class="rec-consequence"><strong>Add to Learn</strong><br>This adds the item to Learn. It does not start it. If you change your mind afterwards, it may remain available and unstarted until a parent cancels it.</div>
+        ${recErrorMarkup()}
+        <div class="rec-controls"><button class="primary-button" type="button" data-rec-add-to-learn ${!app.rec.supportChoice || app.rec.loading ? "disabled" : ""}>Add to Learn</button><button class="secondary-button" type="button" data-rec-back-from-support>Back</button></div>
+        ${app.rec.loading ? `<div class="rec-loading" role="status">Adding this to Learn…</div>` : ""}`;
+    }
+
+    function renderRecCatalogue() {
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>Browse more ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        <p class="rec-copy">This is a compact catalogue. It shows only information the backend currently supplies.</p>
+        ${recErrorMarkup()}${app.rec.loading ? `<div class="rec-loading" role="status">Loading more ideas…</div>` : ""}
+        <div class="rec-grid">${app.rec.catalogue.map(candidate => `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${candidate.estimatedMinutes} min</span>` : ""}</div>${candidate.eligibility.status === "eligible" ? `<div class="rec-eligibility"><strong>Available to choose</strong></div><div class="rec-controls"><button class="primary-button" type="button" data-rec-catalogue-add="${safe(candidate.candidateId)}">Add to Learn</button></div>` : `<div class="rec-eligibility"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason || "This item is not available for the current setup.")}</div><div class="rec-controls"><button class="secondary-button" type="button" data-rec-change-setup>Change who's around</button></div>`}</article>`).join("") || `<div class="rec-unavailable">No catalogue items are available.</div>`}</div>
+        <div class="rec-controls"><button class="secondary-button" type="button" data-rec-back-results>Back to a few ideas</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+    }
+
+    function renderRecommendationDialog() {
+      const host = $("#recommendation-dialog-body");
+      if (!host) return;
+      if (!learningRecommendationContractAvailable() || !recommendationCredential() || app.rec.unauthorised) {
+        host.innerHTML = `<div class="dialog-head"><h2>Learning ideas unavailable</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-unavailable">${safe(recommendationUnavailableMessage())}</div>`;
+        return;
+      }
+      if (app.rec.view === "setup") host.innerHTML = renderRecSetup();
+      else if (app.rec.view === "results") host.innerHTML = renderRecResults();
+      else if (app.rec.view === "preview") host.innerHTML = renderRecPreview(app.rec.currentCandidate);
+      else if (app.rec.view === "support") host.innerHTML = renderRecSupport(app.rec.currentCandidate);
+      else if (app.rec.view === "catalogue") host.innerHTML = renderRecCatalogue();
+      else host.innerHTML = renderRecSetup();
+    }
+
+    async function recommendationPost(operation) {
+      const credential = recommendationCredential();
+      if (!credential) {
+        const error = new Error(recommendationUnavailableMessage());
+        error.code = "UNAUTHORISED";
+        throw error;
+      }
+      try {
+        return await apiPost({ ...operation, recommendationKey: credential });
+      } catch (error) {
+        if (error.code === "UNAUTHORISED") {
+          localStorage.removeItem(RECOMMENDATION_STORAGE_KEY);
+          app.rec.unauthorised = true;
+          app.rec.retry = null;
+          app.rec.error = recommendationUnavailableMessage();
+          renderLearningRecommendationEntry();
+        }
+        throw error;
+      }
+    }
+
+    function recommendationOperation(requestKind, existingOperation = null) {
+      if (existingOperation) return existingOperation;
+      const operation = {
+        action: "getLearningRecommendations",
+        domain: "cooking",
+        limit: 3,
+        clientRequestId: recRequestId(),
+        requestKind,
+        availableSafetySupport: app.rec.availableSafetySupport
+      };
+      if (app.rec.recommendationSessionId) operation.recommendationSessionId = app.rec.recommendationSessionId;
+      if (["show_something_else", "repeat_or_refine"].includes(requestKind) && app.rec.recommendationSetId) operation.priorRecommendationSetId = app.rec.recommendationSetId;
+      if (app.rec.challengePreference && requestKind !== "surprise_me") {
+        operation.challengePreference = app.rec.challengePreference;
+        operation.challengePreferenceDuration = "session";
+      }
+      return operation;
+    }
+
+    async function requestRecommendationSet(requestKind = "normal", existingOperation = null) {
+      if (!recommendationInteractionReady()) return toast(recommendationUnavailableMessage());
+      const operation = recommendationOperation(requestKind, existingOperation);
+      const hadSet = app.rec.recommendations.length > 0;
+      app.rec.loading = true;
+      app.rec.error = "";
+      renderRecommendationDialog();
+      try {
+        const result = await recommendationPost(operation);
+        if (String(result?.learningRecommendationContractVersion || "") !== "rec-v1") throw new Error("Learning recommendation capability mismatch.");
+        const next = (Array.isArray(result.recommendations) ? result.recommendations : []).slice(0, 3).map(normaliseRecommendationCandidate);
+        app.rec.recommendationSessionId = String(result.recommendationSessionId || app.rec.recommendationSessionId || "");
+        app.rec.recommendationSetId = String(result.recommendationSetId || "");
+        app.rec.recommendations = next;
+        app.rec.view = "results";
+        app.rec.retry = null;
+      } catch (error) {
+        if (error.code !== "UNAUTHORISED") {
+          app.rec.error = hadSet ? "Couldn't load different ideas. Your current choices are still here." : (error.message || "Couldn't load learning ideas.");
+          app.rec.retry = { type: "recommendations", operation };
+          if (!hadSet) app.rec.view = "setup";
+        }
+      } finally {
+        app.rec.loading = false;
+        renderRecommendationDialog();
+      }
+    }
+
+    async function loadRecommendationCatalogue(existingOperation = null) {
+      if (!recommendationInteractionReady()) return toast(recommendationUnavailableMessage());
+      const operation = existingOperation || {
+        action: "getLearningCandidateCatalogue",
+        domain: "cooking",
+        availableSafetySupport: app.rec.availableSafetySupport,
+        ...(app.rec.recommendationSessionId ? { recommendationSessionId: app.rec.recommendationSessionId } : {})
+      };
+      app.rec.loading = true;
+      app.rec.error = "";
+      app.rec.view = "catalogue";
+      renderRecommendationDialog();
+      try {
+        const result = await recommendationPost(operation);
+        const rows = Array.isArray(result) ? result : Array.isArray(result?.candidates) ? result.candidates : [];
+        app.rec.catalogue = rows.map(normaliseCatalogueCandidate);
+        app.rec.retry = null;
+      } catch (error) {
+        if (error.code !== "UNAUTHORISED") {
+          app.rec.error = error.message || "Couldn't load more ideas.";
+          app.rec.retry = { type: "catalogue", operation };
+        }
+      } finally {
+        app.rec.loading = false;
+        renderRecommendationDialog();
+      }
+    }
+
+    function recommendationCandidateById(id) {
+      return app.rec.recommendations.find(item => item.candidateId === String(id)) || app.rec.catalogue.find(item => item.candidateId === String(id)) || null;
+    }
+
+    async function recordRecommendationNotNow(candidateId, existingOperation = null) {
+      const candidate = app.rec.recommendations.find(item => item.candidateId === String(candidateId));
+      if (!candidate?.recommendationEventId) return;
+      const operation = existingOperation || {
+        action: "recordRecommendationResponse",
+        clientRequestId: recRequestId(),
+        recommendationEventId: candidate.recommendationEventId,
+        outcome: "not_now",
+        override: "not_now"
+      };
+      app.rec.loading = true;
+      renderRecommendationDialog();
+      try {
+        await recommendationPost(operation);
+        app.rec.recommendations = app.rec.recommendations.filter(item => item.candidateId !== candidate.candidateId);
+        app.rec.currentCandidate = null;
+        app.rec.view = "results";
+        app.rec.error = "Okay — not this one for now.";
+        app.rec.retry = null;
+      } catch (error) {
+        if (error.code !== "UNAUTHORISED") {
+          app.rec.error = error.message || "That choice could not be saved.";
+          app.rec.retry = { type: "not_now", operation, candidateId };
+        }
+      } finally {
+        app.rec.loading = false;
+        renderRecommendationDialog();
+      }
+    }
+
+    function openRecommendationSupport(candidateId, source = "recommendation") {
+      const candidate = recommendationCandidateById(candidateId);
+      if (!candidate) return;
+      app.rec.currentCandidate = candidate;
+      app.rec.currentSource = source;
+      app.rec.supportChoice = "";
+      app.rec.error = "";
+      app.rec.retry = null;
+      app.rec.view = "support";
+      renderRecommendationDialog();
+    }
+
+    async function chooseRecommendation(existingOperation = null) {
+      const candidate = app.rec.currentCandidate;
+      if (!candidate || !app.rec.supportChoice) return;
+      const operation = existingOperation || {
+        action: "chooseRecommendedLearn",
+        clientRequestId: recRequestId(),
+        candidateId: candidate.candidateId,
+        availableSafetySupport: app.rec.availableSafetySupport,
+        ...(candidate.recommendationEventId && app.rec.currentSource === "recommendation" ? { recommendationEventId: candidate.recommendationEventId } : {})
+      };
+      app.rec.loading = true;
+      app.rec.error = "";
+      renderRecommendationDialog();
+      try {
+        const result = await recommendationPost(operation);
+        const returned = result?.opportunity;
+        if (!returned?.id || String(returned.type || "").toLowerCase() !== "learn" || String(returned.status || "").toLowerCase() !== "available") throw new Error("The backend did not return the expected available Learn activity.");
+        const opportunityId = String(returned.id);
+        await loadData({ quiet: true });
+        const authoritative = opportunityById(opportunityId);
+        if (!authoritative) throw new Error("The new Learn activity could not be confirmed after reload.");
+        $("#recommendation-dialog").close();
+        setFilter("learn");
+        setView("opportunities");
+        openOpportunityDetail(opportunityId, null);
+        toast("Added to Learn — it has not started yet");
+        app.rec.retry = null;
+      } catch (error) {
+        if (error.code === "REC_CANDIDATE_INELIGIBLE") {
+          const eligibility = normaliseRecEligibility(error.eligibility || {});
+          app.rec.error = eligibility.reason || "This idea is not available in the current setup anymore.";
+          if (app.rec.currentCandidate) app.rec.currentCandidate.eligibility = eligibility;
+          app.rec.retry = null;
+        } else if (error.code !== "UNAUTHORISED") {
+          app.rec.error = error.message || "The activity could not be added to Learn.";
+          app.rec.retry = { type: "choose", operation };
+        }
+      } finally {
+        app.rec.loading = false;
+        if ($("#recommendation-dialog").open) renderRecommendationDialog();
+      }
+    }
+
+    async function retryRecommendationOperation() {
+      const retry = app.rec.retry;
+      if (!retry) return;
+      if (retry.type === "recommendations") return requestRecommendationSet(retry.operation.requestKind || "normal", retry.operation);
+      if (retry.type === "catalogue") return loadRecommendationCatalogue(retry.operation);
+      if (retry.type === "not_now") return recordRecommendationNotNow(retry.candidateId, retry.operation);
+      if (retry.type === "choose") return chooseRecommendation(retry.operation);
+    }
+
+    function closeRecommendationDiscovery() {
+      if ($("#recommendation-dialog").open) $("#recommendation-dialog").close();
+      app.rec.loading = false;
+      app.rec.error = "";
+      app.rec.retry = null;
+      app.rec.currentCandidate = null;
+      // Whole-session Not now intentionally performs no RecommendationHistory write.
+    }
+
+    function renderParentRecommendationAccess() {
+      const host = $("#parent-recommendation-access");
+      if (!host) return;
+      if (!learningRecommendationContractAvailable(app.parentData || app.data)) {
+        host.innerHTML = `<div class="rec-parent-access"><strong>Recommendation device access unavailable</strong>The current backend does not expose rec-v1. No credential action is available.</div>`;
+        return;
+      }
+      const configuredHere = Boolean(recommendationCredential());
+      host.innerHTML = `<div class="rec-parent-access"><strong>Recommendation discovery on this device: ${configuredHere ? "configured" : "not configured"}</strong>The private device credential is never displayed. Provisioning and rotation are parent-authenticated and independent of School and Learning Resources credentials.<div class="rec-controls">${configuredHere ? `<button class="secondary-button" type="button" data-rec-device="rotate">Rotate recommendation access</button><button class="secondary-button" type="button" data-rec-device="remove-local">Remove from this device</button>` : `<button class="secondary-button" type="button" data-rec-device="provision">Enable recommendation access on this device</button>`}</div></div>`;
+    }
+
+    async function provisionRecommendationDevice(mode, button) {
+      if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
+      if (!learningRecommendationContractAvailable(app.parentData || app.data) || app.dataUnavailable) return toast("Reconnect to the live rec-v1 backend first.");
+      if (mode === "remove-local") {
+        localStorage.removeItem(RECOMMENDATION_STORAGE_KEY);
+        app.rec.unauthorised = false;
+        renderParentRecommendationAccess();
+        renderLearningRecommendationEntry();
+        return toast("Recommendation access removed from this device");
+      }
+      if (button) button.disabled = true;
+      try {
+        extendParentSession();
+        const action = mode === "rotate" ? "rotateLearningRecommendationDeviceKey" : "provisionLearningRecommendationDevice";
+        const result = await apiPost({ action, adminKey: app.adminKey });
+        if (!result?.recommendationKey) throw new Error("The backend did not return recommendation device access.");
+        if (result.learningRecommendationContractVersion && result.learningRecommendationContractVersion !== "rec-v1") throw new Error("Learning recommendation capability mismatch.");
+        localStorage.setItem(RECOMMENDATION_STORAGE_KEY, result.recommendationKey);
+        app.rec.unauthorised = false;
+        toast(mode === "rotate" ? "Recommendation access rotated on this device" : "Recommendation access enabled on this device");
+        renderParentRecommendationAccess();
+        renderLearningRecommendationEntry();
+      } catch (error) {
+        toast(error.message || "Recommendation device access could not be changed.");
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
     function setView(view) {
       app.activeView = view;
       $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === view));
@@ -2757,6 +3329,7 @@
       }).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>All caught up</strong><p>No activities need review.</p></div>`;
       $("#parent-goal-reviews").innerHTML = pendingGoals.length ? pendingGoals.map(goal => `<article class="surface parent-review"><div class="parent-review-head"><div><h3>${safe(goal.icon || "🎯")} ${safe(goal.title)}</h3><p>Target: ${money(goal.targetAmount)}</p></div><span class="status pending">Sophie chose this</span></div><p>Check practical details such as the amount, link and suitability. The goal remains Sophie's choice.</p><div class="form-actions"><button class="danger-button" data-goal-review="reject" data-goal-id="${safe(goal.goalId)}">Decline</button><button class="primary-button" data-goal-review="approve" data-goal-id="${safe(goal.goalId)}">Make active</button></div></article>`).join("") : `<div class="empty"><span class="empty-icon">✓</span><strong>No goal proposals waiting</strong></div>`;
       renderParentLearningResources();
+      renderParentRecommendationAccess();
     }
 
     async function loadParentSchoolSupport() {
@@ -3065,6 +3638,59 @@
       const learningDevice = event.target.closest("[data-learning-resource-device]");
       if (learningDevice) provisionLearningResourceDevice(learningDevice.dataset.learningResourceDevice, learningDevice);
 
+
+
+      const recOpen = event.target.closest("[data-rec-open]");
+      if (recOpen) openRecommendationDiscovery();
+
+      const recChallenge = event.target.closest("[data-rec-challenge]");
+      if (recChallenge) { app.rec.challengePreference = recChallenge.dataset.recChallenge; app.rec.error = ""; renderRecommendationDialog(); }
+
+      const recSafety = event.target.closest("[data-rec-safety]");
+      if (recSafety) { app.rec.availableSafetySupport = recSafety.dataset.recSafety; app.rec.error = ""; renderRecommendationDialog(); }
+
+      const recRequest = event.target.closest("[data-rec-request]");
+      if (recRequest) requestRecommendationSet(recRequest.dataset.recRequest);
+
+      const recPreview = event.target.closest("[data-rec-preview]");
+      if (recPreview) { app.rec.currentCandidate = recommendationCandidateById(recPreview.dataset.recPreview); app.rec.currentSource = "recommendation"; app.rec.view = "preview"; app.rec.error = ""; renderRecommendationDialog(); }
+
+      const recNotNow = event.target.closest("[data-rec-not-now]");
+      if (recNotNow) recordRecommendationNotNow(recNotNow.dataset.recNotNow);
+
+      const recSupportStep = event.target.closest("[data-rec-support-step]");
+      if (recSupportStep && app.rec.currentCandidate) openRecommendationSupport(app.rec.currentCandidate.candidateId, app.rec.currentSource);
+
+      const recSupport = event.target.closest("[data-rec-support]");
+      if (recSupport) { app.rec.supportChoice = recSupport.dataset.recSupport; renderRecommendationDialog(); }
+
+      const recAdd = event.target.closest("[data-rec-add-to-learn]");
+      if (recAdd) chooseRecommendation();
+
+      const recCatalogue = event.target.closest("[data-rec-catalogue]");
+      if (recCatalogue) loadRecommendationCatalogue();
+
+      const recCatalogueAdd = event.target.closest("[data-rec-catalogue-add]");
+      if (recCatalogueAdd) openRecommendationSupport(recCatalogueAdd.dataset.recCatalogueAdd, "catalogue");
+
+      const recChangeSetup = event.target.closest("[data-rec-change-setup]");
+      if (recChangeSetup) { app.rec.view = "setup"; app.rec.error = ""; app.rec.retry = null; renderRecommendationDialog(); }
+
+      const recBackResults = event.target.closest("[data-rec-back-results]");
+      if (recBackResults) { app.rec.view = "results"; app.rec.currentCandidate = null; app.rec.error = ""; renderRecommendationDialog(); }
+
+      const recBackSupport = event.target.closest("[data-rec-back-from-support]");
+      if (recBackSupport) { app.rec.view = app.rec.currentSource === "catalogue" ? "catalogue" : "preview"; app.rec.error = ""; renderRecommendationDialog(); }
+
+      const recRetry = event.target.closest("[data-rec-retry]");
+      if (recRetry) retryRecommendationOperation();
+
+      const recExit = event.target.closest("[data-rec-exit]");
+      if (recExit) closeRecommendationDiscovery();
+
+      const recDevice = event.target.closest("[data-rec-device]");
+      if (recDevice) provisionRecommendationDevice(recDevice.dataset.recDevice, recDevice);
+
       const openWithdraw = event.target.closest("[data-open-withdraw]");
       if (openWithdraw) openEarnWithdraw(openWithdraw.dataset.openWithdraw);
 
@@ -3177,6 +3803,7 @@
       loadData();
       if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
       if (parentSessionValid() && $("#parent-dialog").open) loadParentLearningResources({ quiet: true });
+      renderLearningRecommendationEntry();
     });
     $("#open-goal-form").addEventListener("click", () => {
       if (app.dataUnavailable) return toast("Reconnect before creating a goal");

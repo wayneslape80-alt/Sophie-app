@@ -1,0 +1,96 @@
+PASS: rec capability gate present
+PASS: no new recommendation primary nav
+PASS: recommendations live inside Learn filter workspace
+PASS: active learn region present
+PASS: history learn region present
+PASS: max three recommendations enforced
+PASS: equal-card wording no best match
+PASS: no learner readiness/mastery score copy
+PASS: challenge session copy
+PASS: surprise request kind implemented
+PASS: safety setup implemented
+PASS: support choice is session local
+PASS: support choice not sent to choose payload
+PASS: explicit Add to Learn
+PASS: no automatic start after choose
+PASS: provenance-aware requiredness
+PASS: whole-session not-now documented no write
+PASS: candidate not-now route
+PASS: show something else prior set
+PASS: repeat or refine route
+PASS: browse catalogue route
+PASS: catalogue raw challenge omitted from normaliser
+PASS: catalogue direct action label
+PASS: blocked catalogue wording
+PASS: named pathway chips absent
+PASS: no setLearningPreference call
+PASS: no recordLearningEvidence call
+PASS: no recommendation telemetry writes
+PASS: getLearningRecommendations action mapped
+PASS: getLearningCandidateCatalogue action mapped
+PASS: recordRecommendationResponse action mapped
+PASS: chooseRecommendedLearn action mapped
+PASS: recommendation auth POST body only
+PASS: client request id helper
+PASS: same operation retained for retry
+PASS: choose retry retains operation
+PASS: not-now retry retains operation
+PASS: replacement failure preserves choices copy
+PASS: authoritative reload after choose
+PASS: no local opportunity insertion in choose
+PASS: commit-time ineligibility handled
+PASS: recommendation credential storage name only
+PASS: credential getter reads local storage
+PASS: credential not stored in app state
+PASS: credential never shown in parent HTML
+PASS: child has no credential input
+PASS: unauthorised clears local credential
+PASS: parent provisioning action exists
+PASS: parent rotation action exists
+PASS: parent provisioning requires session
+PASS: no backend secret property name embedded
+PASS: no key in URLs
+PASS: no key in fragments
+PASS: no recommendation payload logging
+PASS: safe text rendering retained
+PASS: D006 action retained: startOpportunity
+PASS: D006 action retained: finishOpportunity
+PASS: D006 action retained: stopLearn
+PASS: D006 action retained: withdrawEarn
+PASS: D006 action retained: reviewEarn
+PASS: D006 action retained: completeContributionReview
+PASS: D006 action retained: createOpportunity
+PASS: legacy action absent: claimJob
+PASS: legacy action absent: approveJob
+PASS: legacy action absent: rejectJob
+PASS: lr-v1 action retained: suggestLearningResource
+PASS: lr-v1 action retained: createLearningResource
+PASS: lr-v1 action retained: updateLearningResource
+PASS: lr-v1 action retained: reorderLearningResources
+PASS: lr-v1 action retained: archiveLearningResource
+PASS: lr-v1 action retained: reviewLearningResource
+PASS: School retained
+PASS: Goals retained
+PASS: Contribute Learn Earn filter retained
+PASS: financial rendering still Earn-only
+PASS: vertical recommendation grid not carousel
+PASS: pressed state challenge
+PASS: pressed state safety
+PASS: pressed state support
+PASS: mobile breakpoint
+PASS: internal fit sentinel fields not normalised
+PASS: internal diversity omitted
+PASS: reasonCodes omitted
+PASS: staged rec cache bumped
+PASS: service worker ignores POST
+PASS: service worker same-origin only
+PASS: service worker has no recommendation credential
+PASS: service worker cleanup retained
+PASS: service worker update registration retained
+RESULT: 89/89 PASS
+INDEX_SHA256: b611218ae71e4f705881c41183603fd8cd6cc52f02d2004e7488f1d4f8bac9ea
+SW_SHA256: ff1a9c2f7cc73528547c7088da5af0a45687e09d6e0e9a2feff04459e22eaa38
+PASS: browser regression 390x844
+PASS: browser regression 1280x900
+PASS: no real recommendation credential requested/provisioned/embedded by staging workflow
+PASS: service worker remains GET-only and staged cache version is bumped
