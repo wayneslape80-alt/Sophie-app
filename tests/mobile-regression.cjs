@@ -185,6 +185,7 @@ async function runFunctional(browser, baseUrl) {
   await learnDetail.waitFor();
   await learnDetail.getByRole("heading", { name: "Caprese-style salad" }).waitFor();
   assert(await learnDetail.getByText("Available", { exact: true }).isVisible(), "new Learn is not available/unstarted");
+  await learnDetail.getByRole("heading", { name: "Learning resources" }).waitFor();
   assert.strictEqual(calls.some(call => call.action === "chooseRecommendedLearn"), true, "chooseRecommendedLearn was not used");
   assert.strictEqual(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "L3"), false, "Learn auto-started");
   await page.getByRole("button", { name: "Close" }).click();
@@ -195,6 +196,10 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "Open Clear the dinner table details" }).click();
   await page.locator("#opportunity-detail-dialog[open]").getByRole("button", { name: "Start", exact: true }).click();
   assert(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "C1"), "Contribute lifecycle did not use D-006 action");
+  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: "Open Wash the family car details" }).click();
+  await page.locator("#opportunity-detail-dialog[open]").getByRole("button", { name: "Start", exact: true }).click();
+  assert(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "E1"), "Earn lifecycle did not use D-006 action");
   await page.getByRole("button", { name: "Close" }).click();
 
   await page.getByRole("button", { name: "Goals", exact: true }).click();
@@ -210,6 +215,12 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "+ Add Learn" }).waitFor();
   await page.getByRole("button", { name: "+ Add Learn" }).click();
   assert.strictEqual(await page.locator("#opp-create-type").inputValue(), "learn", "Add Learn did not preselect Learn");
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "+ Add Contribute" }).click();
+  assert.strictEqual(await page.locator("#opp-create-type").inputValue(), "contribute", "Add Contribute did not preselect Contribute");
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "+ Add Earn" }).click();
+  assert.strictEqual(await page.locator("#opp-create-type").inputValue(), "earn", "Add Earn did not preselect Earn");
   await page.getByRole("button", { name: "Cancel" }).click();
 
   await page.getByRole("button", { name: "Close" }).click();
@@ -234,7 +245,7 @@ async function runFunctional(browser, baseUrl) {
   const moneyState = { balance: state.data.balance, pending: state.data.pending };
   assert.deepStrictEqual(moneyState, { balance: 125.4, pending: 10 }, "financial state changed during non-financial Learn flow");
   await context.close();
-  return { recommendationConversion: "PASS", noAutoStart: "PASS", contributeLifecycle: "PASS", goals: "PASS", school: "PASS", parentCreation: "PASS", softKeyboard: "PASS", text200: "PASS", financialIsolation: "PASS" };
+  return { recommendationConversion: "PASS", noAutoStart: "PASS", contributeLifecycle: "PASS", earnLifecycle: "PASS", learningResources: "PASS", goals: "PASS", school: "PASS", parentCreation: "PASS", softKeyboard: "PASS", text200: "PASS", financialIsolation: "PASS" };
 }
 
 async function runAccessibility(browser, baseUrl) {
