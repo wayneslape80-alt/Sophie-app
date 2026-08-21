@@ -193,7 +193,7 @@ async function runFunctional(browser, baseUrl) {
 
   await page.getByRole("button", { name: "Opportunities", exact: true }).click();
   await page.getByRole("button", { name: "Open Clear the dinner table details" }).click();
-  await page.getByRole("button", { name: "Start", exact: true }).click();
+  await page.locator("#opportunity-detail-dialog[open]").getByRole("button", { name: "Start", exact: true }).click();
   assert(calls.some(call => call.action === "startOpportunity" && call.opportunityId === "C1"), "Contribute lifecycle did not use D-006 action");
   await page.getByRole("button", { name: "Close" }).click();
 
