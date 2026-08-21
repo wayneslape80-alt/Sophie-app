@@ -3,6 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const coarsePointer = window.matchMedia("(pointer: coarse)");
+      const approvedViewport = "width=device-width, initial-scale=1, viewport-fit=cover";
+      let viewport = document.querySelector('meta[name="viewport"]');
+      let viewportRepairActive = false;
+      if (!viewport) {
+        viewport = document.createElement("meta");
+        viewport.name = "viewport";
+        viewport.content = approvedViewport;
+        document.head.insertBefore(viewport, document.currentScript);
+      }
+      const applyDeviceLayout = () => {
+        const screenWidth = Number(window.screen?.width) || Infinity;
+        const screenHeight = Number(window.screen?.height) || Infinity;
+        const shortScreenSide = Math.min(screenWidth, screenHeight);
+        const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
+        const isPhoneScreen = isTouchDevice && shortScreenSide < 600;
+        root.classList.toggle("compact-device", isPhoneScreen);
+        if (isPhoneScreen && (viewportRepairActive || window.innerWidth > screenWidth * 1.25)) {
+          viewportRepairActive = true;
+          viewport.content = `width=${Math.round(screenWidth)}, initial-scale=1, viewport-fit=cover`;
+          root.dataset.viewportRepair = "active";
+        }
+      };
+      applyDeviceLayout();
+      window.addEventListener("resize", applyDeviceLayout, { passive: true });
+      window.addEventListener("orientationchange", applyDeviceLayout, { passive: true });
+    })();
+  </script>
   <meta name="theme-color" content="#6959f5">
   <meta name="description" content="Sophie’s independence app — contribute, learn, earn and choose.">
   <link rel="manifest" href="./manifest.webmanifest">
