@@ -23,7 +23,7 @@ jobs:
       - name: Verify product files
         run: |
           grep -F './assets/android-first.css' index.html
-          grep -F 'sophie-app-v2-11-android-first-stage' sw.js
+          grep -F 'sophie-app-v2-12-skills-android-stage' sw.js
           grep -F '"id": "./"' manifest.webmanifest
       - name: Commit generated index change
         run: |

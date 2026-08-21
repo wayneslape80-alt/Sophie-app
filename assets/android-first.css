@@ -36,6 +36,16 @@ textarea {
   font-size: 1rem;
 }
 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+
 button,
 [role="button"] {
   touch-action: manipulation;
@@ -54,8 +64,23 @@ button,
 .school-view-toggle button,
 .school-toolbar button,
 .form-actions button,
-.setting-row button {
+.setting-row button,
+.text-button,
+.journey-step,
+.support-choice,
+.school-help-options button,
+.opportunity-detail-actions button,
+.learning-resource-actions a {
   min-width: var(--tap-target);
+  min-height: var(--tap-target);
+}
+
+.skills-back,
+.learning-domain-card.available,
+.skills-history summary,
+.parent-create-actions button,
+.job-open,
+.learning-resource-link {
   min-height: var(--tap-target);
 }
 
@@ -108,6 +133,269 @@ iframe {
   max-width: 100%;
 }
 
+/* Skills is a learning workspace, not a score page. */
+.skills-section {
+  margin: 24px 0 30px;
+}
+
+.learning-domain-grid,
+.capability-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.learning-domain-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+
+button.learning-domain-card {
+  width: 100%;
+  cursor: pointer;
+}
+
+.learning-domain-card.available {
+  border-color: color-mix(in srgb, var(--brand) 32%, var(--line));
+}
+
+.learning-domain-card.planned {
+  background: color-mix(in srgb, var(--surface) 75%, var(--surface-2));
+}
+
+.learning-domain-icon,
+.domain-hero-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 17px;
+  background: var(--brand-soft);
+  font-size: 1.65rem;
+}
+
+.learning-domain-card strong,
+.learning-domain-card small,
+.learning-domain-card em {
+  display: block;
+}
+
+.learning-domain-card strong {
+  margin: 1px 0 6px;
+  font-size: 1.05rem;
+}
+
+.learning-domain-card small {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.48;
+}
+
+.learning-domain-card em {
+  margin-top: 10px;
+  color: var(--brand-strong);
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.learning-domain-card.planned em {
+  color: var(--muted);
+}
+
+.capability-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.capability-card h3,
+.capability-card p {
+  margin-bottom: 5px;
+}
+
+.capability-card p {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.capability-icon {
+  font-size: 1.5rem;
+}
+
+.skills-history {
+  margin: 26px 0;
+  padding: 5px 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.skills-history summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.skills-history summary span {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.skills-history > p {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.skills-back {
+  display: inline-flex;
+  align-items: center;
+  margin: 2px 0 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--brand-strong);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.domain-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 22px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, var(--surface), var(--brand-soft));
+  box-shadow: var(--shadow-soft);
+}
+
+.domain-hero h2 {
+  margin-bottom: 6px;
+}
+
+.domain-hero p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.pathway-list {
+  display: grid;
+  gap: 8px;
+}
+
+.pathway-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.pathway-step.hard {
+  border-color: color-mix(in srgb, var(--sun-ink) 35%, var(--line));
+  background: color-mix(in srgb, var(--sun) 42%, var(--surface));
+}
+
+.pathway-marker {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-weight: 900;
+}
+
+.pathway-step h3 {
+  margin: 4px 0 6px;
+}
+
+.pathway-step p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.pathway-label {
+  color: var(--brand-strong);
+  font-size: 0.8125rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pathway-connector {
+  padding-left: 29px;
+  color: var(--muted);
+  font-size: 1.25rem;
+}
+
+.prerequisite-note,
+.recommended-prerequisite {
+  margin-top: 11px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.prerequisite-note {
+  background: var(--sun);
+  color: var(--sun-ink);
+}
+
+.recommended-prerequisite {
+  background: var(--brand-soft);
+  color: var(--ink);
+}
+
+.parent-create-section {
+  margin: 4px 0 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-2);
+}
+
+.parent-create-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rec-eligibility.locked strong::before {
+  content: "🔒 ";
+}
+
+.rec-eligibility.locked {
+  border: 1px solid var(--line);
+}
+
 /* Keep modal content reachable when browser chrome or the soft keyboard changes height. */
 dialog {
   max-width: min(720px, calc(100vw - 24px));
@@ -147,7 +435,10 @@ dialog {
   .skill-grid,
   .goal-grid,
   .learning-resource-grid,
-  .rec-grid {
+  .rec-grid,
+  .learning-domain-grid,
+  .capability-grid,
+  .parent-create-actions {
     grid-template-columns: 1fr;
   }
 
@@ -213,6 +504,65 @@ dialog {
     font-size: 1.25rem;
   }
 
+  .eyebrow,
+  .hero-label,
+  .hero-side span:last-child,
+  .job-domain,
+  .opportunity-detail-domain,
+  .school-scaffold-mode,
+  .school-coach-progress,
+  .learning-resource-kicker,
+  .learning-resource-status,
+  .learning-resource-provenance {
+    font-size: 0.8125rem;
+  }
+
+  .data-alert,
+  .goal-amount,
+  .goal-meta,
+  .job-purpose,
+  .job-status-label,
+  .filter-chip,
+  .school-view-toggle button,
+  .school-meta,
+  .school-next-label,
+  .school-next-note,
+  .school-journey-label,
+  .journey-step,
+  .school-support-label,
+  .support-choice,
+  .school-support-explainer,
+  .school-scaffold p,
+  .school-scaffold-model strong,
+  .school-scaffold-steps li,
+  .school-help-zone strong,
+  .school-help-zone p,
+  .school-help-note,
+  .school-feedback-peek p,
+  .school-history-item p,
+  .school-history-timing,
+  .school-history-dates,
+  .school-outcome span,
+  .school-rubric-row p,
+  .school-neutral-note,
+  .parent-school-task p,
+  .parent-school-profile,
+  .activity-row p,
+  .setting-row p,
+  label,
+  .parent-review p,
+  .parent-stat span,
+  .learning-resource-body > p,
+  .learning-resource-admin-head p,
+  .learning-resource-admin-copy,
+  .learn-workspace-section > p,
+  .rec-entry p,
+  .rec-helper,
+  .rec-card p,
+  .rec-consequence {
+    font-size: 0.875rem !important;
+  }
+
   dialog {
     width: 100vw;
     max-width: 100vw;
@@ -252,6 +602,21 @@ dialog {
 
   textarea {
     min-height: 112px;
+  }
+
+  .domain-hero {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .learning-domain-card,
+  .pathway-step {
+    padding: 15px;
+  }
+
+  .rec-entry .primary-button,
+  .parent-create-actions button {
+    width: 100%;
   }
 }
 
