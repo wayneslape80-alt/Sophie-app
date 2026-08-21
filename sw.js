@@ -1,9 +1,10 @@
-const CACHE_NAME = "sophie-app-v2-10-rec-v1";
+const CACHE_NAME = "sophie-app-v2-12-skills-android-stage";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./assets/android-first.css",
   "./icon-192.png",
   "./icon-512.png"
 ];

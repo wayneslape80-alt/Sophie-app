@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#6d5dfc">
+  <meta name="theme-color" content="#6959f5">
   <meta name="description" content="Sophie’s independence app — contribute, learn, earn and choose.">
   <link rel="manifest" href="./manifest.webmanifest">
   <title>Sophie — My Independence</title>
@@ -13,15 +13,15 @@
       --surface: #ffffff;
       --surface-2: #f0efff;
       --ink: #202033;
-      --muted: #73738a;
+      --muted: #6f6f85;
       --line: #e9e8f2;
-      --brand: #6d5dfc;
+      --brand: #6959f5;
       --brand-strong: #5040dc;
       --brand-soft: #ebe8ff;
       --mint: #dff8ed;
       --mint-ink: #167753;
       --sun: #fff1ca;
-      --sun-ink: #996700;
+      --sun-ink: #946300;
       --rose: #ffe5eb;
       --rose-ink: #b9385a;
       --shadow: 0 18px 50px rgba(46, 38, 100, .10);
@@ -36,9 +36,9 @@
       --bg: #f2f7f1;
       --surface-2: #e4f1e2;
       --ink: #203124;
-      --muted: #68796b;
+      --muted: #647566;
       --line: #dfeade;
-      --brand: #3d8a5d;
+      --brand: #377e55;
       --brand-strong: #2c6c46;
       --brand-soft: #dff2e5;
     }
@@ -49,7 +49,7 @@
       --ink: #402630;
       --muted: #8a6875;
       --line: #f4e1e7;
-      --brand: #db5a82;
+      --brand: #bd416b;
       --brand-strong: #bb3b65;
       --brand-soft: #ffe4ec;
     }
@@ -815,6 +815,7 @@
       .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
     }
   </style>
+  <link rel="stylesheet" href="./assets/android-first.css">
 </head>
 <body>
   <main class="app-shell">
@@ -853,7 +854,7 @@
             <div class="quick-grid">
               <button class="quick-card earn" data-filter-jump="earn"><span class="quick-icon">💰</span><span><strong>Earn</strong><br><small>Open opportunities</small></span></button>
               <button class="quick-card goals" data-go-view="goals"><span class="quick-icon">🎯</span><span><strong>Goals</strong><br><small>See your progress</small></span></button>
-              <button class="quick-card learn" data-filter-jump="learn"><span class="quick-icon">🌱</span><span><strong>Learn</strong><br><small>Build a life skill</small></span></button>
+              <button class="quick-card learn" data-go-view="skills"><span class="quick-icon">🌱</span><span><strong>Skills</strong><br><small>Learn or practise something</small></span></button>
             </div>
           </section>
         </div>
@@ -871,12 +872,11 @@
     </section>
 
     <section class="view" id="view-opportunities" data-view="opportunities">
-      <div class="page-intro"><h2>Opportunities</h2><p>Contribute, learn, or choose extra paid work.</p></div>
+      <div class="page-intro"><h2>Contribute &amp; Earn</h2><p>Take part in family life or choose optional paid work.</p></div>
       <div class="data-alert" id="opportunity-contract-alert" role="status"></div>
       <div class="filter-row" id="opportunity-filters" role="group" aria-label="Filter opportunities">
         <button class="filter-chip active" data-filter="all" aria-pressed="true">All</button>
         <button class="filter-chip" data-filter="contribute" aria-pressed="false">Contribute</button>
-        <button class="filter-chip" data-filter="learn" aria-pressed="false">Learn</button>
         <button class="filter-chip" data-filter="earn" aria-pressed="false">Earn</button>
       </div>
       <div class="cards" id="all-jobs"></div>
@@ -889,8 +889,7 @@
     </section>
 
     <section class="view" id="view-skills" data-view="skills">
-      <div class="page-intro"><h2>Growing independence</h2><p>Progress means becoming more capable—not collecting endless points.</p></div>
-      <div class="skill-grid" id="skills-list"></div>
+      <div id="skills-workspace"></div>
     </section>
 
 
@@ -918,11 +917,11 @@
   </main>
 
   <nav class="bottom-nav" aria-label="Main navigation">
-    <button class="nav-button active" data-view-target="home"><span class="nav-icon">⌂</span><span>Home</span></button>
-    <button class="nav-button" data-view-target="opportunities"><span class="nav-icon">✦</span><span>Opportunities</span></button>
-    <button class="nav-button" data-view-target="goals"><span class="nav-icon">◎</span><span>Goals</span></button>
-    <button class="nav-button" data-view-target="skills"><span class="nav-icon">♧</span><span>Skills</span></button>
-    <button class="nav-button" data-view-target="school"><span class="nav-icon">▣</span><span>School</span></button>
+    <button class="nav-button active" data-view-target="home"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></button>
+    <button class="nav-button" data-view-target="opportunities"><span class="nav-icon" aria-hidden="true">✦</span><span>Opportunities</span></button>
+    <button class="nav-button" data-view-target="goals"><span class="nav-icon" aria-hidden="true">◎</span><span>Goals</span></button>
+    <button class="nav-button" data-view-target="skills"><span class="nav-icon" aria-hidden="true">♧</span><span>Skills</span></button>
+    <button class="nav-button" data-view-target="school"><span class="nav-icon" aria-hidden="true">▣</span><span>School</span></button>
   </nav>
 
   <dialog id="settings-dialog">
@@ -982,7 +981,7 @@
 
   <dialog id="opportunity-create-dialog">
     <form class="dialog-body" id="opportunity-create-form">
-      <div class="dialog-head"><h2>Add an activity</h2><button type="button" class="close-button" data-close-dialog="opportunity-create-dialog" aria-label="Close">×</button></div>
+      <div class="dialog-head"><h2 id="opportunity-create-title">Add an activity</h2><button type="button" class="close-button" data-close-dialog="opportunity-create-dialog" aria-label="Close">×</button></div>
       <p class="opportunity-form-note">Create the real contract Sophie will see. Contribute and Learn are not $0 Earn jobs.</p>
       <div class="form-field"><label for="opp-create-type">Type</label><select id="opp-create-type" required><option value="contribute">Contribute</option><option value="learn">Learn</option><option value="earn">Earn</option></select></div>
       <div class="form-field"><label for="opp-create-title">Title</label><input id="opp-create-title" maxlength="120" required></div>
@@ -1142,8 +1141,15 @@
     <div class="dialog-body">
       <div class="dialog-head"><h2>Parent support</h2><button class="close-button" data-close-dialog="parent-dialog" aria-label="Close">×</button></div>
       <div class="parent-summary" id="parent-summary"></div>
-      <div class="section-heading"><div><h3>Opportunities</h3><p>Work awaiting review</p></div></div>
-      <div class="section-heading" style="margin-top:18px"><div><h3>Things needing review</h3><p>Review the agreement or temporary check, not Sophie.</p></div><button class="secondary-button" type="button" id="open-create-opportunity">+ Add activity</button></div>
+      <section class="parent-create-section" aria-labelledby="parent-create-heading">
+        <div class="section-heading"><div><h3 id="parent-create-heading">Add an activity</h3><p>Create a Contribute, Learn or Earn activity using its existing D-006 contract.</p></div></div>
+        <div class="parent-create-actions">
+          <button class="secondary-button" type="button" data-create-opportunity="contribute">+ Add Contribute</button>
+          <button class="secondary-button" type="button" data-create-opportunity="learn">+ Add Learn</button>
+          <button class="secondary-button" type="button" data-create-opportunity="earn">+ Add Earn</button>
+        </div>
+      </section>
+      <div class="section-heading" style="margin-top:22px"><div><h3>Things needing review</h3><p>Review the agreement or temporary check, not Sophie.</p></div></div>
       <div id="parent-reviews"></div>
       <div class="section-heading" style="margin-top:22px"><div><h3>Goal proposals</h3><p>Sophie chooses; you check practical details.</p></div></div>
       <div id="parent-goal-reviews"></div>
@@ -1187,6 +1193,7 @@
     const app = {
       data: emptyData,
       activeView: "home",
+      skillsDomain: "",
       jobFilter: "all",
       dataUnavailable: false,
       adminKey: sessionStorage.getItem("sophie_admin_key") || "",
@@ -1224,7 +1231,8 @@
       activeOpportunityId: "",
       opportunityReturnFocus: null,
       opportunityMutationError: "",
-      opportunityCreateType: "contribute"
+      opportunityCreateType: "contribute",
+      applyingHistory: false
     };
 
     const $ = selector => document.querySelector(selector);
@@ -1259,6 +1267,21 @@
       ["do_with_me", "Do it with me"],
       ["prompt_me", "Prompt me"],
       ["got_this", "I've got this"]
+    ];
+
+    const LEARNING_DOMAINS = [
+      { id: "cooking", icon: "🍳", name: "Cooking", description: "Choose something to make, build techniques and get the support that fits this cooking session.", available: true },
+      { id: "sewing", icon: "🧵", name: "Sewing", description: "Plan, repair, alter and create with fabric.", available: false },
+      { id: "home", icon: "🔧", name: "Household maintenance", description: "Understand tools, simple repairs and caring for a home.", available: false },
+      { id: "money", icon: "💰", name: "Money", description: "Plan spending, saving and everyday money decisions.", available: false },
+      { id: "laundry", icon: "🧺", name: "Laundry", description: "Sort, wash, dry and care for clothes.", available: false },
+      { id: "pet-care", icon: "🐕", name: "Pet care", description: "Notice needs and take part in safe, reliable care.", available: false }
+    ];
+
+    const COOKING_PATHWAY = [
+      { icon: "1", name: "Set Up Sharp Tools Safely", kind: "foundation", label: "Practise first", description: "Stable board and tool setup, carrying, placement and safe hand position." },
+      { icon: "🔒", name: "Control the Knife", kind: "hard", label: "Hard safety prerequisite", description: "Sophie-led slicing is only available after safe sharp-tool setup has been established." },
+      { icon: "→", name: "Knife-based food preparation", kind: "application", label: "Real application", description: "Use controlled cutting in a suitable recipe with the safety support required for that session." }
     ];
 
     function recommendationCredential() {
@@ -1607,26 +1630,11 @@
         }
       }
       const jobs = [...app.data.jobs].filter(job => job.status !== "cancelled").sort(opportunitySort);
-      const suggestions = jobs.filter(job => ["in_progress", "returned_for_completion", "available"].includes(job.status)).slice(0, 2);
+      const workJobs = jobs.filter(job => job.type === "contribute" || job.type === "earn");
+      const suggestions = workJobs.filter(job => ["in_progress", "returned_for_completion", "available"].includes(job.status)).slice(0, 2);
       $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing needs attention right now.</div>`;
-      const filtered = jobs.filter(job => app.jobFilter === "all" || job.type === app.jobFilter);
-      if (app.jobFilter === "learn") {
-        const activeLearn = filtered.filter(job => !["completed", "withdrawn"].includes(job.status));
-        const learnHistory = filtered.filter(job => ["completed", "withdrawn"].includes(job.status));
-        $("#all-jobs").innerHTML = `
-          <section class="learn-workspace-section" aria-labelledby="active-learn-heading">
-            <h3 id="active-learn-heading">Active Learn</h3><p>Things already in Learn, whether you have started them yet or not.</p>
-            <div class="cards">${activeLearn.length ? activeLearn.map(jobMarkup).join("") : `<div class="surface empty"><strong>Nothing active in Learn</strong><p>You can choose something when it feels useful.</p></div>`}</div>
-          </section>
-          <section class="learn-workspace-section" aria-labelledby="find-practice-heading"><div id="learn-recommendation-host"></div></section>
-          <section class="learn-workspace-section" aria-labelledby="learn-history-heading">
-            <h3 id="learn-history-heading">Completed / stopped Learn</h3><p>Past practice stays informational. One completed activity is not mastery.</p>
-            <div class="cards">${learnHistory.length ? learnHistory.map(jobMarkup).join("") : `<div class="surface empty"><strong>No past Learn activity yet</strong></div>`}</div>
-          </section>`;
-        renderLearningRecommendationEntry();
-      } else {
-        $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
-      }
+      const filtered = workJobs.filter(job => app.jobFilter === "all" || job.type === app.jobFilter);
+      $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
       $$("#opportunity-filters .filter-chip").forEach(chip => chip.setAttribute("aria-pressed", chip.dataset.filter === app.jobFilter ? "true" : "false"));
     }
 
@@ -1704,17 +1712,64 @@
       }).join("");
     }
 
+    function learnItems() {
+      return [...app.data.jobs].filter(job => job.type === "learn" && job.status !== "cancelled").sort(opportunitySort);
+    }
+
+    function learnCardsMarkup(items, emptyTitle, emptyCopy = "") {
+      if (items.length) return `<div class="cards">${items.map(jobMarkup).join("")}</div>`;
+      return `<div class="surface empty"><span class="empty-icon">🌱</span><strong>${safe(emptyTitle)}</strong>${emptyCopy ? `<p>${safe(emptyCopy)}</p>` : ""}</div>`;
+    }
+
+    function skillCapabilitiesMarkup() {
+      if (!app.data.skills.length) return "";
+      return `<section class="skills-section" aria-labelledby="capabilities-heading">
+        <div class="section-heading"><div><h2 id="capabilities-heading">Capabilities</h2><p>Useful areas the app already knows about. No levels, XP or readiness scores.</p></div></div>
+        <div class="capability-grid">${app.data.skills.map(skill => `<article class="surface capability-card"><span class="capability-icon" aria-hidden="true">${safe(skill.icon || "🌱")}</span><div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Built through real experience and useful feedback.")}</p></div></article>`).join("")}</div>
+      </section>`;
+    }
+
+    function learningDomainCardsMarkup() {
+      return `<div class="learning-domain-grid">${LEARNING_DOMAINS.map(domain => domain.available
+        ? `<button class="learning-domain-card available" type="button" data-skills-domain="${safe(domain.id)}"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Open domain →</em></span></button>`
+        : `<article class="learning-domain-card planned" aria-label="${safe(domain.name)}, pathway planned"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Pathway planned</em></span></article>`
+      ).join("")}</div>`;
+    }
+
+    function renderSkillsOverview() {
+      const current = learnItems().filter(job => !["completed", "withdrawn"].includes(job.status));
+      const history = learnItems().filter(job => ["completed", "withdrawn"].includes(job.status));
+      return `<div class="page-intro"><h2>Skills</h2><p>Choose what you want to learn, keep current practice together and see useful next pathways.</p></div>
+        <section class="skills-section" aria-labelledby="current-learning-heading">
+          <div class="section-heading"><div><h2 id="current-learning-heading">Currently learning</h2><p>Available and in-progress Learn activities. Adding one never starts it automatically.</p></div></div>
+          ${learnCardsMarkup(current, "Nothing active right now", "Open a learning domain when you want to choose something.")}
+        </section>
+        <section class="skills-section" aria-labelledby="domains-heading">
+          <div class="section-heading"><div><h2 id="domains-heading">What could I learn?</h2><p>Open a domain for techniques, pathways, resources and discovery that belong to that area.</p></div></div>
+          ${learningDomainCardsMarkup()}
+        </section>
+        ${skillCapabilitiesMarkup()}
+        <details class="skills-history"><summary>Completed or stopped for now <span>${history.length}</span></summary><p>Past practice is information, not proof of mastery.</p>${learnCardsMarkup(history, "No past Learn activity yet")}</details>`;
+    }
+
+    function cookingPathwayMarkup() {
+      return `<div class="pathway-list" aria-label="Sharp-tools learning pathway">${COOKING_PATHWAY.map((step, index) => `<article class="pathway-step ${safe(step.kind)}"><span class="pathway-marker" aria-hidden="true">${safe(step.icon)}</span><div><span class="pathway-label">${safe(step.label)}</span><h3>${safe(step.name)}</h3><p>${safe(step.description)}</p>${step.kind === "hard" ? `<div class="prerequisite-note"><strong>Locked when the safety prerequisite is not confirmed.</strong><br>Practise first: Set Up Sharp Tools Safely. The authoritative rec-v1 eligibility check decides availability for a specific activity and setup.</div>` : ""}</div></article>${index < COOKING_PATHWAY.length - 1 ? `<div class="pathway-connector" aria-hidden="true">↓</div>` : ""}`).join("")}</div>`;
+    }
+
+    function renderCookingDomain() {
+      const cookingLearn = learnItems().filter(job => /cook|food|kitchen|knife|recipe/i.test([job.category, job.skill, job.title, job.scope].join(" ")) && !["completed", "withdrawn"].includes(job.status));
+      return `<button class="skills-back" type="button" data-skills-back>← All skill areas</button>
+        <div class="domain-hero"><span class="domain-hero-icon" aria-hidden="true">🍳</span><div><p class="eyebrow">Learning domain</p><h2>Cooking</h2><p>Build techniques through real food, with safety and support chosen for this cooking session.</p></div></div>
+        ${cookingLearn.length ? `<section class="skills-section" aria-labelledby="cooking-current-heading"><div class="section-heading"><div><h2 id="cooking-current-heading">Cooking I'm practising</h2><p>Cooking Learn activities already in your authoritative D-006 list.</p></div></div>${learnCardsMarkup(cookingLearn, "No Cooking activity active")}</section>` : ""}
+        <section class="skills-section" aria-labelledby="cooking-discovery-heading"><div id="learn-recommendation-host"></div></section>
+        <section class="skills-section" aria-labelledby="cooking-pathway-heading"><div class="section-heading"><div><h2 id="cooking-pathway-heading">How a safety pathway works</h2><p>Real safety dependencies can block an activity. Helpful preparation changes support and order but does not create an arbitrary lock.</p></div></div>${cookingPathwayMarkup()}<div class="recommended-prerequisite"><strong>Recommended, not locked:</strong> “Read the Heat” can be suggested before “Sauté Without Steaming”, but Sophie can still choose the later activity with suitable scaffolding.</div></section>`;
+    }
+
     function renderSkills() {
-      const host = $("#skills-list");
-      if (!app.data.skills.length) {
-        host.innerHTML = `<div class="surface empty"><span class="empty-icon">🌱</span><strong>Your skill tree is ready to grow</strong><p>The setup function creates starter skills without changing current balances.</p></div>`;
-        return;
-      }
-      host.innerHTML = app.data.skills.map(skill => {
-        const max = Math.max(Number(skill.nextLevelAt) || 100, 1);
-        const percent = clampPercent((Number(skill.progress) || 0) / max * 100);
-        return `<article class="surface skill-card"><div class="skill-head"><span>${safe(skill.icon || "🌱")}</span><span class="level">Level ${safe(skill.level || 1)}</span></div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Growing through real experiences.")}</p><div class="progress"><span style="width:${percent}%"></span></div><div class="goal-meta"><span>${Math.round(percent)}% to next level</span></div></article>`;
-      }).join("");
+      const host = $("#skills-workspace");
+      if (!host) return;
+      host.innerHTML = app.skillsDomain === "cooking" ? renderCookingDomain() : renderSkillsOverview();
+      if (app.skillsDomain === "cooking") renderLearningRecommendationEntry();
     }
 
     function renderActivity() {
@@ -2363,18 +2418,18 @@
       const host = $("#learn-recommendation-host");
       if (!host) return;
       if (!learningRecommendationContractAvailable()) {
-        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">Recommendation discovery is not live because the expected rec-v1 capability is unavailable. Existing Learn activities still work normally.</div></div>`;
+        host.innerHTML = `<div class="rec-entry"><span class="opportunity-detail-domain">COOKING</span><h2 id="cooking-discovery-heading">Find something to cook or practise</h2><p>Get Cooking ideas matched to the challenge and adult support around for this session.</p><div class="rec-unavailable">Cooking discovery is not live because the expected rec-v1 capability is unavailable. Existing Learn activities still work normally.</div></div>`;
         return;
       }
       if (!recommendationCredential() || app.rec.unauthorised) {
-        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">${safe(recommendationUnavailableMessage())}</div></div>`;
+        host.innerHTML = `<div class="rec-entry"><span class="opportunity-detail-domain">COOKING</span><h2 id="cooking-discovery-heading">Find something to cook or practise</h2><p>Get Cooking ideas matched to this session.</p><div class="rec-unavailable">${safe(recommendationUnavailableMessage())}</div></div>`;
         return;
       }
       if (app.dataUnavailable) {
-        host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><div class="rec-unavailable">The last loaded Learn activities are still shown. Reconnect before asking for new ideas.</div></div>`;
+        host.innerHTML = `<div class="rec-entry"><span class="opportunity-detail-domain">COOKING</span><h2 id="cooking-discovery-heading">Find something to cook or practise</h2><p>Get Cooking ideas matched to this session.</p><div class="rec-unavailable">The last loaded Learn activities are still shown. Reconnect before asking for new ideas.</div></div>`;
         return;
       }
-      host.innerHTML = `<div class="rec-entry"><h3 id="find-practice-heading">Find something to practise</h3><p>Get a few ideas you can choose from.</p><button class="primary-button" type="button" data-rec-open>Find something to practise</button></div>`;
+      host.innerHTML = `<div class="rec-entry"><span class="opportunity-detail-domain">COOKING</span><h2 id="cooking-discovery-heading">Find something to cook or practise</h2><p>Choose the kind of challenge and who's around, then see Cooking ideas.</p><button class="primary-button" type="button" data-rec-open>Find a Cooking idea</button></div>`;
     }
 
     function resetRecommendationSession() {
@@ -2398,6 +2453,7 @@
       resetRecommendationSession();
       renderRecommendationDialog();
       $("#recommendation-dialog").showModal();
+      writeNavigationState("push", { overlay: "recommendation", recView: "setup" });
     }
 
     function recSafetyMessage(candidate) {
@@ -2424,11 +2480,11 @@
 
     function renderRecSetup() {
       const challenge = [["easier", "Keep it easy"], ["similar", "About the same"], ["more_challenging", "Push me"]];
-      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>What feels right today?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
-        <p class="rec-copy">Choose a direction for this recommendation session. None of these changes your skill level.</p>
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>What feels right for cooking today?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+        <p class="rec-copy">Choose a direction for this Cooking session. None of these choices becomes a skill score.</p>
         <h3>How much challenge?</h3>
         <div class="rec-option-group" role="group" aria-label="Challenge preference">${challenge.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-challenge="${value}" aria-pressed="${app.rec.challengePreference === value}">${safe(label)}</button>`).join("")}</div>
-        <p class="rec-helper">This changes the ideas you see. It doesn't change your skill level.</p>
+        <p class="rec-helper">This changes the ideas you see. It does not change or score your capability.</p>
         <h3>Who's around while you cook?</h3>
         <div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-safety="${value}" aria-pressed="${app.rec.availableSafetySupport === value}">${safe(label)}</button>`).join("")}</div>
         <p class="rec-helper">This is about the setup for this cooking session, not how good you are at cooking.</p>
@@ -2449,7 +2505,7 @@
 
     function renderRecResults() {
       const cards = app.rec.recommendations.slice(0, 3);
-      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>A few ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>A few Cooking ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
         <p class="rec-copy">Pick whichever sounds good.</p>
         ${recErrorMarkup()}
         ${app.rec.loading ? `<div class="rec-loading" role="status">Finding a few different ideas… Your current choices stay here until a new set arrives.</div>` : ""}
@@ -2459,18 +2515,18 @@
 
     function renderRecPreview(candidate) {
       if (!candidate) return renderRecResults();
-      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>${safe(candidate.title)}</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>${safe(candidate.title)}</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
         ${candidate.practiceDescription ? `<section class="opportunity-detail-section"><h3>What you'll practise</h3><p>${safe(candidate.practiceDescription)}</p></section>` : ""}
         ${candidate.whyItMatters ? `<section class="opportunity-detail-section"><h3>Why it could be useful</h3><p>${safe(candidate.whyItMatters)}</p></section>` : ""}
         ${candidate.estimatedMinutes ? `<section class="opportunity-detail-section"><h3>About how long</h3><p>${candidate.estimatedMinutes} minutes</p></section>` : ""}
-        ${recReasonMarkup(candidate)}${recSafetyMessage(candidate)}${candidate.eligibility?.reason && candidate.eligibility.status !== "eligible" ? `<div class="rec-eligibility"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason)}</div>` : ""}
+        ${recReasonMarkup(candidate)}${recSafetyMessage(candidate)}${candidate.eligibility?.reason && candidate.eligibility.status !== "eligible" ? `<div class="rec-eligibility locked"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason)}</div>` : ""}
         <div class="rec-controls">${candidate.eligibility?.status === "eligible" || !candidate.eligibility?.status ? `<button class="primary-button" type="button" data-rec-support-step>Choose this</button>` : ""}<button class="secondary-button" type="button" data-rec-back-results>Back</button>${candidate.recommendationEventId ? `<button class="secondary-button" type="button" data-rec-not-now="${safe(candidate.candidateId)}">Not this one for now</button>` : ""}</div>`;
     }
 
     function renderRecSupport(candidate) {
       if (!candidate) return renderRecResults();
       const sparse = app.rec.currentSource === "catalogue";
-      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>How do you want help this time?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>How do you want help this time?</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
         <h3>${safe(candidate.title)}</h3>
         ${sparse ? `<p class="rec-copy">This is a compact catalogue item. The backend has not supplied a richer practice preview for it.</p>` : candidate.practiceDescription ? `<p class="rec-copy">${safe(candidate.practiceDescription)}</p>` : ""}
         <div class="rec-option-group rec-safety" role="group" aria-label="Learning support choice">${REC_SUPPORT_OPTIONS.map(([value,label]) => `<button type="button" class="rec-choice" data-rec-support="${value}" aria-pressed="${app.rec.supportChoice === value}">${safe(label)}</button>`).join("")}</div>
@@ -2483,10 +2539,10 @@
     }
 
     function renderRecCatalogue() {
-      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">LEARN</span><h2>Browse more ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
+      return `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Browse more Cooking ideas</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div>
         <p class="rec-copy">This is a compact catalogue. It shows only information the backend currently supplies.</p>
         ${recErrorMarkup()}${app.rec.loading ? `<div class="rec-loading" role="status">Loading more ideas…</div>` : ""}
-        <div class="rec-grid">${app.rec.catalogue.map(candidate => `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${candidate.estimatedMinutes} min</span>` : ""}</div>${candidate.eligibility.status === "eligible" ? `<div class="rec-eligibility"><strong>Available to choose</strong></div><div class="rec-controls"><button class="primary-button" type="button" data-rec-catalogue-add="${safe(candidate.candidateId)}">Add to Learn</button></div>` : `<div class="rec-eligibility"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason || "This item is not available for the current setup.")}</div><div class="rec-controls"><button class="secondary-button" type="button" data-rec-change-setup>Change who's around</button></div>`}</article>`).join("") || `<div class="rec-unavailable">No catalogue items are available.</div>`}</div>
+        <div class="rec-grid">${app.rec.catalogue.map(candidate => `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${candidate.estimatedMinutes} min</span>` : ""}</div>${candidate.eligibility.status === "eligible" ? `<div class="rec-eligibility"><strong>Available to choose</strong></div><div class="rec-controls"><button class="primary-button" type="button" data-rec-catalogue-add="${safe(candidate.candidateId)}">Add to Learn</button></div>` : `<div class="rec-eligibility locked"><strong>Not available in this setup</strong><br>${safe(candidate.eligibility.reason || "This item is not available for the current setup.")}</div><div class="rec-controls"><button class="secondary-button" type="button" data-rec-change-setup>Change who's around</button></div>`}</article>`).join("") || `<div class="rec-unavailable">No catalogue items are available.</div>`}</div>
         <div class="rec-controls"><button class="secondary-button" type="button" data-rec-back-results>Back to a few ideas</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
     }
 
@@ -2561,6 +2617,7 @@
         app.rec.recommendations = next;
         app.rec.view = "results";
         app.rec.retry = null;
+        writeNavigationState("replace", { overlay: "recommendation", recView: "results" });
       } catch (error) {
         if (error.code !== "UNAUTHORISED") {
           app.rec.error = hadSet ? "Couldn't load different ideas. Your current choices are still here." : (error.message || "Couldn't load learning ideas.");
@@ -2590,6 +2647,7 @@
         const rows = Array.isArray(result) ? result : Array.isArray(result?.candidates) ? result.candidates : [];
         app.rec.catalogue = rows.map(normaliseCatalogueCandidate);
         app.rec.retry = null;
+        writeNavigationState("replace", { overlay: "recommendation", recView: "catalogue" });
       } catch (error) {
         if (error.code !== "UNAUTHORISED") {
           app.rec.error = error.message || "Couldn't load more ideas.";
@@ -2645,6 +2703,7 @@
       app.rec.retry = null;
       app.rec.view = "support";
       renderRecommendationDialog();
+      writeNavigationState("replace", { overlay: "recommendation", recView: "support", candidateId: candidate.candidateId, candidateSource: source });
     }
 
     async function chooseRecommendation(existingOperation = null) {
@@ -2668,9 +2727,11 @@
         await loadData({ quiet: true });
         const authoritative = opportunityById(opportunityId);
         if (!authoritative) throw new Error("The new Learn activity could not be confirmed after reload.");
+        app.applyingHistory = true;
         $("#recommendation-dialog").close();
-        setFilter("learn");
-        setView("opportunities");
+        app.applyingHistory = false;
+        app.skillsDomain = "";
+        setView("skills", { historyMode: "replace" });
         openOpportunityDetail(opportunityId, null);
         toast("Added to Learn — it has not started yet");
         app.rec.retry = null;
@@ -2700,7 +2761,11 @@
     }
 
     function closeRecommendationDiscovery() {
-      if ($("#recommendation-dialog").open) $("#recommendation-dialog").close();
+      if (history.state?.sophieApp && history.state.overlay === "recommendation" && !app.applyingHistory) {
+        history.back();
+      } else if ($("#recommendation-dialog").open) {
+        $("#recommendation-dialog").close();
+      }
       app.rec.loading = false;
       app.rec.error = "";
       app.rec.retry = null;
@@ -2748,8 +2813,64 @@
       }
     }
 
-    function setView(view) {
+    function navigationState(extra = {}) {
+      return { sophieApp: true, view: app.activeView, skillsDomain: app.skillsDomain || "", ...extra };
+    }
+
+    function writeNavigationState(mode = "push", extra = {}) {
+      if (app.applyingHistory) return;
+      const state = navigationState(extra);
+      const method = mode === "replace" ? "replaceState" : "pushState";
+      history[method](state, "", location.href);
+    }
+
+    function closeTrackedDialogs() {
+      app.applyingHistory = true;
+      ["recommendation-dialog", "opportunity-detail-dialog"].forEach(id => {
+        const dialog = document.getElementById(id);
+        if (dialog?.open) dialog.close();
+      });
+      app.applyingHistory = false;
+    }
+
+    function applyNavigationState(state) {
+      const target = state?.sophieApp ? state : { sophieApp: true, view: "home", skillsDomain: "" };
+      app.applyingHistory = true;
+      closeTrackedDialogs();
+      app.activeView = target.view || "home";
+      app.skillsDomain = target.skillsDomain || "";
+      $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === app.activeView));
+      $$(".nav-button").forEach(button => {
+        const active = button.dataset.viewTarget === app.activeView;
+        button.classList.toggle("active", active);
+        if (active) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      });
+      renderSkills();
+      if (target.overlay === "recommendation") {
+        app.rec.view = target.recView || "setup";
+        if (target.candidateId) {
+          app.rec.currentCandidate = recommendationCandidateById(target.candidateId);
+          app.rec.currentSource = target.candidateSource || "recommendation";
+        }
+        renderRecommendationDialog();
+        if (!$("#recommendation-dialog").open) $("#recommendation-dialog").showModal();
+      } else if (target.overlay === "opportunity" && target.opportunityId) {
+        const job = opportunityById(target.opportunityId);
+        if (job) {
+          app.activeOpportunityId = String(job.id);
+          renderOpportunityDetail(job);
+          if (!$("#opportunity-detail-dialog").open) $("#opportunity-detail-dialog").showModal();
+        }
+      }
+      app.applyingHistory = false;
+    }
+
+    function setView(view, { historyMode = "push" } = {}) {
+      const returnToSkillsOverview = view === "skills" && app.activeView === "skills" && Boolean(app.skillsDomain);
+      const changed = app.activeView !== view || (view !== "skills" && app.skillsDomain) || returnToSkillsOverview;
       app.activeView = view;
+      if (view !== "skills" || returnToSkillsOverview) app.skillsDomain = "";
       $$(".view").forEach(section => section.classList.toggle("active", section.dataset.view === view));
       $$(".nav-button").forEach(button => {
         const active = button.dataset.viewTarget === view;
@@ -2762,6 +2883,16 @@
         renderSchool();
         if (app.schoolKey && !app.schoolLoaded) loadSchoolWorkspace({ quiet: true });
       }
+      if (view === "skills") renderSkills();
+      if (changed || historyMode === "replace") writeNavigationState(historyMode);
+    }
+
+    function setSkillsDomain(domain, { historyMode = "push" } = {}) {
+      app.activeView = "skills";
+      app.skillsDomain = domain || "";
+      renderSkills();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      writeNavigationState(historyMode);
     }
 
     function setFilter(filter) {
@@ -2857,7 +2988,7 @@
         <div class="opportunity-detail-actions">${actions || (app.dataUnavailable ? `<button class="secondary-button" type="button" data-opportunity-retry>Reload live state</button>` : "")}</div>`;
     }
 
-    function openOpportunityDetail(id, trigger) {
+    function openOpportunityDetail(id, trigger, { historyMode = "push" } = {}) {
       const job = opportunityById(id);
       if (!job) return;
       app.activeOpportunityId = String(id);
@@ -2865,6 +2996,7 @@
       app.opportunityMutationError = "";
       renderOpportunityDetail(job);
       $("#opportunity-detail-dialog").showModal();
+      writeNavigationState(historyMode, { overlay: "opportunity", opportunityId: String(id) });
     }
 
     async function opportunityMutation(kind, id, button) {
@@ -3527,6 +3659,7 @@
 
     function configureOpportunityCreateFields() {
       const type = $("#opp-create-type").value;
+      $("#opportunity-create-title").textContent = `Add ${type.charAt(0).toUpperCase()}${type.slice(1)}`;
       const req = $("#opp-create-requiredness");
       req.innerHTML = type === "contribute" ? `<option value="expected">Expected — part of normal personal/family responsibility</option><option value="negotiated">Agreed together</option>` : type === "learn" ? `<option value="negotiated">Agreed together</option><option value="optional">Optional practice</option>` : `<option value="optional">Your choice — Sophie can say no or stop</option>`;
       $("#opp-create-value-field").style.display = type === "earn" ? "grid" : "none";
@@ -3537,10 +3670,10 @@
       $("#opp-create-skill").required = type === "learn";
     }
 
-    function openCreateOpportunity() {
+    function openCreateOpportunity(type = "contribute") {
       if (!parentSessionValid()) return toast("Parent Mode is locked. Sign in again.");
       $("#opportunity-create-form").reset();
-      $("#opp-create-type").value = "contribute";
+      $("#opp-create-type").value = ["contribute", "learn", "earn"].includes(type) ? type : "contribute";
       configureOpportunityCreateFields();
       $("#opportunity-create-dialog").showModal();
     }
@@ -3608,6 +3741,15 @@
       const filter = event.target.closest("[data-filter]");
       if (filter) setFilter(filter.dataset.filter);
 
+      const skillsDomain = event.target.closest("[data-skills-domain]");
+      if (skillsDomain) setSkillsDomain(skillsDomain.dataset.skillsDomain);
+
+      const skillsBack = event.target.closest("[data-skills-back]");
+      if (skillsBack) {
+        if (history.state?.sophieApp && app.skillsDomain) history.back();
+        else setSkillsDomain("");
+      }
+
       const opportunityOpen = event.target.closest("[data-open-opportunity]");
       if (opportunityOpen) openOpportunityDetail(opportunityOpen.dataset.openOpportunity, opportunityOpen);
 
@@ -3653,7 +3795,7 @@
       if (recRequest) requestRecommendationSet(recRequest.dataset.recRequest);
 
       const recPreview = event.target.closest("[data-rec-preview]");
-      if (recPreview) { app.rec.currentCandidate = recommendationCandidateById(recPreview.dataset.recPreview); app.rec.currentSource = "recommendation"; app.rec.view = "preview"; app.rec.error = ""; renderRecommendationDialog(); }
+      if (recPreview) { app.rec.currentCandidate = recommendationCandidateById(recPreview.dataset.recPreview); app.rec.currentSource = "recommendation"; app.rec.view = "preview"; app.rec.error = ""; renderRecommendationDialog(); writeNavigationState("replace", { overlay: "recommendation", recView: "preview", candidateId: recPreview.dataset.recPreview, candidateSource: "recommendation" }); }
 
       const recNotNow = event.target.closest("[data-rec-not-now]");
       if (recNotNow) recordRecommendationNotNow(recNotNow.dataset.recNotNow);
@@ -3674,13 +3816,13 @@
       if (recCatalogueAdd) openRecommendationSupport(recCatalogueAdd.dataset.recCatalogueAdd, "catalogue");
 
       const recChangeSetup = event.target.closest("[data-rec-change-setup]");
-      if (recChangeSetup) { app.rec.view = "setup"; app.rec.error = ""; app.rec.retry = null; renderRecommendationDialog(); }
+      if (recChangeSetup) { app.rec.view = "setup"; app.rec.error = ""; app.rec.retry = null; renderRecommendationDialog(); writeNavigationState("replace", { overlay: "recommendation", recView: "setup" }); }
 
       const recBackResults = event.target.closest("[data-rec-back-results]");
-      if (recBackResults) { app.rec.view = "results"; app.rec.currentCandidate = null; app.rec.error = ""; renderRecommendationDialog(); }
+      if (recBackResults) { app.rec.view = "results"; app.rec.currentCandidate = null; app.rec.error = ""; renderRecommendationDialog(); if (history.state?.overlay === "recommendation") writeNavigationState("replace", { overlay: "recommendation", recView: "results" }); }
 
       const recBackSupport = event.target.closest("[data-rec-back-from-support]");
-      if (recBackSupport) { app.rec.view = app.rec.currentSource === "catalogue" ? "catalogue" : "preview"; app.rec.error = ""; renderRecommendationDialog(); }
+      if (recBackSupport) { const returnView = app.rec.currentSource === "catalogue" ? "catalogue" : "preview"; app.rec.view = returnView; app.rec.error = ""; renderRecommendationDialog(); if (history.state?.overlay === "recommendation") { const nav = { overlay: "recommendation", recView: returnView }; if (returnView === "preview" && app.rec.currentCandidate) { nav.candidateId = app.rec.currentCandidate.candidateId; nav.candidateSource = app.rec.currentSource; } writeNavigationState("replace", nav); } }
 
       const recRetry = event.target.closest("[data-rec-retry]");
       if (recRetry) retryRecommendationOperation();
@@ -3698,7 +3840,14 @@
       if (withdrawNoReview) withdrawEarn(false, withdrawNoReview);
 
       const close = event.target.closest("[data-close-dialog]");
-      if (close) document.getElementById(close.dataset.closeDialog).close();
+      if (close) {
+        const dialog = document.getElementById(close.dataset.closeDialog);
+        if (dialog?.id === "opportunity-detail-dialog" && history.state?.overlay === "opportunity") history.back();
+        else dialog?.close();
+      }
+
+      const createOpportunity = event.target.closest("[data-create-opportunity]");
+      if (createOpportunity) openCreateOpportunity(createOpportunity.dataset.createOpportunity);
 
       const avatarChoice = event.target.closest("[data-avatar]");
       if (avatarChoice) {
@@ -3810,7 +3959,6 @@
       $("#goal-dialog").showModal();
     });
     $("#goal-form").addEventListener("submit", createGoal);
-    $("#open-create-opportunity").addEventListener("click", openCreateOpportunity);
     $("#opportunity-detail-dialog").addEventListener("close", () => { const target = app.opportunityReturnFocus; app.activeOpportunityId = ""; app.opportunityMutationError = ""; if (target && document.body.contains(target)) target.focus(); });
     $("#lock-parent").addEventListener("click", () => lockParentMode());
     $("#open-parent").addEventListener("click", () => {
@@ -3831,6 +3979,8 @@
 
     const hour = new Date().getHours();
     $("#day-greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    history.replaceState(navigationState(), "", location.href);
+    window.addEventListener("popstate", event => applyNavigationState(event.state));
     setupPersonalisation();
     renderSchool();
     loadData({ quiet: true });
