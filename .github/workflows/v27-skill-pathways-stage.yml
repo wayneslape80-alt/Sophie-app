@@ -25,6 +25,7 @@ jobs:
         run: |
           node --check assets/skill-pathways-v27.js
           node --check assets/skill-pathways-v27-choice.js
+          node --check tests/v27-pathways-runtime.cjs
       - name: Validate integration contract
         run: |
           python3 - <<'PY'
@@ -52,9 +53,28 @@ jobs:
           assert 'Adding it creates a Learn activity in Available' in choice
           assert 'These are linked activities that fit the safety setup you chose.' in choice
           assert 'checked by rec-v1' not in choice
+          assert '#recommendation-dialog-body' in choice
+          assert '#rec-dialog-title' not in choice
+          assert '#recommendation-body' not in choice
+          assert 'REC_SAFETY_OPTIONS.map(([value, label])' in choice
+          assert 'REC_SUPPORT_OPTIONS.map(([value, label])' in choice
           assert '<details class="technique-group"' in pathway
           assert 'Safety-gated next step' in pathway
           PY
+      - name: Install Chromium runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run v2.7 browser regression
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/v27-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then break; fi
+            sleep 0.25
+          done
+          node tests/v27-pathways-runtime.cjs
       - name: Commit generated staging files
         run: |
           if git diff --quiet -- index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js; then
@@ -64,5 +84,5 @@ jobs:
           git config user.name "wayneslape80-alt"
           git config user.email "wayneslape80@gmail.com"
           git add index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js
-          git commit -m "Refine v2.7 Sophie-facing pathway copy"
+          git commit -m "Fix and validate v2.7 pathway runtime"
           git push origin HEAD:stage-v2.7-interactive-skill-pathways
