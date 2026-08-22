@@ -318,6 +318,29 @@ async function runScaledDesktopTrap(browser, baseUrl) {
   return { virtualDesktopViewportInjected: "PASS", viewportRepair: "PASS", phoneFallbackWins: "PASS", scaledDesktopLayoutRejected: "PASS" };
 }
 
+async function runAndroidTextScaling(browser, baseUrl) {
+  const { context, page } = await openAndroidApp(browser, baseUrl);
+  await page.getByRole("button", { name: "Skills", exact: true }).click();
+  await page.getByRole("heading", { name: "Currently learning" }).waitFor();
+  const readType = () => page.evaluate(() => ({
+    pageTitleSize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace > .page-intro h2")).fontSize),
+    rowBodySize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace .skills-learning-list .job-purpose")).fontSize)
+  }));
+  const before = await readType();
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  const after = await page.evaluate(() => ({
+    pageTitleSize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace > .page-intro h2")).fontSize),
+    rowBodySize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace .skills-learning-list .job-purpose")).fontSize),
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth
+  }));
+  assert(after.pageTitleSize >= before.pageTitleSize * 1.95, `Android page title did not scale to 200% (${before.pageTitleSize}px -> ${after.pageTitleSize}px)`);
+  assert(after.rowBodySize >= before.rowBodySize * 1.95, `Android row description did not scale to 200% (${before.rowBodySize}px -> ${after.rowBodySize}px)`);
+  assert(after.scrollWidth <= after.innerWidth + 1, `Android 200% text causes horizontal overflow (${after.scrollWidth} > ${after.innerWidth})`);
+  await context.close();
+  return { relativeTypeScaling: "PASS", noHorizontalOverflow: "PASS", smS911bText200: "PASS" };
+}
+
 async function runFunctional(browser, baseUrl) {
   const { context, page, calls, state } = await openApp(browser, baseUrl, [390, 844]);
   await page.getByRole("button", { name: "Skills", exact: true }).click();
@@ -409,13 +432,9 @@ async function runFunctional(browser, baseUrl) {
   await page.getByRole("button", { name: "Skills", exact: true }).click();
   const zoomAudit = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
-    innerWidth,
-    pageTitleSize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace > .page-intro h2")).fontSize),
-    rowBodySize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace .skills-learning-list .job-purpose")).fontSize)
+    innerWidth
   }));
   assert(zoomAudit.scrollWidth <= zoomAudit.innerWidth + 1, "200% text causes horizontal overflow");
-  assert(zoomAudit.pageTitleSize >= 48, `Skills page title did not scale to 200% (${zoomAudit.pageTitleSize}px)`);
-  assert(zoomAudit.rowBodySize >= 28, `Skills row description did not scale to 200% (${zoomAudit.rowBodySize}px)`);
 
   const moneyState = { balance: state.data.balance, pending: state.data.pending };
   assert.deepStrictEqual(moneyState, { balance: 125.4, pending: 10 }, "financial state changed during non-financial Learn flow");
@@ -475,10 +494,11 @@ async function runPwa(browser, baseUrl) {
     for (const viewport of viewports) viewportResults.push(await runViewport(browser, baseUrl, viewport));
     const mobileViewportContract = await runMobileViewportContract(browser, baseUrl);
     const scaledDesktopTrap = await runScaledDesktopTrap(browser, baseUrl);
+    const androidTextScaling = await runAndroidTextScaling(browser, baseUrl);
     const functional = await runFunctional(browser, baseUrl);
     const accessibility = await runAccessibility(browser, baseUrl);
     const pwa = await runPwa(browser, baseUrl);
-    console.log(JSON.stringify({ viewportResults, mobileViewportContract, scaledDesktopTrap, functional, accessibility, pwa }, null, 2));
+    console.log(JSON.stringify({ viewportResults, mobileViewportContract, scaledDesktopTrap, androidTextScaling, functional, accessibility, pwa }, null, 2));
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));
