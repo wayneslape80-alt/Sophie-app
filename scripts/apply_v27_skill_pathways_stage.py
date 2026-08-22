@@ -84,4 +84,19 @@ if internal_copy in choice:
     choice = choice.replace(internal_copy, sophie_copy, 1)
 elif sophie_copy not in choice:
     raise SystemExit("technique choice copy anchor not found")
+
+old_safety_options = '${REC_SAFETY_OPTIONS.map(option => `<button class="rec-choice ${flow.safetySupport === option.value ? "active" : ""}" type="button" data-v27-technique-safety="${safe(option.value)}"><strong>${safe(option.label)}</strong></button>`).join("")}'
+new_safety_options = '${REC_SAFETY_OPTIONS.map(([value, label]) => `<button class="rec-choice ${flow.safetySupport === value ? "active" : ""}" type="button" data-v27-technique-safety="${safe(value)}"><strong>${safe(label)}</strong></button>`).join("")}'
+if old_safety_options in choice:
+    choice = choice.replace(old_safety_options, new_safety_options, 1)
+elif new_safety_options not in choice:
+    raise SystemExit("safety option tuple anchor not found")
+
+old_support_options = '${REC_SUPPORT_OPTIONS.map(option => `<button class="rec-choice ${app.rec.supportChoice === option.value ? "active" : ""}" type="button" data-rec-support="${safe(option.value)}"><strong>${safe(option.label)}</strong><span>${safe(option.copy)}</span></button>`).join("")}'
+new_support_options = '${REC_SUPPORT_OPTIONS.map(([value, label]) => `<button class="rec-choice ${app.rec.supportChoice === value ? "active" : ""}" type="button" data-rec-support="${safe(value)}"><strong>${safe(label)}</strong></button>`).join("")}'
+if old_support_options in choice:
+    choice = choice.replace(old_support_options, new_support_options, 1)
+elif new_support_options not in choice:
+    raise SystemExit("support option tuple anchor not found")
+
 choice_path.write_text(choice, encoding="utf-8")
