@@ -1,0 +1,82 @@
+name: v2.7 live backend diagnostics
+
+on:
+  pull_request:
+    branches:
+      - stage-v2.7-interactive-skill-pathways
+
+permissions:
+  contents: read
+
+jobs:
+  live-backend-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify health, capabilities and fail-closed pathway auth
+        shell: bash
+        env:
+          ENDPOINT: https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec
+        run: |
+          set -euo pipefail
+
+          curl -fsSL --retry 2 --retry-delay 1 "$ENDPOINT?action=health" -o /tmp/health.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/health.json', encoding='utf-8') as f:
+              d = json.load(f)
+          expected = {
+              'success': True,
+              'version': '2.5.1',
+              'opportunityContractVersion': 'd006-v1',
+              'learningResourceContractVersion': 'lr-v1',
+              'learningRecommendationContractVersion': 'rec-v1',
+              'learningPathwayContractVersion': 'pathway-v1',
+          }
+          for k, v in expected.items():
+              assert d.get(k) == v, f'{k}: expected {v!r}, got {d.get(k)!r}'
+          print('HEALTH_OK version=2.5.1 d006-v1 lr-v1 rec-v1 pathway-v1')
+          PY
+
+          curl -fsSL --retry 2 --retry-delay 1 "$ENDPOINT?action=getData" -o /tmp/data.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/data.json', encoding='utf-8') as f:
+              d = json.load(f)
+          expected = {
+              'appVersion': '2.5.1',
+              'opportunityContractVersion': 'd006-v1',
+              'learningResourceContractVersion': 'lr-v1',
+              'learningRecommendationContractVersion': 'rec-v1',
+              'learningPathwayContractVersion': 'pathway-v1',
+          }
+          for k, v in expected.items():
+              assert d.get(k) == v, f'{k}: expected {v!r}, got {d.get(k)!r}'
+          print('GETDATA_CAPABILITIES_OK')
+          PY
+
+          curl -fsSL --retry 2 --retry-delay 1 \
+            -H 'Content-Type: text/plain;charset=utf-8' \
+            --data '{"action":"getLearningPathway","domain":"cooking"}' \
+            "$ENDPOINT" -o /tmp/missing.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/missing.json', encoding='utf-8') as f:
+              d = json.load(f)
+          assert d.get('success') is False, d
+          assert d.get('code') == 'UNAUTHORISED', d
+          print('MISSING_CREDENTIAL_OK code=UNAUTHORISED')
+          PY
+
+          curl -fsSL --retry 2 --retry-delay 1 \
+            -H 'Content-Type: text/plain;charset=utf-8' \
+            --data '{"action":"getLearningPathway","domain":"cooking","recommendationKey":"definitely-invalid-v27-diagnostic-key"}' \
+            "$ENDPOINT" -o /tmp/invalid.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/invalid.json', encoding='utf-8') as f:
+              d = json.load(f)
+          assert d.get('success') is False, d
+          assert d.get('code') == 'UNAUTHORISED', d
+          print('INVALID_CREDENTIAL_OK code=UNAUTHORISED')
+          PY
