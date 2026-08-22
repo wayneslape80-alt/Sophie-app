@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-14-mobile-density";
+const CACHE_NAME = "sophie-app-v2-15-effective-mobile-scale";
 
 const APP_FILES = [
   "./",

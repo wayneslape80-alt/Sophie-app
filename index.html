@@ -8,14 +8,31 @@
       const root = document.documentElement;
       const coarsePointer = window.matchMedia("(pointer: coarse)");
       const approvedViewport = "width=device-width, initial-scale=1, viewport-fit=cover";
+      const initialRootFontPx = Number.parseFloat(getComputedStyle(root).fontSize) || 16;
       let viewport = document.querySelector('meta[name="viewport"]');
       let viewportRepairActive = false;
+      let scaleCheckFrame = 0;
       if (!viewport) {
         viewport = document.createElement("meta");
         viewport.name = "viewport";
         viewport.content = approvedViewport;
         document.head.insertBefore(viewport, document.currentScript);
       }
+      const applyEffectivePhoneScale = (isPhoneScreen, screenWidth) => {
+        const layoutRatio = isPhoneScreen && Number.isFinite(screenWidth) && screenWidth > 0
+          ? window.innerWidth / screenWidth
+          : 1;
+        const needsScaleFallback = layoutRatio > 1.25;
+        root.classList.toggle("effective-mobile-scale", needsScaleFallback);
+        if (needsScaleFallback) {
+          const effectiveScale = Math.min(layoutRatio, 3.25);
+          root.style.fontSize = `${initialRootFontPx * effectiveScale}px`;
+          root.dataset.effectiveMobileScale = effectiveScale.toFixed(3);
+        } else if (root.dataset.effectiveMobileScale) {
+          root.style.removeProperty("font-size");
+          delete root.dataset.effectiveMobileScale;
+        }
+      };
       const applyDeviceLayout = () => {
         const screenWidth = Number(window.screen?.width) || Infinity;
         const screenHeight = Number(window.screen?.height) || Infinity;
@@ -28,6 +45,9 @@
           viewport.content = `width=${Math.round(screenWidth)}, initial-scale=1, viewport-fit=cover`;
           root.dataset.viewportRepair = "active";
         }
+        applyEffectivePhoneScale(isPhoneScreen, screenWidth);
+        cancelAnimationFrame(scaleCheckFrame);
+        scaleCheckFrame = requestAnimationFrame(() => applyEffectivePhoneScale(isPhoneScreen, screenWidth));
       };
       applyDeviceLayout();
       window.addEventListener("resize", applyDeviceLayout, { passive: true });

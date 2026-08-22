@@ -1,0 +1,57 @@
+const fs = require("fs");
+const vm = require("vm");
+const assert = require("assert");
+
+const html = fs.readFileSync("index.html", "utf8");
+const css = fs.readFileSync("assets/android-first.css", "utf8");
+const sw = fs.readFileSync("sw.js", "utf8");
+const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
+const code = fs.readFileSync("Code.gs", "utf8");
+
+const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]);
+scripts.forEach((script, index) => new vm.Script(script, { filename: `index-inline-${index}.js` }));
+
+assert.strictEqual((html.match(/assets\/android-first\.css/g) || []).length, 1, "Android stylesheet must be linked exactly once");
+assert.strictEqual((html.match(/<meta\s+name="viewport"/g) || []).length, 1, "exactly one viewport meta tag is required");
+assert(html.includes('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'), "mobile viewport contract is missing or changed");
+assert(html.indexOf('name="viewport"') < html.indexOf("<style>"), "viewport tag must precede page styling");
+assert(html.includes('root.classList.toggle("compact-device"'), "real-phone compact fallback is missing");
+assert(html.includes('root.dataset.viewportRepair = "active"'), "virtual desktop viewport repair is missing");
+assert(html.includes('root.classList.toggle("effective-mobile-scale"'), "effective phone-scale fallback is missing");
+assert(html.includes('root.dataset.effectiveMobileScale'), "effective phone-scale diagnostic is missing");
+assert(html.indexOf("</style>") < html.indexOf("assets/android-first.css"), "Android override stylesheet must load after legacy inline CSS");
+assert(!html.includes('data-filter="learn"'), "Learn must not remain an Opportunities filter");
+assert(!html.includes("% to next level"), "legacy Skills percentage remains");
+assert(!/Level \$\{|Level \d/.test(html), "legacy Skills level remains");
+assert(html.includes('action: "chooseRecommendedLearn"'), "recommendation conversion contract missing");
+assert(html.includes('String(returned.status || "").toLowerCase() !== "available"'), "available/unstarted Learn guard missing");
+assert(html.includes('domain: "cooking"'), "Cooking rec-v1 domain contract missing");
+assert(html.includes('action: "createOpportunity"'), "D-006 parent create flow missing");
+assert(html.includes("UNAUTHORISED"), "fail-closed recommendation handling missing");
+assert(!/recommendationKey\s*[:=]\s*["'][^"']+["']/.test(html), "credential-like recommendation key literal found");
+assert(css.includes("--tap-target: 3rem"), "scalable 48px target baseline missing");
+assert(css.includes("prefers-reduced-motion: reduce"), "reduced-motion support missing");
+assert(css.includes("100dvh"), "dynamic viewport support missing");
+assert(css.includes("html.compact-device .bottom-nav"), "real-phone navigation fallback missing");
+assert(css.includes("html.compact-device .learning-domain-grid"), "real-phone single-column fallback missing");
+assert(html.includes('class="cards skills-list skills-learning-list"'), "compact learning list markup missing");
+assert(html.includes('class="learning-domain-grid skills-list"'), "compact domain list markup missing");
+assert(html.includes('class="capability-grid skills-list"'), "compact capability list markup missing");
+assert(css.includes("Phone Skills uses dense list rows"), "compact Skills row styling missing");
+assert(css.includes("--type-page-title: 1.5rem"), "compact page-title role is missing");
+assert(css.includes("--type-section-title: 1.25rem"), "compact section-title role is missing");
+assert(css.includes("--type-row-title: 1rem"), "compact row-title role is missing");
+assert(css.includes("--type-supporting: 0.875rem"), "compact supporting-text role is missing");
+assert(css.includes("--type-meta: 0.75rem"), "compact metadata role is missing");
+assert(sw.includes('event.request.method !== "GET"'), "service worker does not exclude POST/non-GET requests");
+assert(/CACHE_NAME\s*=\s*"sophie-app-v2-15-effective-mobile-scale"/.test(sw), "service-worker cache is not versioned for the effective mobile-scale candidate");
+assert.strictEqual(manifest.id, "./");
+assert.strictEqual(manifest.scope, "./");
+assert.strictEqual(manifest.start_url, "./index.html");
+assert.strictEqual(manifest.display, "standalone");
+assert(manifest.icons.some(icon => icon.sizes === "192x192"));
+assert(manifest.icons.some(icon => icon.sizes === "512x512"));
+assert(manifest.icons.every(icon => !String(icon.purpose || "").includes("maskable")));
+assert(!code.includes("sophie-app-v2-15-effective-mobile-scale"), "backend unexpectedly modified for frontend cache version");
+
+console.log("static-contracts: PASS");

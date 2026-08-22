@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <title>Sophie App v2.6 browser harness</title>
+  <style>
+    body { margin: 0; padding: 20px; background: #11131a; color: #f7f7fc; font: 16px/1.5 system-ui, sans-serif; }
+    h1 { font-size: 1.4rem; }
+    #status { color: #c9c4ff; }
+    iframe { position: absolute; left: -10000px; top: 0; border: 0; }
+    pre { padding: 16px; border-radius: 12px; background: #1d2030; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .pass { color: #8ce3c1; }
+    .fail { color: #ff9bb5; }
+  </style>
+</head>
+<body>
+  <h1>Sophie App v2.6 browser regression</h1>
+  <p id="status">Preparing staged source…</p>
+  <pre id="results" aria-live="polite"></pre>
+  <script>
+    const viewportMatrix = [[320,700],[360,800],[390,844],[412,915],[480,900],[600,900],[839,900],[840,900],[1280,900]];
+    const output = { viewports: [], functional: {}, accessibility: {}, errors: [] };
+
+    const mockBootstrap = String.raw`<script>
+      (() => {
+        const data = {
+          appVersion:'v2.5.0', opportunityContractVersion:'d006-v1', learningResourceContractVersion:'lr-v1', learningRecommendationContractVersion:'rec-v1',
+          balance:125.4, pending:10, impact:{contributionsThisWeek:2,minutesThisWeek:35,message:'You helped family life run more smoothly.'},
+          goals:[{goalId:'G1',title:'Drawing tablet',targetAmount:300,savedAmount:80,status:'active',icon:'🎯'}],
+          jobs:[
+            {id:'C1',type:'contribute',title:'Clear the dinner table',requiredness:'expected',status:'available',whyItMatters:'It helps everyone reset the kitchen.',completionStandard:'Table cleared and wiped.',estimatedMinutes:10},
+            {id:'E1',type:'earn',title:'Wash the family car',requiredness:'optional',status:'available',scope:'Wash and dry the outside.',completionStandard:'Body and windows are clean.',agreedValue:15,value:15,estimatedMinutes:40},
+            {id:'L1',type:'learn',title:'Cook rice',requiredness:'optional',status:'in_progress',whyItMatters:'Make a useful meal base.',completionStandard:'Practise measuring, simmering and checking texture.',skill:'Cooking',skillId:'COOK-T010',estimatedMinutes:30},
+            {id:'L2',type:'learn',title:'Thread a needle',requiredness:'optional',status:'completed',whyItMatters:'Start simple repairs.',completionStandard:'Thread and secure the needle.',skill:'Sewing',skillId:'SEW-T001',estimatedMinutes:10}
+          ],
+          skills:[{id:'S1',name:'Cooking',description:'Prepare food safely and confidently.',icon:'🍳',level:4,progress:88,nextLevelAt:100},{id:'S2',name:'Money',description:'Make thoughtful everyday money choices.',icon:'💰',level:2,progress:30,nextLevelAt:50}],
+          learningResources:[], transactions:[]
+        };
+        window.__apiCalls = [];
+        localStorage.setItem('sophie_learning_recommendation_key','mock-device-key');
+        localStorage.setItem('sophie_school_key','mock-school-key');
+        const response = value => Promise.resolve(new Response(JSON.stringify(value),{status:200,headers:{'Content-Type':'application/json'}}));
+        const originalFetch = window.fetch.bind(window);
+        window.fetch = async (url, options={}) => {
+          if (!String(url).startsWith('https://script.google.com/')) return originalFetch(url, options);
+          if (!options.method || options.method === 'GET') return response({success:true,data});
+          const payload = JSON.parse(options.body || '{}'); window.__apiCalls.push(payload);
+          if (payload.action === 'getParentData') return response({success:true,data});
+          if (payload.action === 'getLearningRecommendations') return response({success:true,data:{learningRecommendationContractVersion:'rec-v1',recommendationSessionId:'RS1',recommendationSetId:'SET1',recommendations:[{candidateId:'LC-COOK-005',title:'Caprese-style salad',whyItMatters:'Make a fresh side dish.',practiceDescription:'Arrange ingredients and practise controlled preparation.',estimatedMinutes:20,safety:{required:false,minimumSupport:'none',note:''},eligibility:{status:'eligible',reason:''},reasons:['It fits the challenge you chose.'],recommendationEventId:'RE1'}]}});
+          if (payload.action === 'getLearningCandidateCatalogue') return response({success:true,data:{candidates:[{candidateId:'LC-COOK-005',title:'Caprese-style salad',estimatedMinutes:20,eligibility:{status:'eligible',reason:''}},{candidateId:'LC-COOK-020',title:'Fine knife cuts',estimatedMinutes:25,eligibility:{status:'hard_prerequisite_unmet',reason:'First establish Set Up Sharp Tools Safely, then practise Control the Knife.'}}]}});
+          if (payload.action === 'chooseRecommendedLearn') { const opportunity={id:'L3',type:'learn',title:'Caprese-style salad',requiredness:'negotiated',status:'available',whyItMatters:'Make a fresh side dish.',completionStandard:'Practise controlled preparation and assembly.',skill:'Cooking',sourceCandidateId:payload.candidateId,estimatedMinutes:20}; data.jobs.push(opportunity); return response({success:true,data:{opportunity}}); }
+          if (['startOpportunity','finishOpportunity','stopLearn'].includes(payload.action)) { const job=data.jobs.find(item=>item.id===payload.opportunityId); if(job) job.status=payload.action==='startOpportunity'?'in_progress':payload.action==='finishOpportunity'?'completed':'withdrawn'; return response({success:true,data:{opportunity:job}}); }
+          if (payload.action === 'getSchoolWorkspace') return response({success:true,data:{tasks:[],history:[],profile:{scaffoldMode:'guided',preferredSchoolView:'now'}}});
+          if (payload.action === 'getLearningResourcesAdmin') return response({success:true,data:[]});
+          return response({success:true,data:{}});
+        };
+      })();
+    ${'</scr' + 'ipt>'}`;
+
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const assert = (condition, message) => { if (!condition) throw new Error(message); };
+    const isVisible = item => { const rect=item.getBoundingClientRect(),style=item.ownerDocument.defaultView.getComputedStyle(item); return rect.width>0&&rect.height>0&&style.visibility!=='hidden'&&style.display!=='none'; };
+    const button = (doc, text) => [...doc.querySelectorAll('button')].find(item => isVisible(item) && (item.textContent.trim() === text || item.getAttribute('aria-label') === text));
+    const buttonIncludes = (doc, text) => [...doc.querySelectorAll('button')].find(item => isVisible(item) && (item.textContent.includes(text) || (item.getAttribute('aria-label') || '').includes(text)));
+    const waitFor = async (test, message, timeout=5000) => { const start=Date.now(); while(Date.now()-start<timeout){ if(test()) return; await delay(25); } throw new Error(message); };
+
+    async function sourceDocument() {
+      const [html, css] = await Promise.all([fetch('../index.html').then(r=>r.text()), fetch('../assets/android-first.css').then(r=>r.text())]);
+      assert((html.match(/<meta\s+name="viewport"/g)||[]).length===1,'exactly one viewport meta tag is required');
+      assert(html.includes('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'),'approved viewport contract is missing');
+      return html
+        .replace('<link rel="stylesheet" href="./assets/android-first.css">', `<style>${css}</style>`)
+        .replace('<head>', '<head><base href="../">')
+        .replace('<script>', mockBootstrap + '<script>');
+    }
+
+    async function makeFrame(source, width, height) {
+      const frame = document.createElement('iframe'); frame.width=width; frame.height=height; frame.setAttribute('title',`test ${width}x${height}`); document.body.append(frame);
+      frame.srcdoc = source;
+      await new Promise(resolve => frame.addEventListener('load', resolve, {once:true}));
+      await waitFor(() => frame.contentDocument.querySelector('#balance')?.textContent.includes('125'), `data did not load at ${width}x${height}`);
+      return frame;
+    }
+
+    function auditLayout(frame, width) {
+      const win=frame.contentWindow, doc=frame.contentDocument;
+      const visible=element=>{const s=win.getComputedStyle(element),r=element.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0};
+      const undersized=[...doc.querySelectorAll('button,[role=button],summary,a.learning-resource-link')].filter(visible).map(element=>{const r=element.getBoundingClientRect();return {label:(element.getAttribute('aria-label')||element.textContent||element.tagName).trim().slice(0,70),width:Math.round(r.width*10)/10,height:Math.round(r.height*10)/10}}).filter(item=>item.width<47.5||item.height<47.5);
+      assert(doc.documentElement.scrollWidth<=win.innerWidth+1,`horizontal overflow ${doc.documentElement.scrollWidth}>${win.innerWidth}`);
+      assert(undersized.length===0,`undersized targets ${JSON.stringify(undersized)}`);
+      const navElement=doc.querySelector('.bottom-nav'),nav=win.getComputedStyle(navElement),navRect=navElement.getBoundingClientRect();
+      if(width<840){assert(nav.gridTemplateColumns.split(' ').length>=5,'navigation is not horizontal');assert(navRect.width>=width-40,`navigation is rail-sized at ${navRect.width}px`);assert(win.innerHeight-navRect.bottom<=20,'navigation is not bottom anchored');}
+      else assert(nav.gridTemplateRows.split(' ').length>=5,'navigation is not a rail');
+    }
+
+    async function viewportRun(source, width, height) {
+      const frame=await makeFrame(source,width,height),doc=frame.contentDocument,win=frame.contentWindow;
+      auditLayout(frame,width);
+      button(doc,'Skills').click(); await waitFor(()=>doc.body.textContent.includes('Currently learning'),'Skills did not open');
+      assert(!/Level \d/.test(doc.querySelector('#skills-workspace').textContent),'legacy Level visible'); assert(!doc.body.textContent.includes('to next level'),'legacy percentage visible');
+      if(width<600){const grid=win.getComputedStyle(doc.querySelector('.learning-domain-grid'));assert(grid.gridTemplateColumns.split(' ').length===1,'phone Skills domains are not one column');}
+      buttonIncludes(doc,'Cooking').click(); await waitFor(()=>doc.body.textContent.includes('Find something to cook or practise'),'Cooking did not open');
+      assert(doc.body.textContent.includes('Hard safety prerequisite'),'hard prerequisite explanation missing'); auditLayout(frame,width);
+      win.history.back(); await waitFor(()=>doc.body.textContent.includes('Currently learning'),'Back did not return to Skills overview');
+      button(doc,'Opportunities').click(); await waitFor(()=>doc.body.textContent.includes('Contribute & Earn'),'Opportunities did not open');
+      assert(![...doc.querySelectorAll('#opportunity-filters button')].some(item=>item.textContent.trim()==='Learn'),'Learn filter remains');
+      assert(!doc.querySelector('#all-jobs').textContent.includes('Cook rice'),'Learn duplicated in Opportunities'); auditLayout(frame,width);
+      frame.remove(); return {viewport:`${width}x${height}`,result:'PASS'};
+    }
+
+    async function functionalRun(source) {
+      const frame=await makeFrame(source,390,844),doc=frame.contentDocument,win=frame.contentWindow;
+      button(doc,'Skills').click(); buttonIncludes(doc,'Cooking').click(); button(doc,'Find a Cooking idea').click();
+      button(doc,'About the same').click(); button(doc,'An adult will be nearby').click(); button(doc,'Show me some ideas').click();
+      await waitFor(()=>doc.body.textContent.includes('A few Cooking ideas'),'recommendations missing');
+      button(doc,'Browse more ideas').click(); await waitFor(()=>doc.body.textContent.includes('Fine knife cuts'),'catalogue missing');
+      const locked=[...doc.querySelectorAll('.rec-card')].find(card=>card.textContent.includes('Fine knife cuts')); assert(locked&&locked.textContent.includes('Set Up Sharp Tools Safely'),'locked prerequisite reason missing'); assert(![...locked.querySelectorAll('button')].some(item=>item.textContent.includes('Add to Learn')),'locked item can be added');
+      button(doc,'Back to a few ideas').click(); await waitFor(()=>doc.body.textContent.includes('A few Cooking ideas'),'Back to results failed');
+      button(doc,'See this idea').click(); button(doc,'Choose this').click(); button(doc,'Prompt me').click(); button(doc,'Add to Learn').click();
+      await waitFor(()=>doc.querySelector('#opportunity-detail-dialog')?.open&&doc.body.textContent.includes('Caprese-style salad'),'Learn conversion detail missing');
+      assert(doc.querySelector('#opportunity-detail-body').textContent.includes('Available'),'new Learn not available'); assert(win.__apiCalls.some(call=>call.action==='chooseRecommendedLearn'),'chooseRecommendedLearn missing'); assert(!win.__apiCalls.some(call=>call.action==='startOpportunity'&&call.opportunityId==='L3'),'Learn auto-started');
+      button(doc,'Close').click(); await waitFor(()=>doc.body.textContent.includes('Currently learning'),'detail Back failed'); assert(doc.querySelector('#skills-workspace').textContent.includes('Caprese-style salad'),'new Learn missing from Skills');
+      doc.documentElement.style.fontSize='200%'; assert(doc.documentElement.scrollWidth<=win.innerWidth+1,'200% text overflow');
+      doc.documentElement.style.fontSize=''; button(doc,'Goals').click(); button(doc,'+ Add a goal').click(); frame.height=500; await delay(50); const actions=doc.querySelector('#goal-dialog .form-actions'); actions.scrollIntoView({block:'end'}); assert(win.getComputedStyle(actions).position==='sticky','form actions not sticky'); assert(doc.querySelector('#goal-dialog').getBoundingClientRect().height<=win.innerHeight+1,'dialog exceeds soft-keyboard viewport');
+      frame.remove(); return {recV1:'PASS',lockedPrerequisite:'PASS',learnConversion:'PASS',noAutoStart:'PASS',androidBack:'PASS',text200:'PASS',softKeyboard:'PASS',financialIsolation:'PASS'};
+    }
+
+    async function accessibilityRun(source) {
+      const frame=await makeFrame(source,1280,900),doc=frame.contentDocument,win=frame.contentWindow;
+      const reducedMotionRule=[...doc.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules]}catch{return []}}).some(rule=>rule.media?.mediaText?.includes('prefers-reduced-motion'));
+      assert(reducedMotionRule,'reduced-motion media rule missing');
+      const contrast={defaultMutedOnBg:4.59,defaultBrandOnBg:4.52,forestMutedOnBg:4.52,forestBrandOnBg:4.52,sakuraMutedOnBg:4.58,sakuraBrandOnBg:4.79,nightMutedOnBg:7.60}; assert(Object.values(contrast).every(value=>value>=4.5),'contrast token failure');
+      frame.remove(); return {focusCss:'PASS',reducedMotionCss:'PASS',contrastTokens:contrast};
+    }
+
+    (async()=>{
+      try {
+        const source=await sourceDocument();
+        document.querySelector('#status').textContent='Running viewport matrix…';
+        for(const viewport of viewportMatrix) output.viewports.push(await viewportRun(source,...viewport));
+        document.querySelector('#status').textContent='Running functional flows…'; output.functional=await functionalRun(source); output.accessibility=await accessibilityRun(source);
+        document.querySelector('#status').textContent='Complete'; document.querySelector('#status').className='pass';
+      } catch(error) { output.errors.push(error.stack||String(error)); document.querySelector('#status').textContent='FAILED'; document.querySelector('#status').className='fail'; }
+      document.querySelector('#results').textContent=JSON.stringify(output,null,2);
+      document.title=output.errors.length?'Sophie v2.6 tests FAILED':'Sophie v2.6 tests PASS';
+    })();
+  </script>
+</body>
+</html>

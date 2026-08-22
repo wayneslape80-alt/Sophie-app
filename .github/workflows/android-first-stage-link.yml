@@ -1,0 +1,38 @@
+name: Effective Android scale staging
+
+on:
+  push:
+    branches:
+      - stage-v2.6.3-effective-mobile-scale
+    paths:
+      - '.github/workflows/android-first-stage-link.yml'
+      - 'assets/android-first.css'
+      - 'index.html'
+      - 'manifest.webmanifest'
+      - 'sw.js'
+      - 'tests/**'
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stage-v2.6.3-effective-mobile-scale
+      - name: Verify product files
+        run: |
+          grep -F './assets/android-first.css' index.html
+          grep -F 'width=device-width, initial-scale=1, viewport-fit=cover' index.html
+          grep -F 'sophie-app-v2-15-effective-mobile-scale' sw.js
+          grep -F '"id": "./"' manifest.webmanifest
+      - name: Run static contract tests
+        run: node tests/static-contracts.cjs
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run responsive and functional browser matrix
+        run: node tests/mobile-regression.cjs
