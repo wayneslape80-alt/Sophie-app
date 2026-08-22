@@ -89,3 +89,18 @@ A production read endpoint must not expose hidden scores because none are part o
 ## Security conclusion
 
 The existing rec-v1 credential and `chooseRecommendedLearn` conversion path are suitable for `I want to learn this` once technique selection resolves to an authoritative candidate ID. The remaining gap is read-only pathway/candidate-link exposure, not write authority.
+
+## Implementation verification - 2026-08-22
+
+The decision was rechecked against both the staged frontend and the deployed capability advertisement:
+
+- deployed `getData` reports app `2.5.0`, `opportunityContractVersion=d006-v1`, `learningResourceContractVersion=lr-v1` and `learningRecommendationContractVersion=rec-v1`;
+- an unauthenticated `getLearningCandidateCatalogue` request fails closed with `code=UNAUTHORISED`;
+- the existing frontend stores the scoped recommendation credential only in local device storage, attaches it inside `recommendationPost`, and removes it after `UNAUTHORISED`;
+- `chooseRecommendation` sends an authoritative `candidateId` and current `availableSafetySupport` to `chooseRecommendedLearn`;
+- the frontend rejects a response that is not a D-006 `learn` Opportunity in `available` state, reloads `getData`, and confirms the Opportunity before success;
+- `Code.gs` remains unchanged from the accepted v2.6.3 production source baseline;
+- `assets/skill-pathways-v27.js` is read-only and does not call `chooseRecommendedLearn` directly.
+- the staging-only `assets/skill-pathways-v27-choice.js` reads eligible candidates through `recommendationPost`, filters to the selected technique's linked IDs, and delegates the final action to the existing `chooseRecommendation` function rather than naming or duplicating the mutation;
+
+Therefore the security decision remains: **reuse the existing rec-v1/D-006 mutation; add no new write route.** The staging bridge demonstrates that reuse, but production acceptance still requires bounded read exposure for authoritative technique, prerequisite and candidate linkage. Production must not rely on the staged snapshot as a continuing authoritative data feed.
