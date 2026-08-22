@@ -148,14 +148,14 @@ Local passes:
 - live-sheet count and relationship reconciliation
 - clean diff validation
 
-CI is configured to run:
+Exact staging head `e8f925631b3a7286e984b873812ffcef27e0adce` passed GitHub Actions run `32552944893` on 2026-08-22. The run covered:
 
 - nine viewport Android-first/desktop matrix
 - focused authoritative-pathway runtime flow
 - full D-006, rec-v1, Learning Resources, School, Goals, Parent Mode and financial-isolation regression
 - 48px target, Back navigation, no-overflow, 200% text, reduced-motion, keyboard focus and PWA checks
 
-The local Playwright browser binary could not be downloaded because the runtime proxy returned a certificate/502 failure. GitHub Actions is therefore the authoritative browser gate for the exact staged commit.
+The local Playwright browser binary could not be downloaded because the runtime proxy returned a certificate/502 failure. GitHub Actions supplied the authoritative browser evidence for the exact staged commit. An initial run exposed a missing asynchronous wait in the browser harness; the harness was corrected to wait for the authoritative payload before asserting, and the complete exact-head run then passed.
 
 ## Release boundary
 

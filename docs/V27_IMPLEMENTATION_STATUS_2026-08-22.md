@@ -69,26 +69,27 @@ The implemented backend choice is a dedicated, credential-protected read-only Co
 
 ## Test coverage
 
-Exact implementation head verified: `2ee369a4fc4103360031efbc0ffa3437ef9ad12d`
-GitHub Actions: `32546005315` - completed successfully on 2026-08-22.
+Exact authoritative-pathway implementation head verified: `e8f925631b3a7286e984b873812ffcef27e0adce`
+GitHub Actions: `32552944893` - completed successfully on 2026-08-22.
 
 The exact-head workflow passed:
 
 - deterministic patch application and committed-product verification;
-- JavaScript syntax and static contracts;
+- Apps Script/JavaScript syntax, bounded backend payload and static security contracts;
 - the full Android-first and desktop viewport matrix;
-- the focused v2.7 runtime regression.
+- the focused v2.7 authoritative-pathway runtime regression;
+- the complete D-006, rec-v1, Learning Resources, School, Goals, Parent Mode, accessibility and PWA regression.
 
 Local checks completed:
 
 - deterministic staging patch idempotence;
 - JavaScript syntax;
 - static pathway/data/security contracts;
-- exactly 22 techniques;
+- authoritative spreadsheet reconciliation for exactly 22 Cooking techniques;
 - exactly two hard sharp-tool dependencies;
 - recommended prerequisite separation;
 - product asset and service-worker integration;
-- no v2.7 `Code.gs` change;
+- `Code.gs` derivation from the release-verified deployed v2.5.0 source, not the stale repository copy;
 - clean diff validation.
 
 The staging workflow now runs browser coverage at:
@@ -108,13 +109,17 @@ It checks progressive disclosure, adaptive columns, 48px targets, horizontal ove
 ## Files in this checkpoint
 
 - `.github/workflows/v27-skill-pathways-stage.yml`
+- `Code.gs`
 - `assets/skill-pathways-v27.js`
 - `assets/skill-pathways-v27-choice.js`
 - `index.html`
 - `sw.js`
 - `scripts/apply_v27_skill_pathways_stage.py`
 - `tests/v27-static-contracts.cjs`
+- `tests/v27-backend-pathway-contract.cjs`
 - `tests/v27-browser-regression.cjs`
+- `tests/v27-full-regression.cjs`
+- `tests/v27-pathway-fixture.cjs`
 - `tests/v27-pathways-runtime.cjs`
 - `docs/V27_INTERACTIVE_SKILL_PATHWAYS_SPRINT.md`
 - `docs/V27_REC_V1_REUSE_DECISION.md`
@@ -122,6 +127,6 @@ It checks progressive disclosure, adaptive columns, 48px targets, horizontal ove
 
 ## Current release gate
 
-The bounded read payload and frontend replacement are complete on staging. Exact-head GitHub Actions browser evidence and Coordinator review are required before any controlled backend-first production release. Parent-facing copy refinement may continue as a separate non-blocking v2.7 polish slice.
+The bounded read payload and frontend replacement are complete on staging, and exact-head GitHub Actions evidence is green. Coordinator review is still required before any controlled backend-first production release. Parent-facing copy refinement may continue as a separate non-blocking v2.7 polish slice.
 
 Do not merge or deploy this branch until Coordinator review accepts browser evidence and the snapshot/read-contract production boundary.
