@@ -106,6 +106,7 @@ async function mockApi(page) {
       await page.goto(origin, { waitUntil:"networkidle" });
       await page.locator('[data-view-target="skills"]').click();
       await page.locator('[data-skills-domain="cooking"]').click();
+      await page.locator(".technique-group").first().waitFor();
 
       assert.equal(await page.locator(".technique-group").count(), 5, `${width}x${height}: technique groups`);
       assert.equal(await page.locator(".technique-group[open]").count(), 1, `${width}x${height}: progressive disclosure`);
