@@ -99,4 +99,31 @@ if old_support_options in choice:
 elif new_support_options not in choice:
     raise SystemExit("support option tuple anchor not found")
 
+old_dialog_target = '    const title = document.querySelector("#rec-dialog-title");\n    const body = document.querySelector("#recommendation-body");\n    if (!title || !body) return;'
+new_dialog_target = '    const body = document.querySelector("#recommendation-dialog-body");\n    if (!body) return;'
+if old_dialog_target in choice:
+    choice = choice.replace(old_dialog_target, new_dialog_target, 1)
+elif new_dialog_target not in choice:
+    raise SystemExit("recommendation dialog container anchor not found")
+
+replacements = [
+    (
+        '      title.textContent = "Set up this learning choice";\n      body.innerHTML = `<div class="rec-screen">',
+        '      body.innerHTML = `<div class="dialog-head"><h2>Set up this learning choice</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen">'
+    ),
+    (
+        '      title.textContent = "Choose a real activity";\n      body.innerHTML = `<div class="rec-screen">',
+        '      body.innerHTML = `<div class="dialog-head"><h2>Choose a real activity</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen">'
+    ),
+    (
+        '      title.textContent = "Choose the support you want";\n      body.innerHTML = `<div class="rec-screen">',
+        '      body.innerHTML = `<div class="dialog-head"><h2>Choose the support you want</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen">'
+    )
+]
+for old, new in replacements:
+    if old in choice:
+        choice = choice.replace(old, new, 1)
+    elif new not in choice:
+        raise SystemExit(f"recommendation dialog heading anchor not found: {new[:42]}")
+
 choice_path.write_text(choice, encoding="utf-8")
