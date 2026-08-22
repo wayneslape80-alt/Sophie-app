@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Verify health, capabilities and fail-closed pathway auth
+      - name: Verify uncached health and fail-closed pathway auth
         shell: bash
         env:
           ENDPOINT: https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec
         run: |
           set -euo pipefail
-
-          curl -fsSL --retry 2 --retry-delay 1 "$ENDPOINT?action=health" -o /tmp/health.json
+          NONCE="$(date +%s%N)"
+          curl -fsSL --retry 2 --retry-delay 1 -H 'Cache-Control: no-cache' "$ENDPOINT?action=health&nonce=$NONCE" -o /tmp/health.json
           python3 - <<'PY'
           import json
           with open('/tmp/health.json', encoding='utf-8') as f:
@@ -38,7 +38,7 @@ jobs:
           print('HEALTH_OK version=2.5.1 d006-v1 lr-v1 rec-v1 pathway-v1')
           PY
 
-          curl -fsSL --retry 2 --retry-delay 1 "$ENDPOINT?action=getData" -o /tmp/data.json
+          curl -fsSL --retry 2 --retry-delay 1 -H 'Cache-Control: no-cache' "$ENDPOINT?action=getData&nonce=$NONCE" -o /tmp/data.json
           python3 - <<'PY'
           import json
           with open('/tmp/data.json', encoding='utf-8') as f:
@@ -57,8 +57,9 @@ jobs:
 
           curl -fsSL --retry 2 --retry-delay 1 \
             -H 'Content-Type: text/plain;charset=utf-8' \
+            -H 'Cache-Control: no-cache' \
             --data '{"action":"getLearningPathway","domain":"cooking"}' \
-            "$ENDPOINT" -o /tmp/missing.json
+            "$ENDPOINT?nonce=$NONCE" -o /tmp/missing.json
           python3 - <<'PY'
           import json
           with open('/tmp/missing.json', encoding='utf-8') as f:
@@ -70,8 +71,9 @@ jobs:
 
           curl -fsSL --retry 2 --retry-delay 1 \
             -H 'Content-Type: text/plain;charset=utf-8' \
+            -H 'Cache-Control: no-cache' \
             --data '{"action":"getLearningPathway","domain":"cooking","recommendationKey":"definitely-invalid-v27-diagnostic-key"}' \
-            "$ENDPOINT" -o /tmp/invalid.json
+            "$ENDPOINT?nonce=$NONCE" -o /tmp/invalid.json
           python3 - <<'PY'
           import json
           with open('/tmp/invalid.json', encoding='utf-8') as f:
