@@ -1,0 +1,30 @@
+name: Package v2.7 accepted backend
+
+on:
+  push:
+    branches:
+      - package-v2.7-pathway-v1-backend
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: package-v2.7-pathway-v1-backend
+      - name: Verify accepted Code.gs bytes
+        run: |
+          ACTUAL="$(sha256sum Code.gs | awk '{print $1}')"
+          EXPECTED="d3499860869767f082d4aeeb084debc52c3f51545a1e029eae014905fc37c927"
+          echo "Code.gs SHA-256: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+          cp Code.gs Code.gs.v2.5.1-pathway-v1-ACCEPTED.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v2.7-pathway-v1-backend-accepted
+          path: Code.gs.v2.5.1-pathway-v1-ACCEPTED.txt
+          if-no-files-found: error
+          retention-days: 30
