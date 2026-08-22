@@ -80,9 +80,9 @@
     const style = document.createElement("style");
     style.id = "v27-skill-pathway-styles";
     style.textContent = `
-      .technique-groups{display:grid;gap:24px}.technique-group-head{margin-bottom:10px}.technique-group-head h3{margin:0 0 4px}.technique-group-head p{margin:0;color:var(--muted);font-size:.875rem;line-height:1.5}
+      .technique-groups{display:grid;gap:12px}.technique-group{border:1px solid var(--line);border-radius:18px;background:var(--surface);overflow:hidden}.technique-group>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:12px 14px;cursor:pointer;list-style:none}.technique-group>summary::-webkit-details-marker{display:none}.technique-group>summary::after{content:"+";color:var(--brand);font-size:1.2rem;font-weight:900}.technique-group[open]>summary::after{content:"−"}.technique-group-head{min-width:0}.technique-group-head h3{margin:0 0 3px}.technique-group-head p{margin:0;color:var(--muted);font-size:.8125rem;line-height:1.4}.technique-group-body{padding:0 12px 12px}
       .technique-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.technique-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;min-height:64px;width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:var(--surface);color:var(--ink);text-align:left;cursor:pointer;box-shadow:var(--shadow-soft)}
-      .technique-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}.technique-card-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--brand-soft);font-size:1.2rem}.technique-card-copy{min-width:0}.technique-card-copy strong{display:block;margin-bottom:3px;font-size:.95rem}.technique-card-copy small{display:block;color:var(--muted);font-size:.78rem;line-height:1.35}.technique-card-arrow{color:var(--brand);font-weight:900}
+      .technique-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}.technique-card-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--brand-soft);font-size:1.2rem}.technique-card-copy{min-width:0}.technique-card-copy strong{display:block;margin-bottom:3px;font-size:.95rem}.technique-card-copy small{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;color:var(--muted);font-size:.78rem;line-height:1.35}.technique-card-arrow{color:var(--brand);font-weight:900}
       .technique-badge{display:inline-flex;align-items:center;min-height:28px;margin-top:6px;padding:4px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);font-size:.7rem;font-weight:850}.technique-badge.hard{background:var(--sun);color:var(--sun-ink)}.technique-badge.safety{background:var(--rose);color:var(--rose-ink)}
       .technique-detail{display:grid;gap:18px}.technique-detail-hero{padding:20px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,var(--surface),var(--brand-soft));box-shadow:var(--shadow-soft)}.technique-detail-hero h2{margin:5px 0 7px}.technique-detail-hero p{margin:0;color:var(--muted);line-height:1.55}
       .technique-detail-section{padding:17px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}.technique-detail-section h3{margin:0 0 8px}.technique-detail-section>p{margin:0;color:var(--muted);line-height:1.5}.technique-link-list{display:grid;gap:8px;margin-top:12px}.technique-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-height:52px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);text-align:left;cursor:pointer}.technique-link strong{display:block}.technique-link small{display:block;margin-top:2px;color:var(--muted);line-height:1.35}.technique-link.hard{border-color:color-mix(in srgb,var(--sun-ink) 30%,var(--line));background:color-mix(in srgb,var(--sun) 45%,var(--surface))}
@@ -114,7 +114,7 @@
   function techniqueGroupsMarkup() {
     return `<div class="technique-groups">${GROUPS.map(([id,title,copy]) => {
       const items = TECHNIQUES.filter(item => item.group === id);
-      return `<section class="technique-group" aria-labelledby="v27-group-${safe(id)}"><div class="technique-group-head"><h3 id="v27-group-${safe(id)}">${safe(title)}</h3><p>${safe(copy)}</p></div><div class="technique-grid">${items.map(techniqueCardMarkup).join("")}</div></section>`;
+      return `<details class="technique-group" ${id === "prepare" ? "open" : ""}><summary><span class="technique-group-head"><h3>${safe(title)}</h3><p>${safe(copy)} · ${items.length} techniques</p></span></summary><div class="technique-group-body"><div class="technique-grid">${items.map(techniqueCardMarkup).join("")}</div></div></details>`;
     }).join("")}</div>`;
   }
 
@@ -123,7 +123,7 @@
     const target = techniqueById(targetId);
     if (!target) return "";
     const hard = edge.kind === "hard";
-    const heading = hard ? "Needed first for Sophie-led practice" : direction === "prerequisite" ? "Helpful preparation" : hard ? "Safety-gated next step" : "Can support this next step";
+    const heading = direction === "next" ? (hard ? "Safety-gated next step" : "Can support this next step") : hard ? "Needed first for Sophie-led practice" : "Helpful preparation";
     return `<button class="technique-link ${hard ? "hard" : ""}" type="button" data-v27-technique="${safe(target.id)}"><span><strong>${safe(target.title)}</strong><small>${safe(heading)}. ${safe(edge.rationale)}</small></span><span aria-hidden="true">›</span></button>`;
   }
 
