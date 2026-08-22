@@ -1035,7 +1035,7 @@ html.compact-device #skills-workspace .skills-learning-list .job-side .secondary
 html.compact-device #skills-workspace .learning-domain-card {
   grid-template-columns: 40px minmax(0, 1fr);
   gap: 11px;
-  padding: 12px;
+  padding: 10px 12px;
   background: var(--surface);
 }
 
@@ -1056,6 +1056,11 @@ html.compact-device #skills-workspace .learning-domain-card strong {
 }
 
 html.compact-device #skills-workspace .learning-domain-card small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   line-height: 1.35;
 }
 
