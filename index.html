@@ -54,7 +54,7 @@
       window.addEventListener("orientationchange", applyDeviceLayout, { passive: true });
     })();
   </script>
-  <meta name="theme-color" content="#6959f5">
+  <meta name="theme-color" content="#eeecde">
   <meta name="description" content="Sophie’s independence app — contribute, learn, earn and choose.">
   <link rel="manifest" href="./manifest.webmanifest">
   <title>Sophie — My Independence</title>
@@ -867,13 +867,14 @@
     }
   </style>
   <link rel="stylesheet" href="./assets/android-first.css">
+  <link rel="stylesheet" href="./assets/concept-a.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow" id="day-greeting">My independence</p>
-        <h1>Hey, Sophie <span aria-hidden="true">👋</span></h1>
+        <p class="eyebrow" id="day-greeting">SOPHIE // HOME</p>
+        <h1 id="topbar-title">Make today yours.</h1>
       </div>
       <div class="top-actions">
         <button class="icon-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻</button>
@@ -884,42 +885,59 @@
     <div class="data-alert" id="data-alert" role="alert">Live data is unavailable. Your real balance, opportunities and goals are hidden until the app reconnects.</div>
 
     <section class="view active" id="view-home" data-view="home">
-      <article class="hero">
-        <div class="hero-content">
-          <div class="hero-label">My money</div>
-          <div class="money" id="balance">$0.00</div>
-          <div class="pending-pill"><span>◷</span><span id="pending">$0.00 awaiting review</span></div>
-        </div>
-        <div class="hero-side"><span class="big-icon">🌈</span><span>Every step builds independence</span></div>
-      </article>
-
-      <div class="home-columns">
-        <div>
-          <section class="section">
-            <div class="section-heading"><div><h2>Saving for</h2><p>A goal Sophie chose</p></div><button class="text-button" data-go-view="goals">All goals →</button></div>
+      <div class="home-os-grid">
+        <div class="home-main-column">
+          <section class="home-goal-section">
+            <div class="home-goal-head">
+              <div><span class="home-os-label">PINNED GOAL</span><h2>What matters to me</h2></div>
+              <button class="text-button" data-go-view="goals">All goals ↗</button>
+            </div>
             <div id="active-goal"><div class="skeleton"></div></div>
           </section>
 
-          <section class="section">
-            <div class="section-heading"><div><h2>What do you feel like?</h2><p>Choose your own next step</p></div></div>
-            <div class="quick-grid">
-              <button class="quick-card earn" data-filter-jump="earn"><span class="quick-icon">💰</span><span><strong>Earn</strong><br><small>Open opportunities</small></span></button>
-              <button class="quick-card goals" data-go-view="goals"><span class="quick-icon">🎯</span><span><strong>Goals</strong><br><small>See your progress</small></span></button>
-              <button class="quick-card learn" data-go-view="skills"><span class="quick-icon">🌱</span><span><strong>Skills</strong><br><small>Learn or practise something</small></span></button>
-            </div>
+          <section class="home-destinations" aria-label="Main destinations">
+            <button class="home-destination" data-go-view="skills">
+              <span class="home-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg></span>
+              <span><strong>Skills</strong><small id="home-skills-meta">Choose a pathway</small></span><span class="home-destination-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="home-destination" data-go-view="school">
+              <span class="home-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 9 9-5 9 5-9 5-9-5ZM7 12v5c3 2 7 2 10 0v-5"/></svg></span>
+              <span><strong>School</strong><small id="home-school-meta">Your support space</small></span><span class="home-destination-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="home-destination" data-filter-jump="contribute">
+              <span class="home-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10ZM9 12h6"/></svg></span>
+              <span><strong>Contribute</strong><small id="home-contribute-meta">Take part your way</small></span><span class="home-destination-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="home-destination" data-filter-jump="earn">
+              <span class="home-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.4-.8-1.2-1.2-2.5-1.2-1.5 0-2.4.7-2.4 1.7 0 2.8 5 1.2 5 4 0 1.1-1 1.8-2.6 1.8-1.3 0-2.3-.5-2.8-1.4M12 6.8v10.4"/></svg></span>
+              <span><strong>Earn</strong><small id="home-earn-meta">Optional paid work</small></span><span class="home-destination-arrow" aria-hidden="true">↗</span>
+            </button>
+          </section>
+
+          <section class="home-wallet" aria-label="Wallet">
+            <span class="home-wallet-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 0 1 2 2v9H6a2 2 0 0 1-2-2V7ZM4 7V6a2 2 0 0 1 2-2h11v3M15 12h5"/></svg></span>
+            <div class="home-wallet-copy"><span class="home-os-label">WALLET</span><div class="money" id="balance">$0.00</div></div>
+            <div class="home-wallet-pending" id="pending">$0.00 awaiting review</div>
+          </section>
+
+          <section class="home-now-section">
+            <div class="home-now-head"><div><span class="home-now-kicker">RIGHT NOW</span><h2>Things in motion</h2></div><button class="text-button" data-go-view="opportunities">See all ↗</button></div>
+            <div class="home-now-list" id="home-now"><div class="skeleton"></div></div>
           </section>
         </div>
 
-        <section class="section">
-          <div class="section-heading"><div><h2>For you</h2><p>Opportunities you can choose</p></div><button class="text-button" data-go-view="opportunities">See all →</button></div>
-          <div class="cards" id="suggested-jobs"><div class="skeleton"></div><div class="skeleton"></div></div>
-        </section>
+        <aside class="home-side-stack">
+          <article class="home-style-card">
+            <span class="home-pattern-swatch" data-pattern-preview aria-hidden="true"></span>
+            <div><span class="style-lab-kicker">STYLE LAB</span><h3>Pattern Studio</h3><p>Draw a 32 × 32 tile and repeat it behind the app.</p></div>
+            <button class="secondary-button" type="button" data-open-pattern-studio>Edit</button>
+          </article>
+          <section>
+            <div class="section-heading"><div><h2>Your family impact</h2><p>Contribution without keeping score</p></div></div>
+            <article class="surface impact-card home-impact-card" id="impact-card"><span class="impact-number">0</span><p>Your contributions will appear here as you help make family life easier.</p></article>
+          </section>
+        </aside>
       </div>
-
-      <section class="section">
-        <div class="section-heading"><div><h2>Your family impact</h2><p>Contribution without keeping score</p></div></div>
-        <article class="surface impact-card" id="impact-card"><span class="impact-number">0</span><p>Your contributions will appear here as you help make family life easier.</p></article>
-      </section>
     </section>
 
     <section class="view" id="view-opportunities" data-view="opportunities">
@@ -977,11 +995,60 @@
 
   <dialog id="settings-dialog">
     <div class="dialog-body">
-      <div class="dialog-head"><h2>Make it yours</h2><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
+      <div class="dialog-head"><div><span class="style-lab-kicker">SOPHIE // STYLE LAB</span><h2>Make it yours</h2></div><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
+      <div class="setting-row"><div><strong>Background pattern</strong><p>Draw a repeating 32 × 32 pixel tile. It stays on this device.</p></div><button class="secondary-button" type="button" data-open-pattern-studio>Open Pattern Studio</button></div>
       <div class="setting-row"><div><strong>Your character</strong><p>Choose a companion for the app.</p></div><div class="avatar-options" id="avatar-options"></div></div>
       <div class="setting-row"><div><strong>Colour theme</strong><p>Pick the style that feels most like you.</p></div><div class="theme-options" id="theme-options"></div></div>
       <div class="setting-row"><div><strong>Activity history</strong><p>Earnings, contributions and feedback.</p></div><button class="secondary-button" id="open-activity-history">View</button></div>
       <div class="setting-row"><div><strong>Parent support</strong><p>Review paid work, temporary checks and new opportunities.</p></div><button class="secondary-button" id="open-parent">Parent access</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="pattern-studio-dialog">
+    <div class="pattern-studio-body">
+      <div class="dialog-head">
+        <div><span class="style-lab-kicker">STYLE LAB / 01</span><h2>Pattern Studio</h2></div>
+        <button class="close-button" type="button" data-pattern-cancel aria-label="Close Pattern Studio">×</button>
+      </div>
+      <p class="pattern-studio-intro">Draw one 32 × 32 pixel tile. It repeats live behind solid, readable content surfaces.</p>
+      <div class="pattern-studio-layout">
+        <section>
+          <div class="pattern-tool-row" role="group" aria-label="Drawing tools">
+            <button class="pattern-tool active" type="button" data-pattern-tool="pencil" aria-pressed="true">Pencil</button>
+            <button class="pattern-tool" type="button" data-pattern-tool="eraser" aria-pressed="false">Eraser</button>
+            <button class="pattern-tool" type="button" data-pattern-tool="fill" aria-pressed="false">Fill</button>
+            <button class="pattern-tool" type="button" data-pattern-tool="eyedropper" aria-pressed="false">Pick colour</button>
+            <button class="pattern-tool" type="button" data-pattern-command="undo">Undo</button>
+            <button class="pattern-tool" type="button" data-pattern-command="redo">Redo</button>
+            <button class="pattern-tool" type="button" data-pattern-command="clear">Clear</button>
+            <button class="pattern-tool" type="button" data-pattern-command="reset">Reset</button>
+          </div>
+          <div class="pattern-canvas-wrap">
+            <canvas id="pattern-canvas" width="32" height="32" role="img" aria-label="Editable 32 by 32 pixel pattern canvas. Use the drawing tools and touch or drag on the canvas."></canvas>
+          </div>
+          <div class="pattern-palette" role="group" aria-label="Pattern colours">
+            <button class="pattern-colour" type="button" data-pattern-colour="#101225" style="background:#101225" aria-label="Ink"></button>
+            <button class="pattern-colour active" type="button" data-pattern-colour="#3f57ff" style="background:#3f57ff" aria-label="Electric blue"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#f5ee38" style="background:#f5ee38" aria-label="Signal yellow"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#ff6962" style="background:#ff6962" aria-label="Coral"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#fffef7" style="background:#fffef7" aria-label="Paper"></button>
+            <input class="pattern-custom-colour" id="pattern-custom-colour" type="color" value="#3f57ff" aria-label="Choose a custom colour">
+          </div>
+        </section>
+        <aside>
+          <span class="style-lab-kicker pattern-preview-label">LIVE REPEAT</span>
+          <div class="pattern-repeat-preview" data-pattern-preview>
+            <div class="pattern-readability-card"><small>READABILITY TEST</small><strong>Content stays clear.</strong><p>Your pattern lives behind solid information surfaces.</p></div>
+          </div>
+          <div class="pattern-save-row">
+            <input id="pattern-name" maxlength="32" placeholder="Name this design" aria-label="Pattern name">
+            <button class="secondary-button" type="button" data-pattern-save>Save copy</button>
+          </div>
+          <div class="saved-patterns" id="saved-patterns"></div>
+          <p class="pattern-studio-note">Patterns are creative choices, not rewards. No chores, grades, streaks or levels unlock them.</p>
+        </aside>
+      </div>
+      <div class="form-actions"><button class="secondary-button" type="button" data-pattern-cancel>Cancel</button><button class="primary-button" type="button" data-pattern-use>Use this pattern</button></div>
     </div>
   </dialog>
 
@@ -1221,6 +1288,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="./assets/style-lab.js"></script>
   <script>
     // Keep this URL if you update the existing Apps Script deployment. Replace it only if you create a new deployment.
     const API_URL = "https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec";
@@ -1552,6 +1620,7 @@
       renderSkills();
       renderActivity();
       renderSchool();
+      renderHomeOverview();
     }
 
     function renderGoal() {
@@ -1563,11 +1632,15 @@
 
   if (!goal) {
     host.innerHTML = `
-      <div class="surface empty">
-        <span class="empty-icon">🎯</span>
-        <strong>No active goal yet</strong>
-        <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose a goal when you are ready."}</p>
-      </div>`;
+      <article class="home-goal-card home-goal-empty">
+        <div class="home-goal-copy">
+          <span class="home-os-label">MAKE IT MEANINGFUL</span>
+          <h3>No pinned goal yet</h3>
+          <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose something that matters to you when you are ready."}</p>
+          ${app.dataUnavailable ? "" : `<button class="primary-button" type="button" data-go-view="goals">Explore goals ↗</button>`}
+        </div>
+        <div class="home-goal-visual" aria-hidden="true"><img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt=""></div>
+      </article>`;
     return;
   }
 
@@ -1576,30 +1649,61 @@
   const percent = clampPercent(saved / target * 100);
 
   const imageUrl = safeUrl(goal.imageUrl);
-  const visual = imageUrl
-    ? `<img class="goal-image" src="${safe(imageUrl)}" alt="${safe(goal.title)}">`
-    : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
-
   host.innerHTML = `
-    <article class="surface goal-card">
-      ${visual}
-      <div>
-        <div class="goal-top">
-          <h3>${safe(goal.title)}</h3>
-          <span class="goal-amount">${money(saved)} / ${money(target)}</span>
-        </div>
-
+    <article class="home-goal-card">
+      <div class="home-goal-copy">
+        <span class="home-os-label">CURRENT GOAL</span>
+        <h3>${safe(goal.title)}</h3>
+        <p class="home-goal-amount"><strong>${money(saved)}</strong> of ${money(target)}</p>
         <div class="progress" aria-label="${Math.round(percent)} percent saved">
           <span style="width:${percent}%"></span>
         </div>
-
         <div class="goal-meta">
           <span>${Math.round(percent)}% there</span>
           <span>${money(Math.max(0, target - saved))} to go</span>
         </div>
       </div>
+      <div class="home-goal-visual" aria-hidden="true">
+        <img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt="">
+        ${imageUrl ? `<img class="home-goal-product" src="${safe(imageUrl)}" alt="">` : ""}
+      </div>
     </article>`;
 }
+
+    function renderHomeOverview() {
+      const activeDomains = LEARNING_DOMAINS.filter(domain => domain.available).length;
+      const currentStates = new Set(["available", "in_progress", "returned_for_completion"]);
+      const contribute = app.data.jobs.filter(job => job.type === "contribute" && currentStates.has(job.status)).length;
+      const earn = app.data.jobs.filter(job => job.type === "earn" && currentStates.has(job.status)).length;
+      const skillsMeta = $("#home-skills-meta");
+      const schoolMeta = $("#home-school-meta");
+      const contributeMeta = $("#home-contribute-meta");
+      const earnMeta = $("#home-earn-meta");
+      if (skillsMeta) skillsMeta.textContent = `${activeDomains} pathways open`;
+      if (schoolMeta) schoolMeta.textContent = !app.schoolKey ? "Set up on this device" : app.schoolUnavailable ? "Unavailable right now" : app.schoolLoaded ? `${app.schoolTasks.length} active task${app.schoolTasks.length === 1 ? "" : "s"}` : "Loading support space";
+      if (contributeMeta) contributeMeta.textContent = `${contribute} current choice${contribute === 1 ? "" : "s"}`;
+      if (earnMeta) earnMeta.textContent = `${earn} available job${earn === 1 ? "" : "s"}`;
+
+      const items = [];
+      const activeJobs = [...app.data.jobs]
+        .filter(job => ["in_progress", "returned_for_completion"].includes(job.status))
+        .sort(opportunitySort);
+      const nextJob = activeJobs[0] || [...app.data.jobs].filter(job => job.type === "learn" && job.status === "available").sort(opportunitySort)[0];
+      if (nextJob) {
+        const type = String(nextJob.type || "activity").toUpperCase();
+        items.push(`<button class="home-now-card" type="button" data-open-opportunity="${safe(nextJob.id)}">
+          <span class="home-now-index">01</span><span><small>${safe(type)} · ${safe(nextJob.skill || nextJob.domain || "YOUR CHOICE")}</small><strong>${safe(nextJob.title)}</strong><span class="home-now-note">${safe(opportunityStatusLabel(nextJob))}</span></span><span aria-hidden="true">→</span>
+        </button>`);
+      }
+      if (app.schoolKey && app.schoolLoaded && !app.schoolUnavailable && app.schoolTasks.length) {
+        const task = [...app.schoolTasks].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b))[0];
+        items.push(`<button class="home-now-card" type="button" data-go-view="school">
+          <span class="home-now-index">${String(items.length + 1).padStart(2, "0")}</span><span><small>SCHOOL · ${safe(task.subject || "CURRENT")}</small><strong>${safe(task.title)}</strong><span class="home-now-note">${safe(task.currentAction || task.nextAction || "Choose one useful next action")}</span></span><span aria-hidden="true">→</span>
+        </button>`);
+      }
+      const host = $("#home-now");
+      if (host) host.innerHTML = items.length ? items.slice(0, 2).join("") : `<button class="home-now-card" type="button" data-go-view="skills"><span class="home-now-index">01</span><span><small>OPEN SPACE</small><strong>Nothing needs your attention right now.</strong><span class="home-now-note">Choose a skill only if you feel like it.</span></span><span aria-hidden="true">→</span></button>`;
+    }
 
     const OPPORTUNITY_STATUS_LABELS = {
       available: "Available",
@@ -1683,7 +1787,8 @@
       const jobs = [...app.data.jobs].filter(job => job.status !== "cancelled").sort(opportunitySort);
       const workJobs = jobs.filter(job => job.type === "contribute" || job.type === "earn");
       const suggestions = workJobs.filter(job => ["in_progress", "returned_for_completion", "available"].includes(job.status)).slice(0, 2);
-      $("#suggested-jobs").innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing needs attention right now.</div>`;
+      const suggestedHost = $("#suggested-jobs");
+      if (suggestedHost) suggestedHost.innerHTML = suggestions.length ? suggestions.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">✨</span>Nothing needs attention right now.</div>`;
       const filtered = workJobs.filter(job => app.jobFilter === "all" || job.type === app.jobFilter);
       $("#all-jobs").innerHTML = filtered.length ? filtered.map(jobMarkup).join("") : `<div class="surface empty"><span class="empty-icon">🔎</span>No activities in this group right now.</div>`;
       $$("#opportunity-filters .filter-chip").forEach(chip => chip.setAttribute("aria-pressed", chip.dataset.filter === app.jobFilter ? "true" : "false"));
@@ -2191,20 +2296,24 @@
       if (!app.schoolKey) {
         access.innerHTML = `<article class="surface school-access"><h3>School needs setup on this device</h3><p>A parent can open Parent access and choose <strong>Set up School on this device</strong>. No school login or Daymap password is stored here.</p></article>`;
         workspace.innerHTML = "";
+        renderHomeOverview();
         return;
       }
       if (app.schoolUnavailable) {
         access.innerHTML = `<article class="surface school-access"><h3>School data is unavailable</h3><p>Your school tasks are private and are not replaced with fake or stale data. Reconnect and try again.</p></article>`;
         workspace.innerHTML = "";
+        renderHomeOverview();
         return;
       }
       access.innerHTML = "";
       if (!app.schoolLoaded) {
         workspace.innerHTML = `<div class="skeleton"></div>`;
+        renderHomeOverview();
         return;
       }
       workspace.innerHTML = app.schoolView === "subjects" ? renderSchoolSubjects(app.schoolTasks) : renderSchoolNow(app.schoolTasks);
       renderSchoolHistory();
+      renderHomeOverview();
     }
 
     async function loadSchoolWorkspace({ quiet = false, adminKey = "" } = {}) {
@@ -2868,6 +2977,22 @@
       return { sophieApp: true, view: app.activeView, skillsDomain: app.skillsDomain || "", ...extra };
     }
 
+    function updateTopbar(view = app.activeView) {
+      const labels = {
+        home: ["HOME", "Make today yours."],
+        opportunities: ["ACTIVITY", "Choose what fits."],
+        goals: ["GOALS", "What matters to me."],
+        skills: ["SKILLS", "Build real capability."],
+        school: ["SCHOOL", "One clear step."],
+        activity: ["HISTORY", "My activity."]
+      };
+      const [label, title] = labels[view] || labels.home;
+      const hour = new Date().getHours();
+      const daypart = hour < 12 ? "MORNING" : hour < 18 ? "AFTERNOON" : "EVENING";
+      $("#day-greeting").textContent = view === "home" ? `${daypart} // SOPHIE` : `SOPHIE // ${label}`;
+      $("#topbar-title").textContent = title;
+    }
+
     function writeNavigationState(mode = "push", extra = {}) {
       if (app.applyingHistory) return;
       const state = navigationState(extra);
@@ -2897,6 +3022,7 @@
         if (active) button.setAttribute("aria-current", "page");
         else button.removeAttribute("aria-current");
       });
+      updateTopbar(app.activeView);
       renderSkills();
       if (target.overlay === "recommendation") {
         app.rec.view = target.recView || "setup";
@@ -2929,6 +3055,7 @@
         if (active) button.setAttribute("aria-current", "page");
         else button.removeAttribute("aria-current");
       });
+      updateTopbar(view);
       window.scrollTo({ top: 0, behavior: "smooth" });
       if (view === "school") {
         renderSchool();
@@ -4028,13 +4155,13 @@
       sessionStorage.removeItem("sophie_admin_expires_at");
     }
 
-    const hour = new Date().getHours();
-    $("#day-greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    updateTopbar("home");
     history.replaceState(navigationState(), "", location.href);
     window.addEventListener("popstate", event => applyNavigationState(event.state));
     setupPersonalisation();
     renderSchool();
     loadData({ quiet: true });
+    if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
   </script>
   <script src="./assets/skill-pathways-v28.js"></script>
