@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 61330)
-Total output lines: 4021
-
 <!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -1687,7 +1684,749 @@ Total output lines: 4021
           <div class="surface empty">
             <span class="empty-icon">🎯</span>
             <strong>No goals yet</strong>
-   …11330 tokens truncated…       console.warn("Rubric unavailable:", error);
+            <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose something that matters to you and add your first goal."}</p>
+          </div>`;
+        return;
+      }
+
+      host.innerHTML = app.data.goals.map(goal => {
+        const target = Math.max(Number(goal.targetAmount) || 0, 1);
+        const saved = Number(goal.savedAmount) || 0;
+        const percent = clampPercent(saved / target * 100);
+        const imageUrl = safeUrl(goal.imageUrl);
+        const productUrl = safeUrl(goal.productUrl);
+
+        const visual = imageUrl
+          ? `<img class="goal-page-image"
+                  src="${safe(imageUrl)}"
+                  alt="${safe(goal.title)}">`
+          : `<div class="goal-icon">${safe(goal.icon || "🎯")}</div>`;
+
+        const productLink = productUrl
+          ? `<a class="product-link"
+                href="${safe(productUrl)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                View product / Where to buy →
+             </a>`
+          : "";
+
+        return `
+          <article class="surface full-goal-card">
+            ${visual}
+
+            <div class="skill-head">
+              <span></span>
+              <span class="status ${
+                String(goal.status).toLowerCase() === "complete"
+                  ? "completed"
+                  : "pending"
+              }">
+                ${safe(goal.status || "active")}
+              </span>
+            </div>
+
+            <h3>${safe(goal.title)}</h3>
+            <p>${money(saved)} saved towards ${money(target)}</p>
+
+            <div class="progress">
+              <span style="width:${percent}%"></span>
+            </div>
+
+            <div class="goal-meta">
+              <span>${Math.round(percent)}%</span>
+              <span>${money(Math.max(0, target - saved))} left</span>
+            </div>
+
+            ${productLink}
+          </article>`;
+      }).join("");
+    }
+
+    function learnItems() {
+      return [...app.data.jobs].filter(job => job.type === "learn" && job.status !== "cancelled").sort(opportunitySort);
+    }
+
+    function learnCardsMarkup(items, emptyTitle, emptyCopy = "") {
+      if (items.length) return `<div class="cards skills-list skills-learning-list">${items.map(jobMarkup).join("")}</div>`;
+      return `<div class="surface empty"><span class="empty-icon">🌱</span><strong>${safe(emptyTitle)}</strong>${emptyCopy ? `<p>${safe(emptyCopy)}</p>` : ""}</div>`;
+    }
+
+    function skillCapabilitiesMarkup() {
+      if (!app.data.skills.length) return "";
+      return `<section class="skills-section" aria-labelledby="capabilities-heading">
+        <div class="section-heading"><div><h2 id="capabilities-heading">Capabilities</h2><p>Useful areas the app already knows about. No levels, XP or readiness scores.</p></div></div>
+        <div class="capability-grid skills-list">${app.data.skills.map(skill => `<article class="surface capability-card"><span class="capability-icon" aria-hidden="true">${safe(skill.icon || "🌱")}</span><div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Built through real experience and useful feedback.")}</p></div></article>`).join("")}</div>
+      </section>`;
+    }
+
+    function learningDomainCardsMarkup() {
+      return `<div class="learning-domain-grid skills-list">${LEARNING_DOMAINS.map(domain => domain.available
+        ? `<button class="learning-domain-card available" type="button" data-skills-domain="${safe(domain.id)}"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Open domain →</em></span></button>`
+        : `<article class="learning-domain-card planned" aria-label="${safe(domain.name)}, pathway planned"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Pathway planned</em></span></article>`
+      ).join("")}</div>`;
+    }
+
+    function renderSkillsOverview() {
+      const current = learnItems().filter(job => !["completed", "withdrawn"].includes(job.status));
+      const history = learnItems().filter(job => ["completed", "withdrawn"].includes(job.status));
+      return `<div class="page-intro"><h2>Skills</h2><p>Choose what you want to learn, keep current practice together and see useful next pathways.</p></div>
+        <section class="skills-section" aria-labelledby="current-learning-heading">
+          <div class="section-heading"><div><h2 id="current-learning-heading">Currently learning</h2><p>Available and in-progress Learn activities. Adding one never starts it automatically.</p></div></div>
+          ${learnCardsMarkup(current, "Nothing active right now", "Open a learning domain when you want to choose something.")}
+        </section>
+        <section class="skills-section" aria-labelledby="domains-heading">
+          <div class="section-heading"><div><h2 id="domains-heading">What could I learn?</h2><p>Open a domain for techniques, pathways, resources and discovery that belong to that area.</p></div></div>
+          ${learningDomainCardsMarkup()}
+        </section>
+        ${skillCapabilitiesMarkup()}
+        <details class="skills-history"><summary>Completed or stopped for now <span>${history.length}</span></summary><p>Past practice is information, not proof of mastery.</p>${learnCardsMarkup(history, "No past Learn activity yet")}</details>`;
+    }
+
+    function cookingPathwayMarkup() {
+      return `<div class="pathway-list" aria-label="Sharp-tools learning pathway">${COOKING_PATHWAY.map((step, index) => `<article class="pathway-step ${safe(step.kind)}"><span class="pathway-marker" aria-hidden="true">${safe(step.icon)}</span><div><span class="pathway-label">${safe(step.label)}</span><h3>${safe(step.name)}</h3><p>${safe(step.description)}</p>${step.kind === "hard" ? `<div class="prerequisite-note"><strong>Locked when the safety prerequisite is not confirmed.</strong><br>Practise first: Set Up Sharp Tools Safely. The authoritative rec-v1 eligibility check decides availability for a specific activity and setup.</div>` : ""}</div></article>${index < COOKING_PATHWAY.length - 1 ? `<div class="pathway-connector" aria-hidden="true">↓</div>` : ""}`).join("")}</div>`;
+    }
+
+    function renderCookingDomain() {
+      const cookingLearn = learnItems().filter(job => /cook|food|kitchen|knife|recipe/i.test([job.category, job.skill, job.title, job.scope].join(" ")) && !["completed", "withdrawn"].includes(job.status));
+      return `<button class="skills-back" type="button" data-skills-back>← All skill areas</button>
+        <div class="domain-hero"><span class="domain-hero-icon" aria-hidden="true">🍳</span><div><p class="eyebrow">Learning domain</p><h2>Cooking</h2><p>Build techniques through real food, with safety and support chosen for this cooking session.</p></div></div>
+        ${cookingLearn.length ? `<section class="skills-section" aria-labelledby="cooking-current-heading"><div class="section-heading"><div><h2 id="cooking-current-heading">Cooking I'm practising</h2><p>Cooking Learn activities already in your authoritative D-006 list.</p></div></div>${learnCardsMarkup(cookingLearn, "No Cooking activity active")}</section>` : ""}
+        <section class="skills-section" aria-labelledby="cooking-discovery-heading"><div id="learn-recommendation-host"></div></section>
+        <section class="skills-section" aria-labelledby="cooking-pathway-heading"><div class="section-heading"><div><h2 id="cooking-pathway-heading">How a safety pathway works</h2><p>Real safety dependencies can block an activity. Helpful preparation changes support and order but does not create an arbitrary lock.</p></div></div>${cookingPathwayMarkup()}<div class="recommended-prerequisite"><strong>Recommended, not locked:</strong> “Read the Heat” can be suggested before “Sauté Without Steaming”, but Sophie can still choose the later activity with suitable scaffolding.</div></section>`;
+    }
+
+    function renderSkills() {
+      const host = $("#skills-workspace");
+      if (!host) return;
+      host.innerHTML = app.skillsDomain === "cooking" ? renderCookingDomain() : renderSkillsOverview();
+      if (app.skillsDomain === "cooking") renderLearningRecommendationEntry();
+    }
+
+    function renderActivity() {
+      const host = $("#activity-list");
+      if (!app.data.transactions.length) {
+        host.innerHTML = `<div class="empty"><span class="empty-icon">☷</span><strong>No activity yet</strong><p>The secure transaction ledger begins with v2.</p></div>`;
+        return;
+      }
+      host.innerHTML = app.data.transactions.map(tx => {
+        const amount = Number(tx.amount) || 0;
+        const amountText = amount ? `${amount > 0 ? "+" : ""}${money(amount)}` : "Contribution";
+        return `<article class="activity-row"><div class="activity-icon">${iconFor(tx.type)}</div><div><h3>${safe(tx.description)}</h3><p>${formatDate(tx.date)} · ${safe(tx.feedback || tx.status || "Recorded")}</p></div><div class="activity-amount ${amount >= 0 ? "positive" : "negative"}">${safe(amountText)}</div></article>`;
+      }).join("");
+    }
+
+
+
+    const SCHOOL_JOURNEY = [
+      ["understand", "Understand"],
+      ["plan", "Plan"],
+      ["work", "Work"],
+      ["check", "Check"],
+      ["submit", "Submit"],
+      ["feedback", "Feedback"]
+    ];
+    const SCHOOL_SUPPORT = [
+      ["show_me", "Show me"],
+      ["do_with_me", "Do it with me"],
+      ["prompt_me", "Prompt me"],
+      ["got_this", "I've got this"]
+    ];
+    const SCHOOL_STAGE_GUIDANCE = {
+      understand: {
+        purpose: "Make sure you know what the teacher is asking before you start doing the work.",
+        model: "Look for the thing you need to hand in and the instruction word. Example: ‘Compare two ideas in a report’ means make a report, cover two ideas, and explain similarities and differences.",
+        steps: ["What do I need to make, answer or hand in?", "Which instruction word tells me what to do — explain, compare, calculate, describe or something else?", "What part is still unclear?"],
+        coach: ["In your own words, what do you think the teacher wants you to produce?", "Which word or sentence in the instructions tells you what kind of thinking or work to do?", "Is there anything you still cannot explain clearly? If yes, use ‘I need help’."],
+        prompt: "Say the task in one sentence: ‘I need to…’",
+        independent: "If you can explain the task in your own words, move on to Plan."
+      },
+      plan: {
+        purpose: "Turn the assignment into a few manageable pieces and choose the next useful one.",
+        model: "A big task becomes easier when it is broken down. Example: read instructions → gather what you need → make a first version → check → submit.",
+        steps: ["What parts does this task have?", "What needs to happen first?", "What is small enough to finish or clearly progress in one sitting?"],
+        coach: ["What are the main pieces of this task? Keep the list short.", "Which piece should happen first because something else depends on it?", "What single action should appear in ‘Working on now’?"],
+        prompt: "What is the smallest useful thing you can do next?",
+        independent: "Keep ‘Working on now’ to one concrete action, not the whole assignment."
+      },
+      work: {
+        purpose: "Work on one visible piece at a time instead of carrying the whole assignment in your head.",
+        model: "Make the action specific. ‘Write the first paragraph’ or ‘complete questions 1–3’ is clearer than ‘do English’ or ‘do maths’.",
+        steps: ["Open the materials you need.", "Do the action shown in ‘Working on now’.", "When that action changes, update it instead of leaving an old instruction on the card."],
+        coach: ["What do you need open in front of you to do this action?", "Do only the action shown in ‘Working on now’ first.", "Finished that piece? Decide whether to set a new action, move to Check, or ask for help."],
+        prompt: "What can you make, solve, write or finish next?",
+        independent: "The app will stay out of the way. Keep the current action accurate and use help if you hit a real block."
+      },
+      check: {
+        purpose: "Check that the work answers the task before spending time polishing small details.",
+        model: "Check requirements first, then obvious mistakes. Missing a required section matters more than fixing one comma while a whole part is absent.",
+        steps: ["Read the task instructions again.", "Compare the work with what was actually asked for.", "Fix one missing or unclear part, then check obvious errors."],
+        coach: ["What did the teacher ask for that you can point to in your work?", "What is missing, unclear or unsupported right now?", "After the big pieces are there, what obvious spelling, working, units, labels or attachments need checking?"],
+        prompt: "What would the teacher notice is missing or unclear?",
+        independent: "When the required parts are there, move to Submit. The app will still offer a quick final submission check."
+      },
+      submit: {
+        purpose: "Finish the hand-in process, not just the schoolwork itself.",
+        model: "Submission is complete when the right work goes to the right place and you can tell it was received. The app keeps ‘Submitted’ and ‘Received’ separate for that reason.",
+        steps: ["Make sure you are sending the correct work or file.", "Check required attachments, names or formats.", "Submit it, then confirm Daymap or the teacher shows it was received."],
+        coach: ["What exactly are you about to submit?", "Where does it need to go, and are all required parts attached?", "After submitting, what will show you that it was actually received?"],
+        prompt: "Do I know exactly what I am submitting, where it goes, and how I will confirm receipt?",
+        independent: "Use Submit when you are ready. The final check is short and does not judge the quality of your work."
+      },
+      feedback: {
+        purpose: "Use feedback as information for the next task, not as a score about you.",
+        model: "Look for two things: what worked, and one useful thing to carry forward. A grade or mark is an outcome, not a reward or punishment in Sophie App.",
+        steps: ["Read the feedback without rushing to the mark.", "Notice one thing that worked or improved.", "Choose one thing you want to repeat or change next time."],
+        coach: ["What does the feedback say went well?", "What is one specific thing that could improve next time?", "What do you want to remember when a similar task appears again?"],
+        prompt: "What is one useful thing you want to repeat or change next time?",
+        independent: "Review the feedback when it is useful, then move the task to Past work when you are finished with it."
+      }
+    };
+    const SUBJECT_COLOURS = {
+      english: "#8b63c7", mathematics: "#4b79a8", maths: "#4b79a8", science: "#3b8a76",
+      hass: "#a06f45", japanese: "#b76572", hpe: "#527f58", music: "#9b6a9a", art: "#a97546",
+      technology: "#4d7f8d", default: "#7564ff"
+    };
+
+    function schoolSubjectKey(task) {
+      return String(task.subjectKey || task.subject || "default").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    }
+
+    function schoolSubjectColour(task) {
+      const key = schoolSubjectKey(task);
+      if (SUBJECT_COLOURS[key]) return SUBJECT_COLOURS[key];
+      if (key.includes("math")) return SUBJECT_COLOURS.mathematics;
+      if (key.includes("english")) return SUBJECT_COLOURS.english;
+      if (key.includes("science")) return SUBJECT_COLOURS.science;
+      if (key.includes("japan")) return SUBJECT_COLOURS.japanese;
+      if (key.includes("health") || key.includes("physical")) return SUBJECT_COLOURS.hpe;
+      if (key.includes("music")) return SUBJECT_COLOURS.music;
+      return SUBJECT_COLOURS.default;
+    }
+
+    function parseDateOnly(value) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+      if (!match) return null;
+      return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    }
+
+    function schoolDueInfo(value) {
+      const due = parseDateOnly(value);
+      if (!due) return { label: "No due date", days: 9999 };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      due.setHours(0, 0, 0, 0);
+      const days = Math.round((due - today) / 86400000);
+      if (days === 0) return { label: "Due today", days };
+      if (days === 1) return { label: "Due tomorrow", days };
+      if (days === -1) return { label: "1 day overdue", days };
+      if (days < -1) return { label: `${Math.abs(days)} days overdue`, days };
+      if (days > 1 && days <= 14) return { label: `${days} days until due`, days };
+      return { label: `Due ${new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(due)}`, days };
+    }
+
+    function schoolSubmissionTiming(task) {
+      const due = parseDateOnly(task.dueDate);
+      const submitted = task.submittedAt ? new Date(task.submittedAt) : null;
+      const shortDate = date => new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short" }).format(date);
+
+      if (!due) {
+        if (submitted && !Number.isNaN(submitted.getTime())) {
+          return { label: "Handed in", detail: `Handed in ${shortDate(submitted)} · due date not recorded`, state: "unknown" };
+        }
+        return { label: "Submission timing not recorded", detail: "Due date not recorded", state: "unknown" };
+      }
+
+      const dueLabel = shortDate(due);
+      if (!submitted || Number.isNaN(submitted.getTime())) {
+        return { label: "Submission timing not recorded", detail: `Due ${dueLabel}`, state: "unknown" };
+      }
+
+      const calendarDay = date => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000;
+      const daysFromDue = Math.round(calendarDay(submitted) - calendarDay(due));
+      const submittedLabel = shortDate(submitted);
+
+      if (daysFromDue < 0) {
+        const days = Math.abs(daysFromDue);
+        return {
+          label: `Handed in ${days} day${days === 1 ? "" : "s"} early`,
+          detail: `Due ${dueLabel} · Handed in ${submittedLabel}`,
+          state: "on-time"
+        };
+      }
+      if (daysFromDue === 0) {
+        return { label: "Handed in on time", detail: `Due ${dueLabel} · Handed in ${submittedLabel}`, state: "on-time" };
+      }
+      return {
+        label: `Handed in ${daysFromDue} day${daysFromDue === 1 ? "" : "s"} late`,
+        detail: `Due ${dueLabel} · Handed in ${submittedLabel}`,
+        state: "late"
+      };
+    }
+
+    function schoolStageLabel(stage) {
+      return Object.fromEntries(SCHOOL_JOURNEY)[String(stage || "understand")] || "Understand";
+    }
+
+    function schoolSupportLabel(value) {
+      return Object.fromEntries(SCHOOL_SUPPORT)[String(value || "")] || "Choose when useful";
+    }
+
+    function schoolScaffoldLabel(value) {
+      return ({ guided: "Guided", shared: "Shared", self_managed: "Self-managed", light: "Light" })[String(value || "guided")] || "Guided";
+    }
+
+    function schoolHelpLabel(type) {
+      return ({
+        understand: "You asked for help understanding the task.",
+        stuck: "You asked for help with a step.",
+        feedback: "You asked for feedback on your work.",
+        submitting: "You asked for help submitting it."
+      })[type] || "";
+    }
+
+    function schoolHasOutcome(task) {
+      return Boolean(task.journeyStage === "feedback" || task.gradeOrResult || task.mark || task.teacherComment || task.coachComment || task.carryForwardSuggestion);
+    }
+
+    function schoolStatusLabel(task) {
+      if (task.submissionState === "received" || task.receiptConfirmedAt) return "Received";
+      if (task.submissionState === "submitted" || task.submittedAt) return "Submitted";
+      return schoolStageLabel(task.journeyStage);
+    }
+
+    function schoolTaskPriority(task) {
+      const due = schoolDueInfo(task.dueDate);
+      if (task.helpType) return -3000 + due.days;
+      if (task.submissionState === "submitted") return -2000 + due.days;
+      if (task.submissionState === "received") return 2000 + due.days;
+      return due.days;
+    }
+
+    function schoolNextJourneyStage(stage) {
+      const order = SCHOOL_JOURNEY.map(([value]) => value);
+      const index = order.indexOf(String(stage || "understand"));
+      return index >= 0 && index < order.length - 1 ? order[index + 1] : "";
+    }
+
+    function schoolJourneyMarkup(task) {
+      const hasOutcome = schoolHasOutcome(task);
+      const submitted = task.submissionState && task.submissionState !== "not_submitted";
+      return `<div class="school-journey"><div class="school-journey-label">Assignment journey</div><div class="school-journey-track">${SCHOOL_JOURNEY.map(([value, label]) => {
+        const disabledForOutcome = value === "feedback" && !hasOutcome && task.journeyStage !== "feedback";
+        const disabledAfterSubmit = submitted && !["submit", "feedback"].includes(value);
+        const disabled = disabledForOutcome || disabledAfterSubmit;
+        const title = disabledForOutcome ? "Available when feedback is recorded" : disabledAfterSubmit ? "Earlier stages are locked after submission" : "";
+        return `<button type="button" class="journey-step ${task.journeyStage === value ? "active" : ""}" data-school-stage="${value}" data-school-id="${safe(task.taskId)}" aria-current="${task.journeyStage === value ? "step" : "false"}" ${disabled ? `disabled title="${safe(title)}"` : ""}>${label}</button>`;
+      }).join("")}</div></div>`;
+    }
+
+    function schoolSupportMarkup(task) {
+      const support = String(task.supportPreference || "");
+      const explanation = ({
+        show_me: "The app shows an example and the whole process. It will not create assessed work for you.",
+        do_with_me: "The app gives one question at a time so you can work through the stage yourself.",
+        prompt_me: "The app gives one short prompt, then leaves the thinking and work to you.",
+        got_this: "The app keeps most guidance out of the way. Help is still one tap away."
+      })[support] || "Choose how much structure you want from the app for this stage. This does not send a help request.";
+      return `<div class="school-support"><div class="school-support-label">Support I want right now</div><div class="school-support-options">${SCHOOL_SUPPORT.map(([value, label]) => `<button type="button" class="support-choice ${support === value ? "active" : ""}" data-school-support="${value}" data-school-id="${safe(task.taskId)}" aria-pressed="${support === value ? "true" : "false"}">${label}</button>`).join("")}</div><p class="school-support-explainer">${safe(explanation)}</p></div>`;
+    }
+
+    function schoolGuideKey(task) {
+      return `${String(task.taskId)}:${String(task.journeyStage || "understand")}`;
+    }
+
+    function schoolGuideIndex(task, max) {
+      const raw = Number(app.schoolGuideSteps[schoolGuideKey(task)]) || 0;
+      return Math.max(0, Math.min(Math.max(0, max - 1), raw));
+    }
+
+    function schoolStageNextMarkup(task) {
+      const next = schoolNextJourneyStage(task.journeyStage);
+      if (!next) return "";
+      if (next === "feedback" && !schoolHasOutcome(task)) return "";
+      if (task.submissionState && task.submissionState !== "not_submitted" && next !== "feedback") return "";
+      return `<div class="school-stage-next"><p>Ready to move on?</p><button class="secondary-button" type="button" data-school-next-stage="${safe(next)}" data-school-id="${safe(task.taskId)}">Move to ${safe(schoolStageLabel(next))}</button></div>`;
+    }
+
+    function schoolScaffoldMarkup(task) {
+      const stage = String(task.journeyStage || "understand");
+      const support = String(task.supportPreference || "");
+      const guidance = SCHOOL_STAGE_GUIDANCE[stage] || SCHOOL_STAGE_GUIDANCE.understand;
+      if (!support) {
+        return `<section class="school-scaffold compact" aria-label="Stage guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: what this stage is for</h4><span class="school-scaffold-mode">Choose support</span></div><p>${safe(guidance.purpose)}</p><p style="margin-top:7px">Pick a support level above and the app will change how much guidance it shows.</p></section>`;
+      }
+
+      if (support === "show_me") {
+        return `<section class="school-scaffold" aria-label="Show me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: show me</h4><span class="school-scaffold-mode">Example + steps</span></div><p>${safe(guidance.purpose)}</p><div class="school-scaffold-model"><strong>Example of the process</strong><p>${safe(guidance.model)}</p></div><ol class="school-scaffold-steps">${guidance.steps.map((step, index) => `<li><span>${index + 1}</span><span>${safe(step)}</span></li>`).join("")}</ol>${schoolStageNextMarkup(task)}</section>`;
+      }
+
+      if (support === "do_with_me") {
+        const prompts = guidance.coach || [];
+        const index = schoolGuideIndex(task, prompts.length || 1);
+        const prompt = prompts[index] || guidance.prompt;
+        return `<section class="school-scaffold" aria-label="Do it with me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: do it with me</h4><span class="school-scaffold-mode">One step at a time</span></div><p>${safe(guidance.purpose)}</p><div class="school-coach-prompt"><span class="school-coach-progress">Prompt ${index + 1} of ${Math.max(1, prompts.length)}</span><strong>${safe(prompt)}</strong></div><div class="school-coach-actions">${index > 0 ? `<button class="text-button" type="button" data-school-guide-back="${safe(task.taskId)}">← Back</button>` : ""}${index < prompts.length - 1 ? `<button class="secondary-button" type="button" data-school-guide-next="${safe(task.taskId)}">Next prompt →</button>` : `<button class="secondary-button" type="button" data-school-action-edit="${safe(task.taskId)}">Set working on now</button>`}</div>${index >= prompts.length - 1 ? schoolStageNextMarkup(task) : ""}</section>`;
+      }
+
+      if (support === "prompt_me") {
+        return `<section class="school-scaffold compact" aria-label="Prompt me guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: one prompt</h4><span class="school-scaffold-mode">Prompt only</span></div><div class="school-coach-prompt" style="margin-top:0"><strong>${safe(guidance.prompt)}</strong></div><div class="school-coach-actions"><button class="text-button" type="button" data-school-action-edit="${safe(task.taskId)}">Change working on now</button></div>${schoolStageNextMarkup(task)}</section>`;
+      }
+
+      return `<section class="school-scaffold compact" aria-label="I've got this guidance"><div class="school-scaffold-head"><h4>${safe(schoolStageLabel(stage))}: I've got this</h4><span class="school-scaffold-mode">Minimal guidance</span></div><p>${safe(guidance.independent)}</p>${schoolStageNextMarkup(task)}</section>`;
+    }
+
+    function schoolTaskMarkup(task) {
+      const due = schoolDueInfo(task.dueDate);
+      const helpNote = schoolHelpLabel(task.helpType);
+      const hasOutcome = schoolHasOutcome(task);
+      const accent = schoolSubjectColour(task);
+      let submissionAction = "";
+      if (task.journeyStage === "submit" && task.submissionState === "not_submitted") {
+        submissionAction = `<button class="primary-button" type="button" data-school-submit="${safe(task.taskId)}">Submit</button>`;
+      } else if (task.submissionState === "submitted") {
+        submissionAction = `<button class="primary-button" type="button" data-school-received="${safe(task.taskId)}">Confirm received</button>`;
+      } else if (task.submissionState === "received" && task.recordState === "active") {
+        submissionAction = `<button class="secondary-button" type="button" data-school-history="${safe(task.taskId)}">Move to past work</button>`;
+      }
+      const outcomePeek = hasOutcome ? `<div class="school-feedback-peek"><strong>Feedback is available</strong><p>${safe(task.gradeOrResult || task.mark || task.carryForwardSuggestion || "Open the feedback to review it.")}</p></div>` : "";
+      return `<article class="surface school-task" style="--subject-accent:${accent}">
+        <div class="school-task-head">
+          <div><div class="school-meta">${safe(task.subject || "School")} · ${safe(due.label)}</div><h3>${safe(task.title)}</h3></div>
+          <span class="school-status">${safe(schoolStatusLabel(task))}</span>
+        </div>
+        <div class="school-next" role="group" aria-label="Working on now">
+          <div class="school-next-head"><div><span class="school-next-label">Working on now</span><strong>${safe(task.currentAction || task.nextAction || "Choose one useful next action")}</strong></div>${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-action-edit="${safe(task.taskId)}">Change</button>` : ""}</div>
+          <p class="school-next-note">This is the one action the app should help you keep in view right now.</p>
+        </div>
+        ${schoolJourneyMarkup(task)}
+        ${schoolSupportMarkup(task)}
+        ${schoolScaffoldMarkup(task)}
+        ${helpNote ? `<div class="school-help-note">${safe(helpNote)}</div>` : ""}
+        <div class="school-help-zone"><div><strong>Need another person or extra explanation?</strong><p>This is separate from how much app guidance you chose above.</p></div><button class="secondary-button" type="button" data-school-help="${safe(task.taskId)}">${task.helpType ? "Change help request" : "I need help"}</button></div>
+        ${outcomePeek}
+        <div class="school-actions">
+          ${submissionAction}
+          ${hasOutcome ? `<button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">Feedback</button>` : ""}
+          ${task.submissionState === "not_submitted" ? `<button class="text-button" type="button" data-school-edit="${safe(task.taskId)}">Edit task details</button>` : ""}
+        </div>
+      </article>`;
+    }
+
+    function renderSchoolNow(tasks) {
+      const ordered = [...tasks].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b));
+      if (!ordered.length) return `<div class="surface empty"><span class="empty-icon">▣</span><strong>No current school tasks</strong><p>Add the next task you need to manage. Daymap remains the official school record.</p></div>`;
+      const now = ordered.slice(0, 3);
+      const later = ordered.slice(3);
+      return `<section><div class="section-heading"><div><h2>What matters now</h2><p>Across subjects, with one clear action at a time.</p></div></div><div class="school-stack">${now.map(schoolTaskMarkup).join("")}</div></section>${later.length ? `<section class="school-section"><div class="section-heading"><div><h2>Later</h2><p>Still visible, without turning this into a giant calendar.</p></div></div><div class="school-stack">${later.map(schoolTaskMarkup).join("")}</div></section>` : ""}`;
+    }
+
+    function renderSchoolSubjects(tasks) {
+      if (!tasks.length) return renderSchoolNow(tasks);
+      const groups = new Map();
+      [...tasks].sort((a, b) => schoolTaskPriority(a) - schoolTaskPriority(b)).forEach(task => {
+        const key = task.subject || "Other";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(task);
+      });
+      return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([subject, items]) => {
+        const accent = schoolSubjectColour(items[0]);
+        return `<section class="school-subject-group" style="--subject-accent:${accent}"><div class="school-subject-heading"><span class="school-subject-dot" aria-hidden="true"></span><h3>${safe(subject)}</h3></div><div class="school-stack">${items.map(schoolTaskMarkup).join("")}</div></section>`;
+      }).join("");
+    }
+
+    function renderSchoolHistory() {
+      const host = $("#school-history-list");
+      if (!host) return;
+      const history = app.schoolHistory || [];
+      host.innerHTML = history.length ? history.map(task => {
+        const outcome = [task.gradeOrResult, task.mark].filter(Boolean).join(" · ");
+        const timing = schoolSubmissionTiming(task);
+        return `<article class="school-history-item">
+          <div class="school-history-meta">
+            <span class="school-meta">${safe(task.subject || "School")}</span>
+            <span class="school-history-timing ${safe(timing.state)}">${safe(timing.label)}</span>
+          </div>
+          <strong>${safe(task.title)}</strong>
+          <p>${safe(outcome || task.carryForwardSuggestion || task.teacherComment || "Completed school work")}</p>
+          <p class="school-history-dates">${safe(timing.detail)}</p>
+          ${schoolHasOutcome(task) ? `<div class="form-actions"><button class="secondary-button" type="button" data-school-feedback="${safe(task.taskId)}">View feedback</button></div>` : ""}
+        </article>`;
+      }).join("") : `<div class="empty"><span class="empty-icon">▣</span><strong>No past work yet</strong><p>Completed tasks can move here without becoming a scorecard.</p></div>`;
+    }
+
+    function syncSchoolViewControls() {
+      $$("[data-school-view]").forEach(button => {
+        const active = button.dataset.schoolView === app.schoolView;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    function renderSchool() {
+      const access = $("#school-access-state");
+      const workspace = $("#school-workspace");
+      if (!access || !workspace) return;
+      syncSchoolViewControls();
+
+      if (!app.schoolKey) {
+        access.innerHTML = `<article class="surface school-access"><h3>School needs setup on this device</h3><p>A parent can open Parent access and choose <strong>Set up School on this device</strong>. No school login or Daymap password is stored here.</p></article>`;
+        workspace.innerHTML = "";
+        return;
+      }
+      if (app.schoolUnavailable) {
+        access.innerHTML = `<article class="surface school-access"><h3>School data is unavailable</h3><p>Your school tasks are private and are not replaced with fake or stale data. Reconnect and try again.</p></article>`;
+        workspace.innerHTML = "";
+        return;
+      }
+      access.innerHTML = "";
+      if (!app.schoolLoaded) {
+        workspace.innerHTML = `<div class="skeleton"></div>`;
+        return;
+      }
+      workspace.innerHTML = app.schoolView === "subjects" ? renderSchoolSubjects(app.schoolTasks) : renderSchoolNow(app.schoolTasks);
+      renderSchoolHistory();
+    }
+
+    async function loadSchoolWorkspace({ quiet = false, adminKey = "" } = {}) {
+      if (!app.schoolKey && !adminKey) {
+        app.schoolLoaded = false;
+        app.schoolUnavailable = false;
+        renderSchool();
+        return null;
+      }
+      try {
+        const payload = { action: "getSchoolWorkspace" };
+        if (adminKey) payload.adminKey = adminKey;
+        else payload.schoolKey = app.schoolKey;
+        const result = await apiPost(payload);
+        app.schoolTasks = Array.isArray(result?.tasks) ? result.tasks : [];
+        app.schoolHistory = Array.isArray(result?.history) ? result.history : [];
+        app.schoolProfile = result?.profile || app.schoolProfile;
+        app.schoolView = ["now", "subjects"].includes(app.schoolProfile.preferredSchoolView) ? app.schoolProfile.preferredSchoolView : app.schoolView;
+        app.schoolLoaded = true;
+        app.schoolUnavailable = false;
+        renderSchool();
+        return result;
+      } catch (error) {
+        console.warn("School workspace unavailable:", error);
+        app.schoolLoaded = false;
+        app.schoolUnavailable = true;
+        if (/not authorised|not set up/i.test(String(error.message || "")) && !adminKey) {
+          app.schoolKey = "";
+          localStorage.removeItem("sophie_school_key");
+        }
+        renderSchool();
+        if (!quiet) toast(error.message || "School data is unavailable");
+        return null;
+      }
+    }
+
+    async function setSchoolView(view, button) {
+      if (!["now", "subjects"].includes(view)) return;
+      app.schoolView = view;
+      app.schoolProfile = { ...app.schoolProfile, preferredSchoolView: view };
+      renderSchool();
+      if (!app.schoolKey) return;
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "updateSchoolProfile", schoolKey: app.schoolKey, preferredSchoolView: view });
+      } catch (error) {
+        toast(error.message || "School view preference could not be saved");
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openSchoolTaskForm(task = null) {
+      if (!app.schoolKey) return toast("Ask a parent to set up School on this device first");
+      $("#school-task-form").reset();
+      $("#school-task-id").value = task?.taskId || "";
+      $("#school-task-dialog-title").textContent = task ? "Edit school task" : "Add a school task";
+      if (task) {
+        $("#school-subject").value = task.subject || "";
+        $("#school-title").value = task.title || "";
+        $("#school-due").value = task.dueDate || "";
+        $("#school-stage").value = task.journeyStage || "understand";
+        $("#school-current-action").value = task.currentAction || task.nextAction || "";
+        $("#school-support-preference").value = task.supportPreference || "";
+      } else {
+        $("#school-stage").value = "understand";
+        $("#school-support-preference").value = "";
+      }
+      $("#school-task-dialog").showModal();
+    }
+
+    async function saveSchoolTask(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-task-form button[type=submit]");
+      submit.disabled = true;
+      const taskId = $("#school-task-id").value;
+      try {
+        const payload = {
+          action: taskId ? "updateSchoolTask" : "createSchoolTask",
+          schoolKey: app.schoolKey,
+          subject: $("#school-subject").value.trim(),
+          title: $("#school-title").value.trim(),
+          dueDate: $("#school-due").value,
+          journeyStage: $("#school-stage").value,
+          currentAction: $("#school-current-action").value.trim(),
+          supportPreference: $("#school-support-preference").value
+        };
+        if (taskId) payload.taskId = taskId;
+        await apiPost(payload);
+        $("#school-task-dialog").close();
+        toast(taskId ? "Task updated" : "Task added");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The school task could not be saved");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function updateSchoolTaskField(taskId, field, value, button, successMessage = "Task updated") {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, [field]: value });
+        if (successMessage) toast(successMessage);
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The task could not be updated");
+        if (button) button.disabled = false;
+      }
+    }
+
+    function schoolTaskById(taskId) {
+      return app.schoolTasks.find(item => String(item.taskId) === String(taskId)) || app.schoolHistory.find(item => String(item.taskId) === String(taskId)) || null;
+    }
+
+    function openSchoolActionEditor(taskId, stage = "") {
+      const task = schoolTaskById(taskId);
+      if (!task) return toast("That school task is no longer available");
+      const targetStage = stage || task.journeyStage || "understand";
+      const changingStage = Boolean(stage && stage !== task.journeyStage);
+      $("#school-action-form").reset();
+      $("#school-action-task-id").value = task.taskId;
+      $("#school-action-stage").value = changingStage ? targetStage : "";
+      $("#school-action-input").value = task.currentAction || task.nextAction || "";
+      $("#school-action-dialog-title").textContent = changingStage ? `Move to ${schoolStageLabel(targetStage)}` : "Change what I'm working on";
+      $("#school-action-dialog-copy").textContent = changingStage
+        ? `Choose the one concrete action you want visible while you are in ${schoolStageLabel(targetStage)}.`
+        : "Keep this to one concrete, visible action. Change it whenever the next useful step changes.";
+      $("#school-action-dialog").showModal();
+      setTimeout(() => { $("#school-action-input").focus(); $("#school-action-input").select(); }, 0);
+    }
+
+    async function saveSchoolAction(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-action-form button[type=submit]");
+      const taskId = $("#school-action-task-id").value;
+      const stage = $("#school-action-stage").value;
+      const currentAction = $("#school-action-input").value.trim();
+      if (!currentAction) return toast("Choose one concrete action first");
+      submit.disabled = true;
+      try {
+        const payload = { action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, currentAction };
+        if (stage) payload.journeyStage = stage;
+        await apiPost(payload);
+        $("#school-action-dialog").close();
+        toast(stage ? `Moved to ${schoolStageLabel(stage)}` : "Working on now updated");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The current action could not be saved");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    function changeSchoolGuideStep(taskId, delta) {
+      const task = schoolTaskById(taskId);
+      if (!task) return;
+      const guidance = SCHOOL_STAGE_GUIDANCE[task.journeyStage] || SCHOOL_STAGE_GUIDANCE.understand;
+      const max = Math.max(1, (guidance.coach || []).length);
+      const key = schoolGuideKey(task);
+      const current = schoolGuideIndex(task, max);
+      app.schoolGuideSteps[key] = Math.max(0, Math.min(max - 1, current + delta));
+      renderSchool();
+    }
+
+    function openSchoolHelp(taskId) {
+      app.activeSchoolTaskId = taskId;
+      $("#school-help-dialog").showModal();
+    }
+
+    async function saveSchoolHelp(helpType, button) {
+      if (!app.activeSchoolTaskId) return;
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "requestSchoolHelp", schoolKey: app.schoolKey, taskId: app.activeSchoolTaskId, helpType });
+        $("#school-help-dialog").close();
+        toast(helpType ? "Help request saved" : "Help request cleared");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The help request could not be saved");
+        if (button) button.disabled = false;
+      }
+    }
+
+    function openSchoolSubmitCheck(taskId) {
+      app.activeSchoolTaskId = taskId;
+      $("#school-check-form").reset();
+      $("#school-check-dialog").showModal();
+    }
+
+    async function submitSchoolTask(event) {
+      event.preventDefault();
+      const submit = event.submitter || $("#school-check-form button[type=submit]");
+      submit.disabled = true;
+      try {
+        await apiPost({ action: "markSchoolSubmitted", schoolKey: app.schoolKey, taskId: app.activeSchoolTaskId });
+        $("#school-check-dialog").close();
+        toast("Marked submitted — confirm when Daymap or the teacher shows it was received");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "The task could not be marked submitted");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function confirmSchoolReceived(taskId, button) {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "confirmSchoolReceipt", schoolKey: app.schoolKey, taskId });
+        toast("Receipt confirmed");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "Receipt could not be confirmed");
+        if (button) button.disabled = false;
+      }
+    }
+
+    async function moveSchoolTaskToHistory(taskId, button) {
+      if (button) button.disabled = true;
+      try {
+        await apiPost({ action: "updateSchoolTask", schoolKey: app.schoolKey, taskId, recordState: "history" });
+        toast("Moved to past work");
+        await loadSchoolWorkspace({ quiet: true });
+      } catch (error) {
+        toast(error.message || "Task could not be moved to past work");
+        if (button) button.disabled = false;
+      }
+    }
+
+    async function openSchoolFeedback(taskId) {
+      const task = [...app.schoolTasks, ...app.schoolHistory].find(item => String(item.taskId) === String(taskId));
+      if (!task) return toast("Feedback is unavailable for this task");
+      const host = $("#school-feedback-content");
+      host.innerHTML = `<div class="skeleton"></div>`;
+      $("#school-feedback-dialog").showModal();
+      let rubric = [];
+      try {
+        rubric = await apiPost({ action: "getSchoolRubric", schoolKey: app.schoolKey, taskId });
+        if (!Array.isArray(rubric)) rubric = [];
+      } catch (error) {
+        console.warn("Rubric unavailable:", error);
       }
       const outcomeCards = [
         task.gradeOrResult ? `<div class="school-outcome"><span>Grade / result</span><strong>${safe(task.gradeOrResult)}</strong></div>` : "",
