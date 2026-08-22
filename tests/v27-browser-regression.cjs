@@ -182,5 +182,7 @@ async function mockApi(page) {
   console.log("v2.7 browser regression: PASS");
 })().catch(error => {
   console.error(error);
+  const message = String(error && (error.stack || error.message) || error).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+  console.error(`::error file=tests/v27-browser-regression.cjs::${message}`);
   process.exitCode = 1;
 });
