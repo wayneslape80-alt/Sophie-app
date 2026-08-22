@@ -74,6 +74,16 @@ This is a read contract only. It must not expose credentials, hidden scores or l
 
 ## Test coverage
 
+Exact implementation head verified: `2ee369a4fc4103360031efbc0ffa3437ef9ad12d`
+GitHub Actions: `32546005315` - completed successfully on 2026-08-22.
+
+The exact-head workflow passed:
+
+- deterministic patch application and committed-product verification;
+- JavaScript syntax and static contracts;
+- the full Android-first and desktop viewport matrix;
+- the focused v2.7 runtime regression.
+
 Local checks completed:
 
 - deterministic staging patch idempotence;
