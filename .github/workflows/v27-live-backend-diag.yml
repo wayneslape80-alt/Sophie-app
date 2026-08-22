@@ -1,0 +1,47 @@
+name: v2.7 live backend diagnostics
+
+on:
+  pull_request:
+    branches:
+      - stage-v2.7-interactive-skill-pathways
+
+permissions:
+  contents: read
+
+jobs:
+  live-backend-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify health and fail-closed pathway auth
+        shell: bash
+        env:
+          ENDPOINT: https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec
+        run: |
+          set -euo pipefail
+          NONCE="$(date +%s%N)"
+
+          curl -fsSL --retry 2 --retry-delay 1 -H 'Cache-Control: no-cache' "$ENDPOINT?action=health&nonce=$NONCE" -o /tmp/health.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/health.json',encoding='utf-8'))
+          exp={'success':True,'version':'2.5.1','opportunityContractVersion':'d006-v1','learningResourceContractVersion':'lr-v1','learningRecommendationContractVersion':'rec-v1','learningPathwayContractVersion':'pathway-v1'}
+          for k,v in exp.items(): assert d.get(k)==v, f'{k}: expected {v!r}, got {d.get(k)!r}'
+          print('HEALTH_OK')
+          PY
+
+          curl -fsSL --retry 2 --retry-delay 1 -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"getLearningPathway","domain":"cooking"}' "$ENDPOINT?nonce=$NONCE" -o /tmp/missing.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/missing.json',encoding='utf-8'))
+          assert d.get('success') is False and d.get('code')=='UNAUTHORISED', d
+          print('MISSING_CREDENTIAL_OK')
+          PY
+
+          curl -fsSL --retry 2 --retry-delay 1 -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"getLearningPathway","domain":"cooking","recommendationKey":"definitely-invalid-v27-diagnostic-key"}' "$ENDPOINT?nonce=$NONCE" -o /tmp/invalid.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/invalid.json',encoding='utf-8'))
+          assert d.get('success') is False and d.get('code')=='UNAUTHORISED', d
+          print('INVALID_CREDENTIAL_OK')
+          PY
