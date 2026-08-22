@@ -19,8 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply deterministic staging patch
+      - name: Apply deterministic pathway staging patch
         run: python3 scripts/apply_v27_skill_pathways_stage.py
+      - name: Enable existing-route technique learning choice
+        run: python3 scripts/enable_v27_learning_choice_stage.py
       - name: Validate staged JavaScript
         run: node --check assets/skill-pathways-v27.js
       - name: Validate integration contract
@@ -36,12 +38,19 @@ jobs:
           for number in range(1, 23):
               technique = f'COOK-T{number:03d}'
               assert technique in js, technique
-          assert 'chooseRecommendedLearn' not in js, 'read-only stage must not create Learn activities yet'
+          assert 'action: "chooseRecommendedLearn"' not in js, 'must reuse the existing chooseRecommendation path rather than duplicate the mutation action'
+          assert 'action: "createOpportunity"' not in js, 'technique choice must not bypass rec-v1'
+          assert 'action: "getLearningCandidateCatalogue"' in js
+          assert 'chooseRecommendation' in js
           assert 'data-v27-technique' in js
           assert 'data-v27-technique-back' in js
+          assert 'data-v27-learn-technique' in js
+          assert 'data-v27-technique-safety' in js
+          assert 'data-v27-technique-candidate' in js
           assert 'skillsTechniqueId' in js
           assert '<details class="technique-group"' in js
           assert 'Safety-gated next step' in js
+          assert 'Adding it creates a Learn activity in Available' in js
           PY
       - name: Commit generated staging files
         run: |
@@ -52,5 +61,5 @@ jobs:
           git config user.name "wayneslape80-alt"
           git config user.email "wayneslape80@gmail.com"
           git add index.html sw.js assets/skill-pathways-v27.js
-          git commit -m "Refine v2.7 Cooking pathway navigation"
+          git commit -m "Connect v2.7 techniques to existing rec-v1 choice path"
           git push origin HEAD:stage-v2.7-interactive-skill-pathways
