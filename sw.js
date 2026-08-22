@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-13-android-viewport-hotfix";
+const CACHE_NAME = "sophie-app-v2-14-mobile-density";
 
 const APP_FILES = [
   "./",

@@ -1748,7 +1748,7 @@
     }
 
     function learnCardsMarkup(items, emptyTitle, emptyCopy = "") {
-      if (items.length) return `<div class="cards">${items.map(jobMarkup).join("")}</div>`;
+      if (items.length) return `<div class="cards skills-list skills-learning-list">${items.map(jobMarkup).join("")}</div>`;
       return `<div class="surface empty"><span class="empty-icon">🌱</span><strong>${safe(emptyTitle)}</strong>${emptyCopy ? `<p>${safe(emptyCopy)}</p>` : ""}</div>`;
     }
 
@@ -1756,12 +1756,12 @@
       if (!app.data.skills.length) return "";
       return `<section class="skills-section" aria-labelledby="capabilities-heading">
         <div class="section-heading"><div><h2 id="capabilities-heading">Capabilities</h2><p>Useful areas the app already knows about. No levels, XP or readiness scores.</p></div></div>
-        <div class="capability-grid">${app.data.skills.map(skill => `<article class="surface capability-card"><span class="capability-icon" aria-hidden="true">${safe(skill.icon || "🌱")}</span><div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Built through real experience and useful feedback.")}</p></div></article>`).join("")}</div>
+        <div class="capability-grid skills-list">${app.data.skills.map(skill => `<article class="surface capability-card"><span class="capability-icon" aria-hidden="true">${safe(skill.icon || "🌱")}</span><div><h3>${safe(skill.name)}</h3><p>${safe(skill.description || "Built through real experience and useful feedback.")}</p></div></article>`).join("")}</div>
       </section>`;
     }
 
     function learningDomainCardsMarkup() {
-      return `<div class="learning-domain-grid">${LEARNING_DOMAINS.map(domain => domain.available
+      return `<div class="learning-domain-grid skills-list">${LEARNING_DOMAINS.map(domain => domain.available
         ? `<button class="learning-domain-card available" type="button" data-skills-domain="${safe(domain.id)}"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Open domain →</em></span></button>`
         : `<article class="learning-domain-card planned" aria-label="${safe(domain.name)}, pathway planned"><span class="learning-domain-icon" aria-hidden="true">${safe(domain.icon)}</span><span><strong>${safe(domain.name)}</strong><small>${safe(domain.description)}</small><em>Pathway planned</em></span></article>`
       ).join("")}</div>`;
