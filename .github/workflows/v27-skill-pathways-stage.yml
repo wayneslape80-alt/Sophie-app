@@ -38,16 +38,19 @@ jobs:
               assert technique in js, technique
           assert 'chooseRecommendedLearn' not in js, 'read-only stage must not create Learn activities yet'
           assert 'data-v27-technique' in js
+          assert 'data-v27-technique-back' in js
           assert 'skillsTechniqueId' in js
+          assert '<details class="technique-group"' in js
+          assert 'Safety-gated next step' in js
           PY
-      - name: Commit generated integration files
+      - name: Commit generated staging files
         run: |
-          if git diff --quiet -- index.html sw.js; then
+          if git diff --quiet -- index.html sw.js assets/skill-pathways-v27.js; then
             echo "Generated files already current"
             exit 0
           fi
           git config user.name "wayneslape80-alt"
           git config user.email "wayneslape80@gmail.com"
-          git add index.html sw.js
-          git commit -m "Integrate v2.7 read-only Cooking pathways"
+          git add index.html sw.js assets/skill-pathways-v27.js
+          git commit -m "Refine v2.7 Cooking pathway navigation"
           git push origin HEAD:stage-v2.7-interactive-skill-pathways
