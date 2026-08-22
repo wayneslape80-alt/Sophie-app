@@ -4,6 +4,7 @@ ROOT = Path(__file__).resolve().parents[1]
 index_path = ROOT / "index.html"
 sw_path = ROOT / "sw.js"
 asset_path = ROOT / "assets" / "skill-pathways-v27.js"
+choice_path = ROOT / "assets" / "skill-pathways-v27-choice.js"
 
 index = index_path.read_text(encoding="utf-8")
 script_tag = '  <script src="./assets/skill-pathways-v27.js"></script>\n'
@@ -75,3 +76,12 @@ elif new_heading not in asset:
     raise SystemExit("technique edge heading anchor not found")
 
 asset_path.write_text(asset, encoding="utf-8")
+
+choice = choice_path.read_text(encoding="utf-8")
+internal_copy = "These are linked activities checked by rec-v1 for the safety setup you chose."
+sophie_copy = "These are linked activities that fit the safety setup you chose."
+if internal_copy in choice:
+    choice = choice.replace(internal_copy, sophie_copy, 1)
+elif sophie_copy not in choice:
+    raise SystemExit("technique choice copy anchor not found")
+choice_path.write_text(choice, encoding="utf-8")
