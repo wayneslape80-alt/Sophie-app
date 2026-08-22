@@ -21,36 +21,37 @@ jobs:
           node-version: '22'
       - name: Apply deterministic pathway staging patch
         run: python3 scripts/apply_v27_skill_pathways_stage.py
-      - name: Enable existing-route technique learning choice
-        run: python3 scripts/enable_v27_learning_choice_stage.py
       - name: Validate staged JavaScript
-        run: node --check assets/skill-pathways-v27.js
+        run: |
+          node --check assets/skill-pathways-v27.js
+          node --check assets/skill-pathways-v27-choice.js
       - name: Validate integration contract
         run: |
           python3 - <<'PY'
           from pathlib import Path
           index = Path('index.html').read_text()
           sw = Path('sw.js').read_text()
-          js = Path('assets/skill-pathways-v27.js').read_text()
+          pathway = Path('assets/skill-pathways-v27.js').read_text()
+          choice = Path('assets/skill-pathways-v27-choice.js').read_text()
           assert index.count('<script src="./assets/skill-pathways-v27.js"></script>') == 1
+          assert index.count('<script src="./assets/skill-pathways-v27-choice.js"></script>') == 1
           assert './assets/skill-pathways-v27.js' in sw
-          assert 'sophie-app-v2-16-skill-pathways-stage' in sw
+          assert './assets/skill-pathways-v27-choice.js' in sw
+          assert 'sophie-app-v2-17-skill-pathways-choice-stage' in sw
           for number in range(1, 23):
               technique = f'COOK-T{number:03d}'
-              assert technique in js, technique
-          assert 'action: "chooseRecommendedLearn"' not in js, 'must reuse the existing chooseRecommendation path rather than duplicate the mutation action'
-          assert 'action: "createOpportunity"' not in js, 'technique choice must not bypass rec-v1'
-          assert 'action: "getLearningCandidateCatalogue"' in js
-          assert 'chooseRecommendation' in js
-          assert 'data-v27-technique' in js
-          assert 'data-v27-technique-back' in js
-          assert 'data-v27-learn-technique' in js
-          assert 'data-v27-technique-safety' in js
-          assert 'data-v27-technique-candidate' in js
-          assert 'skillsTechniqueId' in js
-          assert '<details class="technique-group"' in js
-          assert 'Safety-gated next step' in js
-          assert 'Adding it creates a Learn activity in Available' in js
+              assert technique in pathway, technique
+              assert technique in choice, technique
+          assert 'action: "chooseRecommendedLearn"' not in choice, 'choice bridge must not duplicate the mutation action'
+          assert 'action: "createOpportunity"' not in choice, 'technique choice must not bypass rec-v1'
+          assert 'action: "getLearningCandidateCatalogue"' in choice
+          assert 'chooseRecommendation' in choice
+          assert 'data-v27-learn-technique' in choice
+          assert 'data-v27-technique-safety' in choice
+          assert 'data-v27-technique-candidate' in choice
+          assert 'Adding it creates a Learn activity in Available' in choice
+          assert '<details class="technique-group"' in pathway
+          assert 'Safety-gated next step' in pathway
           PY
       - name: Commit generated staging files
         run: |
@@ -61,5 +62,5 @@ jobs:
           git config user.name "wayneslape80-alt"
           git config user.email "wayneslape80@gmail.com"
           git add index.html sw.js assets/skill-pathways-v27.js
-          git commit -m "Connect v2.7 techniques to existing rec-v1 choice path"
+          git commit -m "Integrate v2.7 technique choice bridge"
           git push origin HEAD:stage-v2.7-interactive-skill-pathways
