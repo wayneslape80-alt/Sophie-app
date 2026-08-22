@@ -6,7 +6,7 @@ on:
       - stage-v2.7-interactive-skill-pathways
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-and-check:
@@ -21,51 +21,23 @@ jobs:
           node-version: '22'
       - name: Apply deterministic pathway staging patch
         run: python3 scripts/apply_v27_skill_pathways_stage.py
-      - name: Validate staged JavaScript
+      - name: Verify generated product files are committed
+        run: |
+          git diff --exit-code -- index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js
+      - name: Validate staged JavaScript and static contracts
         run: |
           node --check assets/skill-pathways-v27.js
           node --check assets/skill-pathways-v27-choice.js
           node --check tests/v27-pathways-runtime.cjs
-      - name: Validate integration contract
+          node --check tests/v27-static-contracts.cjs
+          node tests/v27-static-contracts.cjs
+      - name: Install browser test dependency
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          index = Path('index.html').read_text()
-          sw = Path('sw.js').read_text()
-          pathway = Path('assets/skill-pathways-v27.js').read_text()
-          choice = Path('assets/skill-pathways-v27-choice.js').read_text()
-          assert index.count('<script src="./assets/skill-pathways-v27.js"></script>') == 1
-          assert index.count('<script src="./assets/skill-pathways-v27-choice.js"></script>') == 1
-          assert './assets/skill-pathways-v27.js' in sw
-          assert './assets/skill-pathways-v27-choice.js' in sw
-          assert 'sophie-app-v2-17-skill-pathways-choice-stage' in sw
-          for number in range(1, 23):
-              technique = f'COOK-T{number:03d}'
-              assert technique in pathway, technique
-              assert technique in choice, technique
-          assert 'action: "chooseRecommendedLearn"' not in choice, 'choice bridge must not duplicate the mutation action'
-          assert 'action: "createOpportunity"' not in choice, 'technique choice must not bypass rec-v1'
-          assert 'action: "getLearningCandidateCatalogue"' in choice
-          assert 'chooseRecommendation' in choice
-          assert 'data-v27-learn-technique' in choice
-          assert 'data-v27-technique-safety' in choice
-          assert 'data-v27-technique-candidate' in choice
-          assert 'Adding it creates a Learn activity in Available' in choice
-          assert 'These are linked activities that fit the safety setup you chose.' in choice
-          assert 'checked by rec-v1' not in choice
-          assert '#recommendation-dialog-body' in choice
-          assert '#rec-dialog-title' not in choice
-          assert '#recommendation-body' not in choice
-          assert 'REC_SAFETY_OPTIONS.map(([value, label])' in choice
-          assert 'REC_SUPPORT_OPTIONS.map(([value, label])' in choice
-          assert '<details class="technique-group"' in pathway
-          assert 'Safety-gated next step' in pathway
-          PY
-      - name: Install Chromium runtime
-        run: |
-          npm install --no-save playwright@1.55.0
+          npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-      - name: Run v2.7 browser regression
+      - name: Run Android-first and desktop pathway matrix
+        run: node tests/v27-browser-regression.cjs
+      - name: Run focused v2.7 runtime regression
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/v27-http.log 2>&1 &
           SERVER_PID=$!
@@ -75,14 +47,3 @@ jobs:
             sleep 0.25
           done
           node tests/v27-pathways-runtime.cjs
-      - name: Commit generated staging files
-        run: |
-          if git diff --quiet -- index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js; then
-            echo "Generated files already current"
-            exit 0
-          fi
-          git config user.name "wayneslape80-alt"
-          git config user.email "wayneslape80@gmail.com"
-          git add index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js
-          git commit -m "Fix and validate v2.7 pathway runtime"
-          git push origin HEAD:stage-v2.7-interactive-skill-pathways
