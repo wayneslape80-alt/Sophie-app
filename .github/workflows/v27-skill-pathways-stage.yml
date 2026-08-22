@@ -1,0 +1,53 @@
+name: v2.7 Skill Pathways staging
+
+on:
+  push:
+    branches:
+      - stage-v2.7-interactive-skill-pathways
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stage-v2.7-interactive-skill-pathways
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply deterministic staging patch
+        run: python3 scripts/apply_v27_skill_pathways_stage.py
+      - name: Validate staged JavaScript
+        run: node --check assets/skill-pathways-v27.js
+      - name: Validate integration contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          index = Path('index.html').read_text()
+          sw = Path('sw.js').read_text()
+          js = Path('assets/skill-pathways-v27.js').read_text()
+          assert index.count('<script src="./assets/skill-pathways-v27.js"></script>') == 1
+          assert './assets/skill-pathways-v27.js' in sw
+          assert 'sophie-app-v2-16-skill-pathways-stage' in sw
+          for number in range(1, 23):
+              technique = f'COOK-T{number:03d}'
+              assert technique in js, technique
+          assert 'chooseRecommendedLearn' not in js, 'read-only stage must not create Learn activities yet'
+          assert 'data-v27-technique' in js
+          assert 'skillsTechniqueId' in js
+          PY
+      - name: Commit generated integration files
+        run: |
+          if git diff --quiet -- index.html sw.js; then
+            echo "Generated files already current"
+            exit 0
+          fi
+          git config user.name "wayneslape80-alt"
+          git config user.email "wayneslape80@gmail.com"
+          git add index.html sw.js
+          git commit -m "Integrate v2.7 read-only Cooking pathways"
+          git push origin HEAD:stage-v2.7-interactive-skill-pathways
