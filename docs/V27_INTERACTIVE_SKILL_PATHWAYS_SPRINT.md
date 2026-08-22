@@ -1,6 +1,6 @@
 # Sophie App v2.7 - Interactive Skill Pathways Sprint
 
-Status: ACTIVE STAGING IMPLEMENTATION - COOKING PATHWAY AND EXISTING-ROUTE CHOICE BRIDGE COMPLETE
+Status: ACTIVE STAGING IMPLEMENTATION - AUTHORITATIVE PATHWAY-V1 READ INTEGRATED; COORDINATOR REVIEW PENDING
 Branch: `stage-v2.7-interactive-skill-pathways`
 Issue: #11
 Production base: `9fc9790b034dcdea0776b7c8ea17d776306fd814`
@@ -326,7 +326,24 @@ Completed on `stage-v2.7-interactive-skill-pathways`:
 
 The UI deliberately does not display an evidence-based `Ready`/`Not available yet` state because the current browser payload does not contain authoritative `LearningEvidence` or prerequisite satisfaction. Structural safety dependencies are shown as dependencies, not as claims that Sophie has or has not satisfied them.
 
-The `I want to learn this` bridge is implemented for staging only. It proves that the existing `chooseRecommendedLearn` mutation can be reused without a new write route. Production acceptance remains blocked on authoritative read exposure for technique/prerequisite/candidate linkage; the versioned snapshot must not become the continuing production authority for a live conversion control.
+The `I want to learn this` bridge is implemented for staging only. It proves that the existing `chooseRecommendedLearn` mutation can be reused without a new write route.
+
+## Authoritative pathway-v1 integration - 2026-08-22
+
+The snapshot/read-contract blocker from the first checkpoint is resolved on staging:
+
+- repository `Code.gs` was reconciled from the accepted Drive v2.5.0 production source with SHA-256 `22b7b8c9c6850e46f70bfcc8d9402719710d3dc9186b3efdfd6661530c7cca29` before modification;
+- staged backend version is `2.5.1`;
+- new `getLearningPathway` is protected by the existing recommendation-device/admin access check;
+- new read capability is independently advertised as `pathway-v1`;
+- the response includes bounded active technique, prerequisite and active-candidate relationship data only;
+- raw evidence, evidence expectations, readiness claims, history, preferences, provenance and credentials remain excluded;
+- the frontend contains no bundled technique or candidate-link records;
+- the existing rec-v1/D-006 mutation contract remains unchanged;
+- live-sheet verification confirms 26 active candidates, 22 techniques, 132 mappings and 16 prerequisite relationships;
+- no production deployment or spreadsheet mutation occurred.
+
+Detailed contract and release boundary: `docs/V27_PATHWAY_V1_BACKEND_STAGE_2026-08-22.md`.
 
 Test coverage added:
 

@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const { chromium } = require("playwright");
+const { makePathwayPayload } = require("./v27-pathway-fixture.cjs");
 
 const root = path.resolve(__dirname, "..");
 const mime = { ".html":"text/html; charset=utf-8", ".js":"text/javascript; charset=utf-8", ".css":"text/css; charset=utf-8", ".json":"application/json; charset=utf-8", ".png":"image/png", ".svg":"image/svg+xml" };
@@ -12,6 +13,7 @@ const appData = {
   opportunityContractVersion: "d006-v1",
   learningResourceContractVersion: "lr-v1",
   learningRecommendationContractVersion: "rec-v1",
+  learningPathwayContractVersion: "pathway-v1",
   balance: 25,
   pending: 0,
   impact: { contributionsThisWeek: 1, minutesThisWeek: 20, message: "Test impact" },
@@ -51,6 +53,10 @@ async function mockApi(page) {
     }
     const payload = JSON.parse(request.postData() || "{}");
     observedPosts.push(payload);
+    if (payload.action === "getLearningPathway") {
+      await route.fulfill({ status:200, contentType:"application/json", body:JSON.stringify({ success:true, data:makePathwayPayload() }) });
+      return;
+    }
     if (payload.action === "getLearningCandidateCatalogue") {
       await route.fulfill({ status:200, contentType:"application/json", body:JSON.stringify({ success:true, data:{ candidates:[
         { candidateId:"LC-COOK-005", title:"Practise controlled vegetable slicing", estimatedMinutes:20, eligibility:{ status:"eligible", reason:"" } },
@@ -119,7 +125,7 @@ async function mockApi(page) {
 
       await page.locator(".technique-card", { hasText:"Control the Knife" }).click();
       await page.locator(".technique-detail h2", { hasText:"Control the Knife" }).waitFor();
-      assert.ok(await page.locator(".technique-detail-section", { hasText:"Needed first" }).isVisible());
+      assert.ok(await page.locator(".technique-detail-section", { hasText:"Safety prerequisite" }).isVisible());
       assert.ok(await page.locator(".technique-link", { hasText:"Set Up Sharp Tools Safely" }).isVisible());
       assert.equal(await page.getByRole("button", { name:/I want to learn this/i }).count(), 1, `${width}x${height}: existing-route learning choice`);
 
@@ -151,11 +157,13 @@ async function mockApi(page) {
 
         const cataloguePost = observedPosts.find(post => post.action === "getLearningCandidateCatalogue");
         const choosePost = observedPosts.find(post => post.action === "chooseRecommendedLearn");
+        assert.equal(cataloguePost.techniqueId, "COOK-T004");
         assert.equal(cataloguePost.availableSafetySupport, "adult_nearby");
         assert.equal(choosePost.candidateId, "LC-COOK-005");
         assert.equal(choosePost.availableSafetySupport, "adult_nearby");
         assert.equal(choosePost.recommendationKey, "inert-browser-test-key");
         assert.ok(!observedPosts.some(post => post.action === "createOpportunity"), "technique choice must not bypass rec-v1");
+        assert.ok(observedPosts.some(post => post.action === "getLearningPathway"), "pathway must come from the authoritative read route");
         await page.locator('#opportunity-detail-dialog [data-close-dialog="opportunity-detail-dialog"]').click();
 
         await page.addStyleTag({ content:"html{font-size:200% !important}" });

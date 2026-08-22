@@ -5,31 +5,6 @@
 (() => {
   "use strict";
 
-  const DIRECT_CANDIDATES = Object.freeze({
-    "COOK-T001":["LC-COOK-002","LC-COOK-014"],
-    "COOK-T002":["LC-COOK-003","LC-COOK-017"],
-    "COOK-T003":["LC-COOK-001"],
-    "COOK-T004":["LC-COOK-005","LC-COOK-015"],
-    "COOK-T005":["LC-COOK-012"],
-    "COOK-T006":["LC-COOK-010","LC-COOK-011","LC-COOK-012","LC-COOK-013","LC-COOK-014"],
-    "COOK-T007":["LC-COOK-013","LC-COOK-021","LC-COOK-023"],
-    "COOK-T008":["LC-COOK-008","LC-COOK-021","LC-COOK-022","LC-COOK-023","LC-COOK-024"],
-    "COOK-T009":["LC-COOK-021","LC-COOK-022"],
-    "COOK-T010":[],
-    "COOK-T011":["LC-COOK-008","LC-COOK-010","LC-COOK-020","LC-COOK-027"],
-    "COOK-T012":["LC-COOK-004","LC-COOK-006","LC-COOK-007","LC-COOK-015","LC-COOK-024"],
-    "COOK-T013":["LC-COOK-004"],
-    "COOK-T014":["LC-COOK-009","LC-COOK-023","LC-COOK-025","LC-COOK-026"],
-    "COOK-T015":["LC-COOK-011","LC-COOK-012","LC-COOK-017"],
-    "COOK-T016":["LC-COOK-018","LC-COOK-019","LC-COOK-020"],
-    "COOK-T017":["LC-COOK-019","LC-COOK-021","LC-COOK-022","LC-COOK-023","LC-COOK-024","LC-COOK-025","LC-COOK-026"],
-    "COOK-T018":[],
-    "COOK-T019":["LC-COOK-026"],
-    "COOK-T020":[],
-    "COOK-T021":[],
-    "COOK-T022":["LC-COOK-027"]
-  });
-
   const flow = app.v27TechniqueChoice = app.v27TechniqueChoice || {
     techniqueId: "",
     techniqueTitle: "",
@@ -39,7 +14,9 @@
   };
 
   function candidateIdsFor(techniqueId) {
-    return DIRECT_CANDIDATES[String(techniqueId)] || [];
+    return typeof app.v27CandidateIdsForTechnique === "function"
+      ? app.v27CandidateIdsForTechnique(String(techniqueId))
+      : [];
   }
 
   function currentTechniqueTitle() {
@@ -99,6 +76,7 @@
       const result = await recommendationPost({
         action: "getLearningCandidateCatalogue",
         domain: "cooking",
+        techniqueId: flow.techniqueId,
         availableSafetySupport: flow.safetySupport,
         ...(app.rec.recommendationSessionId ? { recommendationSessionId: app.rec.recommendationSessionId } : {})
       });

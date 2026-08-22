@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-17-skill-pathways-choice-stage";
+const CACHE_NAME = "sophie-app-v2-18-authoritative-pathways-stage";
 
 const APP_FILES = [
   "./",

@@ -7,13 +7,13 @@ Production deployment: not authorised by this checkpoint
 
 ## Outcome
 
-The first v2.7 slice is implemented as a read-only Cooking pathway plus a staging-only existing-route learning-choice bridge, while preserving the accepted v2.6.3 Android layout and backend mutation boundaries.
+The v2.7 staging candidate now implements an authoritative read-only Cooking pathway plus the existing-route learning-choice bridge, while preserving the accepted v2.6.3 Android layout and backend mutation boundaries.
 
 Sophie can now move through:
 
 `Skills -> Cooking -> technique group -> technique detail -> prerequisite or later technique`
 
-The implementation does not infer readiness, mastery or prerequisite completion. The structural pathway is read-only. Where a snapshot technique has linked candidates, the separate staging bridge asks rec-v1 for current catalogue eligibility and delegates the selected candidate to the existing authoritative conversion path.
+The implementation does not infer readiness, mastery or prerequisite completion. `pathway-v1` supplies bounded technique, prerequisite and active-candidate linkage; rec-v1 supplies current catalogue eligibility and delegates the selected candidate to the existing authoritative conversion path.
 
 ## Implemented product behaviour
 
@@ -30,16 +30,16 @@ The implementation does not infer readiness, mastery or prerequisite completion.
 - compact/real-phone layouts remain single-column; the accepted bottom-navigation and effective-scale fallback are unchanged.
 - the new JavaScript asset is versioned in the staging service-worker cache.
 
-## Authoritative-data boundary
+## Authoritative-data boundary - superseded first-slice snapshot
 
-The current UI uses `v27-cooking-snapshot-2026-08-22`, generated from the authoritative spreadsheet tables:
+The first slice used `v27-cooking-snapshot-2026-08-22`, generated from the authoritative spreadsheet tables:
 
 - `Techniques`
 - `TechniquePrerequisites`
 - `CandidateTechniques`
 - `LearnCandidates`
 
-That snapshot is permitted only to describe pathway structure. It is not used to decide:
+That first-slice snapshot was permitted only to describe pathway structure. It has now been removed from the staged product. The authoritative `pathway-v1` response still does not decide:
 
 - whether a prerequisite is satisfied;
 - whether Sophie is ready;
@@ -53,14 +53,9 @@ No new backend mutation route should be implemented.
 
 The existing `chooseRecommendedLearn` route already provides the correct security and D-006 lifecycle boundary: scoped device credential, server-side eligibility recheck, fail-closed errors, authoritative `learn/available` result, reload confirmation, no auto-start and no financial state.
 
-The staging bridge demonstrates the flow with the versioned snapshot and authoritative rec-v1 eligibility. The remaining production blocker is read-only data exposure: the frontend needs authoritative technique/prerequisite data and technique-to-candidate links in a bounded Sophie-safe response rather than treating a bundled snapshot as the continuing live mapping.
+The staging bridge now demonstrates the flow with authoritative `pathway-v1` structure and rec-v1 eligibility. No new write route is required.
 
-Preferred backend follow-up:
-
-1. enrich `getLearningCandidateCatalogue` with safe `techniqueIds`/relationship roles and add the bounded pathway payload; or
-2. add a dedicated read-only Cooking pathway action.
-
-This is a read contract only. It must not expose credentials, hidden scores or legacy level/progress inference.
+The implemented backend choice is a dedicated, credential-protected read-only Cooking pathway action. It does not expose credentials, hidden scores, raw evidence, evidence expectations or legacy level/progress inference.
 
 ## Security evidence
 
@@ -68,7 +63,7 @@ This is a read contract only. It must not expose credentials, hidden scores or l
 - catalogue access without a recommendation-device credential returns `UNAUTHORISED`;
 - the pathway asset contains no `fetch`, `apiPost`, credential storage, `chooseRecommendedLearn` or `createOpportunity` call;
 - the separate choice bridge does not read or store the credential, does not name a new D-006 creation action, and does not call `createOpportunity`; it uses `recommendationPost` for the catalogue and the existing `chooseRecommendation` conversion function;
-- `Code.gs` has no v2.7 diff from production base;
+- staged `Code.gs` is derived from the release-verified v2.5.0 production source and adds only the bounded pathway read capability; production `Code.gs` is unchanged;
 - no credential was requested, provisioned, logged, committed or placed in a URL;
 - no production data was mutated during verification.
 
@@ -125,8 +120,8 @@ It checks progressive disclosure, adaptive columns, 48px targets, horizontal ove
 - `docs/V27_REC_V1_REUSE_DECISION.md`
 - `docs/V27_IMPLEMENTATION_STATUS_2026-08-22.md`
 
-## Next controlled slice
+## Current release gate
 
-Backend/security should now specify and stage the bounded read payload. Frontend should replace the snapshot linkage in the staging bridge with that authoritative payload without changing the rec-v1/D-006 mutation contract. Parent-facing copy refinement and the wider regression pass remain inside v2.7 after the read contract is resolved.
+The bounded read payload and frontend replacement are complete on staging. Exact-head GitHub Actions browser evidence and Coordinator review are required before any controlled backend-first production release. Parent-facing copy refinement may continue as a separate non-blocking v2.7 polish slice.
 
 Do not merge or deploy this branch until Coordinator review accepts browser evidence and the snapshot/read-contract production boundary.

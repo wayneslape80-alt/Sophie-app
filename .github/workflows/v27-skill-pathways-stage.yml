@@ -26,11 +26,15 @@ jobs:
           git diff --exit-code -- index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js
       - name: Validate staged JavaScript and static contracts
         run: |
+          node --check --input-type=commonjs < Code.gs
           node --check assets/skill-pathways-v27.js
           node --check assets/skill-pathways-v27-choice.js
+          node --check tests/v27-pathway-fixture.cjs
+          node --check tests/v27-backend-pathway-contract.cjs
           node --check tests/v27-pathways-runtime.cjs
           node --check tests/v27-static-contracts.cjs
           node tests/v27-static-contracts.cjs
+          node tests/v27-backend-pathway-contract.cjs
       - name: Install browser test dependency
         run: |
           npm install --no-save playwright@1.62.1
@@ -47,3 +51,5 @@ jobs:
             sleep 0.25
           done
           node tests/v27-pathways-runtime.cjs
+      - name: Run full product, accessibility and PWA regression
+        run: node tests/v27-full-regression.cjs

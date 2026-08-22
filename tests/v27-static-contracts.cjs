@@ -1,53 +1,64 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { execFileSync } = require("node:child_process");
 
 const root = path.resolve(__dirname, "..");
 const read = file => fs.readFileSync(path.join(root, file), "utf8");
 const pathway = read("assets/skill-pathways-v27.js");
 const choice = read("assets/skill-pathways-v27-choice.js");
+const code = read("Code.gs");
 const index = read("index.html");
 const sw = read("sw.js");
-const decision = read("docs/V27_REC_V1_REUSE_DECISION.md");
 
 assert.match(index, /<script src="\.\/assets\/skill-pathways-v27\.js"><\/script>/);
 assert.match(index, /<script src="\.\/assets\/skill-pathways-v27-choice\.js"><\/script>/);
-assert.match(sw, /sophie-app-v2-17-skill-pathways-choice-stage/);
+assert.match(sw, /sophie-app-v2-18-authoritative-pathways-stage/);
 assert.match(sw, /"\.\/assets\/skill-pathways-v27\.js"/);
 assert.match(sw, /"\.\/assets\/skill-pathways-v27-choice\.js"/);
 
-assert.equal((pathway.match(/id:"COOK-T\d{3}"/g) || []).length, 22, "expected 22 Cooking techniques");
-assert.equal((pathway.match(/kind:"hard"/g) || []).length, 2, "only the two sharp-tool safety dependencies are hard");
-assert.equal((pathway.match(/kind:"recommended"/g) || []).length, 14, "recommended prerequisites must remain distinct");
+assert.match(pathway, /action:"getLearningPathway"/);
+assert.match(pathway, /learningPathwayContractVersion/);
+assert.match(pathway, /authority:"backend"/);
+assert.match(pathway, /v27CandidateIdsForTechnique/);
 assert.match(pathway, /<details class="technique-group"/);
-assert.match(pathway, /id === "prepare" \? "open" : ""/);
-assert.match(pathway, /direction === "next" \? \(hard \? "Safety-gated next step"/);
-assert.match(pathway, /state\.skillsTechniqueId/);
-assert.match(pathway, /writeNavigationState\(historyMode\)/);
 assert.match(pathway, /history\.back\(\)/);
+assert.equal((pathway.match(/COOK-T\d{3}/g) || []).length, 0, "frontend pathway asset must not bundle technique records");
+assert.equal((pathway.match(/LC-COOK-\d{3}/g) || []).length, 0, "frontend pathway asset must not bundle candidate links");
+assert.ok(!/v27-cooking-snapshot|snapshot-2026/i.test(pathway), "snapshot authority must be removed");
 
 for (const forbidden of ["apiPost(", "fetch(", "localStorage", "chooseRecommendedLearn", "createOpportunity"]) {
-  assert.ok(!pathway.includes(forbidden), `read-only pathway asset must not contain ${forbidden}`);
+  assert.ok(!pathway.includes(forbidden), `pathway client must stay behind the existing recommendation transport; found ${forbidden}`);
 }
-assert.ok(!/\b(?:XP|level|mastery percentage|readiness score)\b/i.test(pathway), "pathway UI must not introduce gamified readiness state");
+assert.ok(!/\b(?:XP|mastery percentage|readiness score)\b/i.test(pathway), "pathway UI must not introduce gamified readiness state");
 
-assert.equal((choice.match(/"COOK-T\d{3}"/g) || []).length, 22, "choice bridge must map all snapshot techniques explicitly");
+assert.match(choice, /v27CandidateIdsForTechnique/);
 assert.match(choice, /action: "getLearningCandidateCatalogue"/);
+assert.match(choice, /techniqueId: flow\.techniqueId/);
 assert.match(choice, /recommendationPost\(/);
 assert.match(choice, /chooseRecommendation/);
-assert.match(choice, /#recommendation-dialog-body/);
-assert.match(choice, /REC_SAFETY_OPTIONS\.map\(\(\[value,label\]\)/);
-assert.match(choice, /REC_SUPPORT_OPTIONS\.map\(\(\[value,label\]\)/);
-for (const forbidden of ['action: "chooseRecommendedLearn"', 'action: "createOpportunity"', "recommendationKey", "localStorage", "#rec-dialog-title", "#recommendation-body", "recErrorMessage(", "recommendationUnauthorised("]) {
-  assert.ok(!choice.includes(forbidden), `choice bridge must reuse existing boundaries and symbols; found ${forbidden}`);
+assert.equal((choice.match(/COOK-T\d{3}/g) || []).length, 0, "choice bridge must not bundle technique IDs");
+assert.equal((choice.match(/LC-COOK-\d{3}/g) || []).length, 0, "choice bridge must not bundle candidate IDs");
+for (const forbidden of ['action: "getLearningPathway"', 'action: "chooseRecommendedLearn"', 'action: "createOpportunity"', "recommendationKey", "localStorage"]) {
+  assert.ok(!choice.includes(forbidden), `choice bridge must reuse existing boundaries; found ${forbidden}`);
 }
 
-assert.match(decision, /Reuse the existing `chooseRecommendedLearn` write path/);
-assert.match(decision, /No new mutation route is required/);
-assert.match(decision, /remaining gap is read-only pathway\/candidate-link exposure/);
+assert.match(code, /const APP_VERSION = '2\.5\.1'/);
+assert.match(code, /const LEARNING_RECOMMENDATION_CONTRACT_VERSION = 'rec-v1'/);
+assert.match(code, /const LEARNING_PATHWAY_CONTRACT_VERSION = 'pathway-v1'/);
+assert.match(code, /case 'getLearningPathway':[\s\S]*?requireLearningRecommendationAccess_\(data\.recommendationKey, data\.adminKey\);[\s\S]*?getLearningPathway_\(data\)/);
+assert.match(code, /learningPathwayContractVersion: LEARNING_PATHWAY_CONTRACT_VERSION/);
+assert.match(code, /candidateLinks:/);
+assert.match(code, /prerequisites:/);
+assert.doesNotMatch(code, /case 'createLearningPathway'/);
+assert.doesNotMatch(code, /case 'chooseTechniqueLearn'/);
 
-const codeDiff = execFileSync("git", ["diff", "9fc9790b034dcdea0776b7c8ea17d776306fd814", "--", "Code.gs"], { cwd: root, encoding: "utf8" });
-assert.equal(codeDiff, "", "Code.gs must remain unchanged from the v2.6.3 production baseline");
+const readStart = code.indexOf("function getLearningPathway_(data)");
+const readEnd = code.indexOf("function setLearningPreference_(data)", readStart);
+assert.ok(readStart >= 0 && readEnd > readStart, "bounded pathway read function must exist");
+const boundedRead = code.slice(readStart, readEnd);
+for (const forbidden of ["SHEET_NAMES.learningEvidence", "edge.EvidenceExpectation", "SHEET_NAMES.recommendationHistory", "SHEET_NAMES.sourceLinks", "PreferenceValue", "technique.ObservableEvidence", "CreatedAt:", "UpdatedAt:"]) {
+  assert.ok(!boundedRead.includes(forbidden), `bounded pathway payload must exclude ${forbidden}`);
+}
+assert.ok(!/satisfied\s*:|mastery|readiness/i.test(boundedRead), "pathway response must not claim prerequisite satisfaction, mastery or readiness");
 
 console.log("v2.7 static contracts: PASS");

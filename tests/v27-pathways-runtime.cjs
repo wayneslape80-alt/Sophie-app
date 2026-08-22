@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const { makePathwayPayload } = require('./v27-pathway-fixture.cjs');
 
 const APP_URL = process.env.V27_APP_URL || 'http://127.0.0.1:4173/index.html';
 const API_PREFIX = 'https://script.google.com/macros/s/';
@@ -27,6 +28,7 @@ function appData(created) {
     opportunityContractVersion: 'd006-v1',
     learningResourceContractVersion: 'lr-v1',
     learningRecommendationContractVersion: 'rec-v1',
+    learningPathwayContractVersion: 'pathway-v1',
     learningResources: [],
     balance: 0,
     pending: 0,
@@ -77,8 +79,15 @@ function json(route, payload) {
     try { payload = JSON.parse(request.postData() || '{}'); } catch {}
     posts.push(payload);
 
+    if (payload.action === 'getLearningPathway') {
+      assert.equal(payload.domain, 'cooking');
+      assert.equal(payload.recommendationKey, 'test-rec-key-not-production');
+      return json(route, { success: true, data: makePathwayPayload() });
+    }
+
     if (payload.action === 'getLearningCandidateCatalogue') {
       assert.equal(payload.domain, 'cooking');
+      assert.equal(payload.techniqueId, 'COOK-T004');
       assert.equal(payload.recommendationKey, 'test-rec-key-not-production');
       return json(route, {
         success: true,
@@ -133,7 +142,7 @@ function json(route, payload) {
   await page.click('[data-v27-technique="COOK-T004"]');
   await page.waitForSelector('.technique-detail-hero h2');
   assert.equal((await page.locator('.technique-detail-hero h2').textContent()).trim(), 'Control the Knife');
-  assert.ok((await page.locator('.technique-detail').textContent()).includes('Needed first'), 'Hard prerequisite section should be visible');
+  assert.ok((await page.locator('.technique-detail').textContent()).includes('Safety prerequisite'), 'Hard prerequisite section should be visible');
   assert.ok((await page.locator('.technique-detail').textContent()).includes('Set Up Sharp Tools Safely'), 'Hard prerequisite should name the precursor');
 
   await page.click('.technique-link[data-v27-technique="COOK-T003"]');
@@ -173,6 +182,7 @@ function json(route, payload) {
   assert.ok(detailText.includes('Caprese Salad'));
   assert.ok(detailText.toLowerCase().includes('available'));
   assert.ok(posts.some(item => item.action === 'getLearningCandidateCatalogue'));
+  assert.ok(posts.some(item => item.action === 'getLearningPathway'));
   assert.ok(posts.some(item => item.action === 'chooseRecommendedLearn'));
   assert.ok(!posts.some(item => item.action === 'createOpportunity'), 'Technique choice must not bypass rec-v1 with direct opportunity creation');
 

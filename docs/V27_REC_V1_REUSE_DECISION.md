@@ -1,6 +1,6 @@
 # v2.7 rec-v1 reuse decision
 
-Status: Coordinator decision - accepted for staging
+Status: Coordinator decision - mutation reuse preserved; bounded read contract staged
 Date: 2026-08-22
 Branch: `stage-v2.7-interactive-skill-pathways`
 
@@ -26,7 +26,7 @@ The existing frontend/backend contract already provides the required security an
 
 This is the correct functional boundary for a technique-originated learning choice.
 
-## What is missing
+## Gap identified in the first slice
 
 The browser currently does not receive the authoritative domain technique graph through normal `getData`.
 
@@ -40,7 +40,7 @@ The current `getLearningCandidateCatalogue` response is normalised to:
 
 It does not expose the technique-to-candidate relationship that exists in `CandidateTechniques`, nor the technique and prerequisite records needed to render a live domain-wide pathway.
 
-## Staging approach
+## Historical first-slice approach
 
 The v2.7 read-only prototype uses a versioned snapshot generated from the authoritative spreadsheet tables:
 
@@ -75,7 +75,7 @@ For a technique with one or more direct candidate links:
 
 If no linked candidate is eligible, show the authoritative rec-v1 reason and allow the setup to change. Do not fabricate a local unlock.
 
-## Production data recommendation
+## Read-contract recommendation
 
 Before treating the Skill Tree as live production data, prefer one of these read-only changes:
 
@@ -103,4 +103,26 @@ The decision was rechecked against both the staged frontend and the deployed cap
 - `assets/skill-pathways-v27.js` is read-only and does not call `chooseRecommendedLearn` directly.
 - the staging-only `assets/skill-pathways-v27-choice.js` reads eligible candidates through `recommendationPost`, filters to the selected technique's linked IDs, and delegates the final action to the existing `chooseRecommendation` function rather than naming or duplicating the mutation;
 
-Therefore the security decision remains: **reuse the existing rec-v1/D-006 mutation; add no new write route.** The staging bridge demonstrates that reuse, but production acceptance still requires bounded read exposure for authoritative technique, prerequisite and candidate linkage. Production must not rely on the staged snapshot as a continuing authoritative data feed.
+Therefore the security decision remains: **reuse the existing rec-v1/D-006 mutation; add no new write route.**
+
+## Pathway-v1 staging resolution - 2026-08-22
+
+The identified read gap is now resolved on staging through a dedicated
+credential-protected `getLearningPathway` action with
+`learningPathwayContractVersion=pathway-v1`.
+
+The endpoint was built from the release-verified v2.5.0 production source, not
+the stale repository v2.2.0 copy. It exposes only active Sophie-facing technique
+structure, active-candidate relationship roles and active prerequisite
+relationships. It excludes raw evidence, evidence expectations, readiness or
+mastery claims, preferences, history, provenance, credentials and administrative
+metadata.
+
+The frontend snapshot and hard-coded candidate map have been removed. The
+selected technique is now passed to the existing `getLearningCandidateCatalogue`
+eligibility read, and final conversion remains the unchanged
+`chooseRecommendedLearn` -> D-006 `learn/available` path.
+
+Production remains unchanged pending Coordinator review and controlled backend-
+first release verification. Detailed evidence is recorded in
+`docs/V27_PATHWAY_V1_BACKEND_STAGE_2026-08-22.md`.
