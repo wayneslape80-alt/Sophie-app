@@ -1,10 +1,11 @@
-const CACHE_NAME = "sophie-app-v2-15-effective-mobile-scale";
+const CACHE_NAME = "sophie-app-v2-16-skill-pathways-stage";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/android-first.css",
+  "./assets/skill-pathways-v27.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
