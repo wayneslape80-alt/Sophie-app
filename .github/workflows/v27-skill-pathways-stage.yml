@@ -50,17 +50,19 @@ jobs:
           assert 'data-v27-technique-safety' in choice
           assert 'data-v27-technique-candidate' in choice
           assert 'Adding it creates a Learn activity in Available' in choice
+          assert 'These are linked activities that fit the safety setup you chose.' in choice
+          assert 'checked by rec-v1' not in choice
           assert '<details class="technique-group"' in pathway
           assert 'Safety-gated next step' in pathway
           PY
       - name: Commit generated staging files
         run: |
-          if git diff --quiet -- index.html sw.js assets/skill-pathways-v27.js; then
+          if git diff --quiet -- index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js; then
             echo "Generated files already current"
             exit 0
           fi
           git config user.name "wayneslape80-alt"
           git config user.email "wayneslape80@gmail.com"
-          git add index.html sw.js assets/skill-pathways-v27.js
-          git commit -m "Integrate v2.7 technique choice bridge"
+          git add index.html sw.js assets/skill-pathways-v27.js assets/skill-pathways-v27-choice.js
+          git commit -m "Refine v2.7 Sophie-facing pathway copy"
           git push origin HEAD:stage-v2.7-interactive-skill-pathways
