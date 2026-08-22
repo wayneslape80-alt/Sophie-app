@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - diag-v27-live-backend
+  pull_request:
+    branches:
+      - stage-v2.7-interactive-skill-pathways
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
