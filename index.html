@@ -1324,9 +1324,9 @@
       { id: "cooking", icon: "🍳", name: "Cooking", description: "Choose something to make, build techniques and get the support that fits this cooking session.", available: true },
       { id: "sewing", icon: "🧵", name: "Sewing", description: "Plan, repair, alter and create with fabric.", available: false },
       { id: "home", icon: "🔧", name: "Household maintenance", description: "Understand tools, simple repairs and caring for a home.", available: false },
-      { id: "money", icon: "💰", name: "Money", description: "Plan spending, saving and everyday money decisions.", available: false },
-      { id: "laundry", icon: "🧺", name: "Laundry", description: "Sort, wash, dry and care for clothes.", available: false },
-      { id: "pet-care", icon: "🐕", name: "Pet care", description: "Notice needs and take part in safe, reliable care.", available: false }
+      { id: "money", icon: "💳", name: "Money", description: "Use Smart Access and Youthsaver language for real choices; this app never claims a live bank balance.", available: true },
+      { id: "laundry", icon: "🧺", name: "Laundry", description: "Sort, wash, dry and care for clothes with the support each step needs.", available: true },
+      { id: "pet-care", icon: "🐩", name: "Pet care", description: "Take part in kind, adult-supported care for a Lagotto Romagnolo.", available: true }
     ];
 
     const COOKING_PATHWAY = [
@@ -4037,7 +4037,7 @@
     loadData({ quiet: true });
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
   </script>
-  <script src="./assets/skill-pathways-v27.js"></script>
-  <script src="./assets/skill-pathways-v27-choice.js"></script>
+  <script src="./assets/skill-pathways-v28.js"></script>
+  <script src="./assets/skill-pathways-v28-choice.js"></script>
 </body>
 </html>
