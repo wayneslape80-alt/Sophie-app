@@ -115,9 +115,12 @@ It checks progressive disclosure, adaptive columns, 48px targets, horizontal ove
 - `.github/workflows/v27-skill-pathways-stage.yml`
 - `assets/skill-pathways-v27.js`
 - `assets/skill-pathways-v27-choice.js`
+- `index.html`
+- `sw.js`
 - `scripts/apply_v27_skill_pathways_stage.py`
 - `tests/v27-static-contracts.cjs`
 - `tests/v27-browser-regression.cjs`
+- `tests/v27-pathways-runtime.cjs`
 - `docs/V27_INTERACTIVE_SKILL_PATHWAYS_SPRINT.md`
 - `docs/V27_REC_V1_REUSE_DECISION.md`
 - `docs/V27_IMPLEMENTATION_STATUS_2026-08-22.md`
