@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - package-v2.7-pathway-v1-backend
+  pull_request:
+    branches:
+      - stage-v2.7-interactive-skill-pathways
 
 permissions:
   contents: read
