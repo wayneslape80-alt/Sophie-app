@@ -73,19 +73,19 @@
     if (!body) return;
 
     if (app.rec.view === "technique-safety") {
-      body.innerHTML = `<div class="dialog-head"><h2>Set up this learning choice</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen"><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-helper">Who is around while you practise? This is used for safety eligibility, not as a score of what you can do.</p><div class="rec-choice-list">${REC_SAFETY_OPTIONS.map(([value, label]) => `<button class="rec-choice ${flow.safetySupport === value ? "active" : ""}" type="button" data-v27-technique-safety="${safe(value)}"><strong>${safe(label)}</strong></button>`).join("")}</div>${flow.error ? `<div class="rec-error">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v27-check-technique ${flow.safetySupport && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show learning choices"}</button><button class="text-button" type="button" data-rec-exit>Not now</button></div></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Set up this learning choice</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This checks safety eligibility; it is not a score of what you can do.</p><div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => `<button class="rec-choice" type="button" data-v27-technique-safety="${safe(value)}" aria-pressed="${flow.safetySupport === value}">${safe(label)}</button>`).join("")}</div>${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v27-check-technique ${flow.safetySupport && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show learning choices"}</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
       return;
     }
 
     if (app.rec.view === "technique-candidates") {
-      body.innerHTML = `<div class="dialog-head"><h2>Choose a real activity</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen"><div class="rec-progress">Step 2 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-helper">These are linked activities that fit the safety setup you chose.</p>${flow.candidates.length ? `<div class="rec-grid">${flow.candidates.map(candidate => { const eligible = candidate.eligibility?.status === "eligible"; return `<article class="rec-card"><div class="rec-card-head"><div><h3>${safe(candidate.title)}</h3>${candidate.estimatedMinutes ? `<span>About ${safe(candidate.estimatedMinutes)} min</span>` : ""}</div></div><p class="rec-reason">${eligible ? "Available for this setup." : safe(candidate.eligibility?.reason || "Not available for this setup.")}</p>${eligible ? `<button class="primary-button" type="button" data-v27-technique-candidate="${safe(candidate.candidateId)}">Choose this</button>` : ""}</article>`; }).join("")}</div>` : `<div class="rec-unavailable"><strong>No linked activity is available for this setup.</strong><p>Try a different setup or choose another technique.</p></div>`}${flow.error ? `<div class="rec-error">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="text-button" type="button" data-v27-back-technique-safety>Change who is around</button><button class="text-button" type="button" data-rec-exit>Not now</button></div></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Choose a real activity</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 2 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">These are linked activities that fit the safety setup you chose.</p>${flow.candidates.length ? `<div class="rec-grid">${flow.candidates.map(candidate => { const eligible = candidate.eligibility?.status === "eligible"; return `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${safe(candidate.estimatedMinutes)} min</span>` : ""}</div><div class="rec-eligibility ${eligible ? "" : "locked"}"><strong>${eligible ? "Available for this setup" : "Not available for this setup"}</strong>${eligible ? "" : `<br>${safe(candidate.eligibility?.reason || "Try another setup.")}`}</div>${eligible ? `<div class="rec-controls"><button class="primary-button" type="button" data-v27-technique-candidate="${safe(candidate.candidateId)}">Choose this</button></div>` : ""}</article>`; }).join("")}</div>` : `<div class="rec-unavailable"><strong>No linked activity is available for this setup.</strong><br>Try a different setup or choose another technique.</div>`}${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="secondary-button" type="button" data-v27-back-technique-safety>Change who is around</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
       return;
     }
 
     if (app.rec.view === "technique-support") {
       const candidate = app.rec.currentCandidate;
       const blocked = candidate?.eligibility?.status && candidate.eligibility.status !== "eligible";
-      body.innerHTML = `<div class="dialog-head"><h2>Choose the support you want</h2><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-screen"><div class="rec-progress">Step 3 of 3</div><h3>${safe(candidate?.title || flow.techniqueTitle)}</h3><p class="rec-helper">This choice is for this session. It does not become a permanent label about your ability.</p><div class="rec-choice-list">${REC_SUPPORT_OPTIONS.map(([value, label]) => `<button class="rec-choice ${app.rec.supportChoice === value ? "active" : ""}" type="button" data-rec-support="${safe(value)}"><strong>${safe(label)}</strong></button>`).join("")}</div>${recErrorMarkup()}${blocked ? `<div class="rec-unavailable"><strong>That activity is no longer available for this setup.</strong><p>${safe(candidate?.eligibility?.reason || "Try another setup or activity.")}</p></div>` : ""}<p class="rec-consequence">Adding it creates a Learn activity in Available. It does not start automatically and does not create money.</p><div class="rec-controls"><button class="primary-button" type="button" data-rec-add-to-learn ${app.rec.supportChoice && !app.rec.loading && !blocked ? "" : "disabled"}>${app.rec.loading ? "Adding…" : "Add to Learn"}</button><button class="text-button" type="button" data-v27-back-technique-candidates>Back</button><button class="text-button" type="button" data-rec-exit>Not now</button></div></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Choose the support you want</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 3 of 3</div><h3>${safe(candidate?.title || flow.techniqueTitle)}</h3><p class="rec-copy">This choice is for this session. It does not become a permanent label about your ability.</p><div class="rec-option-group rec-safety" role="group" aria-label="Learning support choice">${REC_SUPPORT_OPTIONS.map(([value,label]) => `<button class="rec-choice" type="button" data-rec-support="${safe(value)}" aria-pressed="${app.rec.supportChoice === value}">${safe(label)}</button>`).join("")}</div>${recErrorMarkup()}${blocked ? `<div class="rec-unavailable"><strong>That activity is no longer available for this setup.</strong><br>${safe(candidate?.eligibility?.reason || "Try another setup or activity.")}</div>` : ""}<div class="rec-consequence"><strong>Add to Learn</strong><br>Adding it creates an available Learn activity. It does not start automatically and does not create money.</div><div class="rec-controls"><button class="primary-button" type="button" data-rec-add-to-learn ${app.rec.supportChoice && !app.rec.loading && !blocked ? "" : "disabled"}>${app.rec.loading ? "Adding…" : "Add to Learn"}</button><button class="secondary-button" type="button" data-v27-back-technique-candidates>Back</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
     }
   }
 
@@ -115,7 +115,7 @@
       writeNavigationState("replace", { overlay: "recommendation", recView: "technique-candidates", techniqueId: flow.techniqueId });
     } catch (error) {
       app.rec.loading = false;
-      flow.error = recErrorMessage(error);
+      flow.error = error?.message || recommendationUnavailableMessage();
       renderRecommendationDialog();
     }
   }
@@ -124,7 +124,7 @@
     const linked = candidateIdsFor(techniqueId);
     if (!linked.length) return;
     if (!recommendationInteractionReady()) {
-      toast(recommendationUnauthorised() ? "Learning choices need to be set up again in Parent Mode." : "Learning choices are not available on this device yet.", true);
+      toast(app.rec.unauthorised ? "Learning choices need to be set up again in Parent Mode." : "Learning choices are not available on this device yet.");
       return;
     }
     flow.techniqueId = String(techniqueId);
@@ -135,7 +135,7 @@
     app.rec.currentCandidate = null;
     app.rec.currentSource = "catalogue";
     app.rec.supportChoice = "";
-    app.rec.error = null;
+    app.rec.error = "";
     app.rec.retry = null;
     app.rec.loading = false;
     app.rec.view = "technique-safety";
@@ -151,7 +151,7 @@
     app.rec.currentCandidate = candidate;
     app.rec.currentSource = "catalogue";
     app.rec.supportChoice = "";
-    app.rec.error = null;
+    app.rec.error = "";
     app.rec.view = "technique-support";
     renderRecommendationDialog();
     writeNavigationState("replace", { overlay: "recommendation", recView: "technique-support", techniqueId: flow.techniqueId });
