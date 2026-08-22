@@ -7,6 +7,14 @@
 :root {
   --mobile-gutter: 16px;
   --tap-target: 48px;
+  /* Compact type roles follow Material's title/body/label hierarchy. */
+  --type-page-title: 1.5rem;
+  --type-section-title: 1.25rem;
+  --type-row-title: 1rem;
+  --type-body: 1rem;
+  --type-supporting: 0.875rem;
+  --type-label: 0.8125rem;
+  --type-meta: 0.75rem;
 }
 
 html {
@@ -938,12 +946,36 @@ html.compact-device .parent-create-actions button {
 }
 
 /* Phone Skills uses dense list rows rather than a stack of floating cards. */
+html.compact-device #skills-workspace > .page-intro h2 {
+  margin-bottom: 6px;
+  font-size: var(--type-page-title);
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+html.compact-device #skills-workspace > .page-intro p {
+  font-size: var(--type-body);
+  line-height: 1.5;
+}
+
 html.compact-device #skills-workspace .skills-section {
   margin: 20px 0 24px;
 }
 
 html.compact-device #skills-workspace .section-heading {
   margin-bottom: 10px;
+}
+
+html.compact-device #skills-workspace .section-heading h2 {
+  margin-bottom: 4px;
+  font-size: var(--type-section-title);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+html.compact-device #skills-workspace .section-heading p {
+  font-size: var(--type-supporting);
+  line-height: 1.5;
 }
 
 html.compact-device #skills-workspace .skills-list {
@@ -984,11 +1016,14 @@ html.compact-device #skills-workspace .skills-learning-list .job-open {
 
 html.compact-device #skills-workspace .skills-learning-list .job-open h3 {
   margin-bottom: 3px;
+  font-size: var(--type-row-title);
+  line-height: 1.35;
 }
 
 html.compact-device #skills-workspace .skills-learning-list .job-requiredness {
   margin: 2px 0 5px;
-  font-size: 0.75rem;
+  font-size: var(--type-label);
+  line-height: 1.35;
 }
 
 html.compact-device #skills-workspace .skills-learning-list .job-purpose {
@@ -997,7 +1032,8 @@ html.compact-device #skills-workspace .skills-learning-list .job-purpose {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  line-height: 1.35;
+  font-size: var(--type-supporting);
+  line-height: 1.45;
 }
 
 html.compact-device #skills-workspace .skills-learning-list .job-meta {
@@ -1007,7 +1043,8 @@ html.compact-device #skills-workspace .skills-learning-list .job-meta {
 
 html.compact-device #skills-workspace .skills-learning-list .pill {
   padding: 4px 7px;
-  font-size: 0.6875rem;
+  font-size: var(--type-meta);
+  line-height: 1.25;
 }
 
 html.compact-device #skills-workspace .skills-learning-list .job-side {
@@ -1052,7 +1089,8 @@ html.compact-device #skills-workspace .learning-domain-icon {
 
 html.compact-device #skills-workspace .learning-domain-card strong {
   margin: 0 0 2px;
-  font-size: 1rem;
+  font-size: var(--type-row-title);
+  line-height: 1.35;
 }
 
 html.compact-device #skills-workspace .learning-domain-card small {
@@ -1061,12 +1099,14 @@ html.compact-device #skills-workspace .learning-domain-card small {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  line-height: 1.35;
+  font-size: var(--type-supporting);
+  line-height: 1.45;
 }
 
 html.compact-device #skills-workspace .learning-domain-card em {
   margin-top: 4px;
-  font-size: 0.75rem;
+  font-size: var(--type-label);
+  line-height: 1.35;
 }
 
 html.compact-device #skills-workspace .capability-card {
@@ -1084,10 +1124,12 @@ html.compact-device #skills-workspace .capability-icon {
 
 html.compact-device #skills-workspace .capability-card h3 {
   margin: 0 0 2px;
-  font-size: 0.9375rem;
+  font-size: var(--type-row-title);
+  line-height: 1.35;
 }
 
 html.compact-device #skills-workspace .capability-card p {
   margin: 0;
-  line-height: 1.35;
+  font-size: var(--type-supporting);
+  line-height: 1.45;
 }

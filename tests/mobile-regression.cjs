@@ -210,6 +210,13 @@ async function phonePresentationAudit(page) {
     const domainRows = [...domainGrid.querySelectorAll(":scope > .learning-domain-card")];
     const capabilityRows = [...capabilityList.querySelectorAll(":scope > .capability-card")];
     const rowHeights = rows => rows.map(row => row.getBoundingClientRect().height);
+    const fontMetrics = selector => {
+      const style = getComputedStyle(document.querySelector(selector));
+      return {
+        size: Number.parseFloat(style.fontSize),
+        lineHeight: Number.parseFloat(style.lineHeight)
+      };
+    };
     const viewport = document.querySelector('meta[name="viewport"]');
     return {
       viewportContent: viewport?.getAttribute("content") || "",
@@ -239,6 +246,15 @@ async function phonePresentationAudit(page) {
       learningRowShadow: getComputedStyle(learningRows[0]).boxShadow,
       domainRowShadow: getComputedStyle(domainRows[0]).boxShadow,
       capabilityRowShadow: getComputedStyle(capabilityRows[0]).boxShadow,
+      pageTitleType: fontMetrics("#skills-workspace > .page-intro h2"),
+      pageIntroType: fontMetrics("#skills-workspace > .page-intro p"),
+      sectionTitleType: fontMetrics("#skills-workspace .section-heading h2"),
+      sectionSupportType: fontMetrics("#skills-workspace .section-heading p"),
+      rowTitleType: fontMetrics("#skills-workspace .skills-learning-list .job-open h3"),
+      rowBodyType: fontMetrics("#skills-workspace .skills-learning-list .job-purpose"),
+      rowLabelType: fontMetrics("#skills-workspace .skills-learning-list .job-requiredness"),
+      rowMetaType: fontMetrics("#skills-workspace .skills-learning-list .pill"),
+      navType: fontMetrics(".bottom-nav .nav-button"),
       scrollWidth: document.documentElement.scrollWidth,
       bodyFontSize: Number.parseFloat(getComputedStyle(document.body).fontSize)
     };
@@ -260,6 +276,17 @@ async function phonePresentationAudit(page) {
   assert.strictEqual(audit.learningRowShadow, "none", "Current Learning items retain individual card shadows");
   assert.strictEqual(audit.domainRowShadow, "none", "domain items retain individual card shadows");
   assert.strictEqual(audit.capabilityRowShadow, "none", "capabilities retain individual card shadows");
+  assert(audit.pageTitleType.size >= 24, `Skills page title is too small: ${audit.pageTitleType.size}px`);
+  assert(audit.sectionTitleType.size >= 20, `Skills section title is too small: ${audit.sectionTitleType.size}px`);
+  assert(audit.pageTitleType.size > audit.sectionTitleType.size, "page and section titles do not have a visible hierarchy");
+  assert(audit.rowTitleType.size >= 16, `Skills row title is too small: ${audit.rowTitleType.size}px`);
+  assert(audit.pageIntroType.size >= 16, `Skills introduction is too small: ${audit.pageIntroType.size}px`);
+  assert(audit.sectionSupportType.size >= 14, `section supporting text is too small: ${audit.sectionSupportType.size}px`);
+  assert(audit.rowBodyType.size >= 14, `row description is too small: ${audit.rowBodyType.size}px`);
+  assert(audit.rowLabelType.size >= 13, `row label is too small: ${audit.rowLabelType.size}px`);
+  assert(audit.rowMetaType.size >= 12, `row metadata is too small: ${audit.rowMetaType.size}px`);
+  assert(audit.navType.size >= 12, `navigation label is too small: ${audit.navType.size}px`);
+  assert(audit.rowBodyType.lineHeight / audit.rowBodyType.size >= 1.4, "row description line height is too tight");
   assert(Math.max(...audit.learningRowHeights) <= 180, `Current Learning row is too tall: ${audit.learningRowHeights.join(", ")}px`);
   assert(Math.max(...audit.domainRowHeights) <= 112, `domain row is too tall: ${audit.domainRowHeights.join(", ")}px`);
   assert(Math.max(...audit.capabilityRowHeights) <= 90, `capability row is too tall: ${audit.capabilityRowHeights.join(", ")}px`);
@@ -380,8 +407,15 @@ async function runFunctional(browser, baseUrl) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
   await page.getByRole("button", { name: "Skills", exact: true }).click();
-  const zoomAudit = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth }));
+  const zoomAudit = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth,
+    pageTitleSize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace > .page-intro h2")).fontSize),
+    rowBodySize: Number.parseFloat(getComputedStyle(document.querySelector("#skills-workspace .skills-learning-list .job-purpose")).fontSize)
+  }));
   assert(zoomAudit.scrollWidth <= zoomAudit.innerWidth + 1, "200% text causes horizontal overflow");
+  assert(zoomAudit.pageTitleSize >= 48, `Skills page title did not scale to 200% (${zoomAudit.pageTitleSize}px)`);
+  assert(zoomAudit.rowBodySize >= 28, `Skills row description did not scale to 200% (${zoomAudit.rowBodySize}px)`);
 
   const moneyState = { balance: state.data.balance, pending: state.data.pending };
   assert.deepStrictEqual(moneyState, { balance: 125.4, pending: 10 }, "financial state changed during non-financial Learn flow");

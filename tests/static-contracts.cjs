@@ -36,6 +36,11 @@ assert(html.includes('class="cards skills-list skills-learning-list"'), "compact
 assert(html.includes('class="learning-domain-grid skills-list"'), "compact domain list markup missing");
 assert(html.includes('class="capability-grid skills-list"'), "compact capability list markup missing");
 assert(css.includes("Phone Skills uses dense list rows"), "compact Skills row styling missing");
+assert(css.includes("--type-page-title: 1.5rem"), "compact page-title role is missing");
+assert(css.includes("--type-section-title: 1.25rem"), "compact section-title role is missing");
+assert(css.includes("--type-row-title: 1rem"), "compact row-title role is missing");
+assert(css.includes("--type-supporting: 0.875rem"), "compact supporting-text role is missing");
+assert(css.includes("--type-meta: 0.75rem"), "compact metadata role is missing");
 assert(sw.includes('event.request.method !== "GET"'), "service worker does not exclude POST/non-GET requests");
 assert(/CACHE_NAME\s*=\s*"sophie-app-v2-14-mobile-density"/.test(sw), "service-worker cache is not versioned for the mobile density candidate");
 assert.strictEqual(manifest.id, "./");

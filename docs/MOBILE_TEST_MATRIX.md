@@ -39,3 +39,16 @@ The suite must also inject a `980px` virtual desktop viewport into the same Andr
 ## Compact Skills density
 
 On a phone, Current Learning, learning domains and Capabilities must render as grouped list rows rather than separate floating cards. Tests must verify zero inter-row gap, divider-based grouping, no individual row shadow or corner radius, and bounded row heights while preserving 48px actions and readable descriptions.
+
+## Compact typography hierarchy
+
+The phone Skills workspace uses a reduced Material-style role set rather than unrelated per-component sizes:
+
+- page title: at least 24px equivalent;
+- section title: at least 20px and visibly below the page title;
+- row title and introductory body: at least 16px;
+- supporting descriptions: at least 14px with 1.4 line height or greater;
+- labels: at least 13px;
+- metadata and bottom-navigation labels: at least 12px.
+
+The browser suite must assert the computed hierarchy on genuine Android emulation and confirm that relative units scale to 200% without horizontal overflow or loss of functionality.
