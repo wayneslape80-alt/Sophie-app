@@ -936,3 +936,153 @@ html.compact-device .rec-entry .primary-button,
 html.compact-device .parent-create-actions button {
   width: 100%;
 }
+
+/* Phone Skills uses dense list rows rather than a stack of floating cards. */
+html.compact-device #skills-workspace .skills-section {
+  margin: 20px 0 24px;
+}
+
+html.compact-device #skills-workspace .section-heading {
+  margin-bottom: 10px;
+}
+
+html.compact-device #skills-workspace .skills-list {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+html.compact-device #skills-workspace .skills-list > .job-card,
+html.compact-device #skills-workspace .skills-list > .learning-domain-card,
+html.compact-device #skills-workspace .skills-list > .capability-card {
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html.compact-device #skills-workspace .skills-list > :last-child {
+  border-bottom: 0;
+}
+
+html.compact-device #skills-workspace .skills-learning-list > .job-card {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0;
+  padding: 0;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-open {
+  align-self: stretch;
+  padding: 13px 10px 13px 14px;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-open h3 {
+  margin-bottom: 3px;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-requiredness {
+  margin: 2px 0 5px;
+  font-size: 0.75rem;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-purpose {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.35;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-meta {
+  gap: 4px;
+  margin-top: 7px;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .pill {
+  padding: 4px 7px;
+  font-size: 0.6875rem;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-side {
+  width: auto;
+  min-width: 108px;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 12px 12px 0;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-status-label {
+  display: none;
+}
+
+html.compact-device #skills-workspace .skills-learning-list .job-side .primary-button,
+html.compact-device #skills-workspace .skills-learning-list .job-side .secondary-button {
+  width: 100%;
+  min-width: 108px;
+  flex: 0 0 auto;
+  padding: 9px 10px;
+}
+
+html.compact-device #skills-workspace .learning-domain-card {
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 11px;
+  padding: 12px;
+  background: var(--surface);
+}
+
+html.compact-device #skills-workspace .learning-domain-card.planned {
+  background: color-mix(in srgb, var(--surface) 88%, var(--surface-2));
+}
+
+html.compact-device #skills-workspace .learning-domain-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  font-size: 1.25rem;
+}
+
+html.compact-device #skills-workspace .learning-domain-card strong {
+  margin: 0 0 2px;
+  font-size: 1rem;
+}
+
+html.compact-device #skills-workspace .learning-domain-card small {
+  line-height: 1.35;
+}
+
+html.compact-device #skills-workspace .learning-domain-card em {
+  margin-top: 4px;
+  font-size: 0.75rem;
+}
+
+html.compact-device #skills-workspace .capability-card {
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 11px 12px;
+}
+
+html.compact-device #skills-workspace .capability-icon {
+  width: 30px;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+html.compact-device #skills-workspace .capability-card h3 {
+  margin: 0 0 2px;
+  font-size: 0.9375rem;
+}
+
+html.compact-device #skills-workspace .capability-card p {
+  margin: 0;
+  line-height: 1.35;
+}
