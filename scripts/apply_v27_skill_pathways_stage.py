@@ -7,27 +7,40 @@ asset_path = ROOT / "assets" / "skill-pathways-v27.js"
 
 index = index_path.read_text(encoding="utf-8")
 script_tag = '  <script src="./assets/skill-pathways-v27.js"></script>\n'
+choice_script_tag = '  <script src="./assets/skill-pathways-v27-choice.js"></script>\n'
+anchor = "</body>\n</html>"
 if script_tag not in index:
-    anchor = "</body>\n</html>"
     if anchor not in index:
         raise SystemExit("index.html body-close anchor not found")
     index = index.replace(anchor, script_tag + anchor, 1)
-    index_path.write_text(index, encoding="utf-8")
+if choice_script_tag not in index:
+    if script_tag not in index:
+        raise SystemExit("pathway script integration anchor not found")
+    index = index.replace(script_tag, script_tag + choice_script_tag, 1)
+index_path.write_text(index, encoding="utf-8")
 
 sw = sw_path.read_text(encoding="utf-8")
 old_cache = 'const CACHE_NAME = "sophie-app-v2-15-effective-mobile-scale";'
-new_cache = 'const CACHE_NAME = "sophie-app-v2-16-skill-pathways-stage";'
+old_stage_cache = 'const CACHE_NAME = "sophie-app-v2-16-skill-pathways-stage";'
+new_cache = 'const CACHE_NAME = "sophie-app-v2-17-skill-pathways-choice-stage";'
 if old_cache in sw:
     sw = sw.replace(old_cache, new_cache, 1)
+elif old_stage_cache in sw:
+    sw = sw.replace(old_stage_cache, new_cache, 1)
 elif new_cache not in sw:
     raise SystemExit("unexpected service-worker cache name")
 
 asset_line = '  "./assets/skill-pathways-v27.js",\n'
+choice_asset_line = '  "./assets/skill-pathways-v27-choice.js",\n'
 if asset_line not in sw:
-    anchor = '  "./assets/android-first.css",\n'
-    if anchor not in sw:
+    css_anchor = '  "./assets/android-first.css",\n'
+    if css_anchor not in sw:
         raise SystemExit("service-worker APP_FILES anchor not found")
-    sw = sw.replace(anchor, anchor + asset_line, 1)
+    sw = sw.replace(css_anchor, css_anchor + asset_line, 1)
+if choice_asset_line not in sw:
+    if asset_line not in sw:
+        raise SystemExit("service-worker pathway asset anchor not found")
+    sw = sw.replace(asset_line, asset_line + choice_asset_line, 1)
 
 sw_path.write_text(sw, encoding="utf-8")
 
