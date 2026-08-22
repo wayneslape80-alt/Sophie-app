@@ -1,6 +1,6 @@
 # Sophie App v2.7 - Interactive Skill Pathways Sprint
 
-Status: ACTIVE STAGING DESIGN
+Status: ACTIVE STAGING IMPLEMENTATION - COOKING PATHWAY AND EXISTING-ROUTE CHOICE BRIDGE COMPLETE
 Branch: `stage-v2.7-interactive-skill-pathways`
 Issue: #11
 Production base: `9fc9790b034dcdea0776b7c8ea17d776306fd814`
@@ -309,3 +309,29 @@ Stop before implementation that would:
 - add unsecured child-write routes
 - change financial state
 - regress D-006, rec-v1, School, Goals or Learning Resources
+
+## Implementation checkpoint - 2026-08-22
+
+Completed on `stage-v2.7-interactive-skill-pathways`:
+
+- 22 Cooking techniques rendered from the versioned 2026-08-22 snapshot of `Techniques`, `TechniquePrerequisites`, `CandidateTechniques` and `LearnCandidates`.
+- five progressively disclosed technique groups; preparation opens first and the other groups remain collapsed until Sophie chooses them.
+- full technique detail for description, ordinary activity-level safety support, hard prerequisites, recommended preparation and later techniques.
+- prerequisite cards navigate directly to the related technique.
+- History API state now carries `skillsTechniqueId`, preserving `Skills -> Cooking -> Technique -> related Technique` Back behaviour.
+- compact single-column treatment below the accepted v2.6.3 breakpoint and on `compact-device`; expanded layouts retain two technique columns.
+- the structural pathway asset remains read-only and contains no credential access, fetch, API POST, local Opportunity creation or financial mutation.
+- the separate staging choice bridge asks for current safety support, reads the credential-protected rec-v1 catalogue, intersects it with the versioned technique links, asks for reversible learning support and delegates conversion to the existing `chooseRecommendation` / `chooseRecommendedLearn` path.
+- the service-worker staging cache includes the new pathway asset under `sophie-app-v2-16-skill-pathways-stage`.
+
+The UI deliberately does not display an evidence-based `Ready`/`Not available yet` state because the current browser payload does not contain authoritative `LearningEvidence` or prerequisite satisfaction. Structural safety dependencies are shown as dependencies, not as claims that Sophie has or has not satisfied them.
+
+The `I want to learn this` bridge is implemented for staging only. It proves that the existing `chooseRecommendedLearn` mutation can be reused without a new write route. Production acceptance remains blocked on authoritative read exposure for technique/prerequisite/candidate linkage; the versioned snapshot must not become the continuing production authority for a live conversion control.
+
+Test coverage added:
+
+- `tests/v27-static-contracts.cjs`
+- `tests/v27-browser-regression.cjs`
+- `.github/workflows/v27-skill-pathways-stage.yml` now fails when generated product files are not committed and runs the Android-first/desktop matrix rather than writing commits from CI.
+
+Detailed checkpoint and handoff: `docs/V27_IMPLEMENTATION_STATUS_2026-08-22.md`.
