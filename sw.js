@@ -1,12 +1,12 @@
-const CACHE_NAME = "sophie-app-v2-18-authoritative-pathways-stage";
+const CACHE_NAME = "sophie-app-v2-19-multi-domain-pathways-stage";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/android-first.css",
-  "./assets/skill-pathways-v27.js",
-  "./assets/skill-pathways-v27-choice.js",
+  "./assets/skill-pathways-v28.js",
+  "./assets/skill-pathways-v28-choice.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
