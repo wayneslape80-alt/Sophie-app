@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-16-skill-pathways-stage";
+const CACHE_NAME = "sophie-app-v2-17-skill-pathways-choice-stage";
 
 const APP_FILES = [
   "./",
@@ -6,6 +6,7 @@ const APP_FILES = [
   "./manifest.webmanifest",
   "./assets/android-first.css",
   "./assets/skill-pathways-v27.js",
+  "./assets/skill-pathways-v27-choice.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
