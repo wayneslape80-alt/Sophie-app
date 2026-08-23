@@ -1,507 +1,164 @@
-/* Sophie App v2.9.2 candidate 2 — Concept A: Surreal Personal OS */
-:root {
-  --bg: #eeecde;
-  --surface: #fffef7;
-  --surface-2: #e7e4d6;
-  --ink: #101225;
-  --muted: #626477;
-  --line: #c8c5b8;
-  --brand: #3f57ff;
-  --brand-strong: #263bd6;
-  --brand-soft: #dfe3ff;
-  --mint: #d7f3e5;
-  --mint-ink: #146b4d;
-  --sun: #f5ee38;
-  --sun-ink: #17181f;
-  --rose: #ffd9d6;
-  --rose-ink: #a62d2a;
-  --shadow: 7px 7px 0 rgba(16, 18, 37, .18);
-  --shadow-soft: 3px 3px 0 rgba(16, 18, 37, .16);
-  --radius-xl: 3px 28px 3px 28px;
-  --radius-lg: 3px 20px 3px 20px;
-  --radius-md: 3px 14px 3px 14px;
-  --sophie-pattern-image: none;
-  --sophie-pattern-size: 128px;
-}
+/* Sophie App v2.9.2.5 - readable Android typography and top-left surreal emblem. */
+@import url("./concept-a-base-v2924.css?v=2.9.2.4");
 
-[data-theme="forest"] {
-  --bg: #e7ecdf;
-  --surface: #fbfff6;
-  --surface-2: #dce7d5;
-  --brand: #296e53;
-  --brand-strong: #174a37;
-  --brand-soft: #d2e9dc;
-}
-
-[data-theme="sakura"] {
-  --bg: #f4e8e8;
-  --surface: #fffafa;
-  --surface-2: #eedcde;
-  --brand: #c33f6e;
-  --brand-strong: #8d244b;
-  --brand-soft: #f7dce6;
-}
-
-[data-theme="night"] {
-  --bg: #101225;
-  --surface: #1c1e38;
-  --surface-2: #292b48;
-  --ink: #f4f1df;
-  --muted: #b1afc0;
-  --line: #50526c;
-  --brand: #8292ff;
-  --brand-strong: #b2bcff;
-  --brand-soft: #30365f;
-  --sun: #e7df3c;
-  --sun-ink: #111320;
-  --rose: #4a2934;
-  --rose-ink: #ffabbf;
-  --shadow: 7px 7px 0 rgba(0, 0, 0, .34);
-  --shadow-soft: 3px 3px 0 rgba(0, 0, 0, .3);
-}
-
-body {
-  position: relative;
-  isolation: isolate;
-  background-color: var(--bg);
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  background-color: var(--bg);
-  background-image: var(--sophie-pattern-image);
-  background-repeat: repeat;
-  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
-  image-rendering: pixelated;
-  opacity: .16;
-  pointer-events: none;
-}
-
-.topbar {
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 36%, transparent);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-}
-
-.topbar .eyebrow,
-.home-os-label,
-.home-now-kicker,
-.style-lab-kicker {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  letter-spacing: .11em;
-}
-
-.topbar h1 { font-weight: 900; }
-
-.icon-button,
-.avatar-button,
-.surface,
-dialog,
-.bottom-nav {
-  border: 1px solid color-mix(in srgb, var(--ink) 25%, var(--line));
-}
-
-.avatar-button {
-  position: relative;
-  border-radius: 3px 17px 3px 17px;
-}
-
-.sync-dot { border-color: var(--surface); }
-
-.bottom-nav {
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  box-shadow: 0 14px 44px rgba(16, 18, 37, .23);
-}
-
-.nav-button.active {
-  border-radius: 2px 12px 2px 12px;
-  background: var(--ink);
-  color: var(--bg);
-}
-
-/* Home — identity first, money in a supporting role. */
-#view-home { padding-top: 10px; }
-
-.home-os-grid {
-  display: grid;
-  gap: 22px;
-}
-
-.home-goal-head,
-.home-now-head {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 11px;
-}
-
-.home-os-label,
-.home-now-kicker,
-.style-lab-kicker {
-  display: block;
-  margin: 0 0 4px;
-  color: var(--muted);
-  font-size: .72rem;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.home-goal-head h2,
-.home-now-head h2 { margin: 0; }
-
-#active-goal .home-goal-card {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  min-height: 210px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(130px, 38%);
-  gap: 16px;
-  align-items: center;
-  padding: 23px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-xl);
-  background: var(--surface);
-  box-shadow: 7px 7px 0 #ff6962;
-  transform: skewY(-.35deg);
-}
-
-.home-goal-copy { z-index: 2; transform: skewY(.35deg); }
-.home-goal-copy h3 { margin: 4px 0 7px; font-size: clamp(1.35rem, 6vw, 2rem); }
-.home-goal-amount { margin: 0 0 13px; color: var(--muted); font-size: .9rem; font-weight: 750; }
-.home-goal-amount strong { color: var(--ink); font-size: 1.2rem; }
-.home-goal-card .progress { height: 10px; border: 1px solid var(--ink); background: var(--surface-2); }
-.home-goal-card .progress > span { background: linear-gradient(90deg, var(--brand), var(--sun)); }
-.home-goal-card .goal-meta { font-family: "SFMono-Regular", Consolas, monospace; font-size: .68rem; }
-
-.home-goal-visual {
-  position: relative;
-  z-index: 1;
+/* The surreal emblem is now a brand mark beside the page title. */
+.topbar > div:first-child {
   min-width: 0;
-  min-height: 155px;
-  transform: skewY(.35deg);
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
 }
 
+.topbar > div:first-child::before {
+  content: "";
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 48px;
+  height: 48px;
+  background: url("./surreal-os-emblem.png") center / contain no-repeat;
+  filter: drop-shadow(0 6px 7px rgba(16,18,37,.2));
+}
+
+.topbar > div:first-child .eyebrow,
+.topbar > div:first-child #topbar-title {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.topbar > div:first-child .eyebrow { grid-row: 1; }
+.topbar > div:first-child #topbar-title { grid-row: 2; }
+
+/* Remove the old copy of the emblem from Current Goal. */
 .home-goal-emblem {
-  position: absolute;
-  width: 220px;
-  max-width: none;
-  right: -48px;
-  top: 50%;
-  transform: translateY(-50%) rotate(4deg);
-  filter: drop-shadow(0 16px 16px rgba(16,18,37,.28));
+  display: none !important;
 }
 
-.home-goal-product {
-  position: absolute;
-  z-index: 2;
-  right: 2px;
-  bottom: 3px;
-  width: 92px;
-  height: 92px;
-  object-fit: cover;
-  border: 2px solid var(--ink);
-  border-radius: 2px 18px 2px 18px;
-  background: var(--surface);
-  box-shadow: 4px 4px 0 var(--sun);
+html.compact-device {
+  /* v2.9.2.4 corrected the DPR viewport. Physical review shows 16px is still too small. */
+  font-size: 118.75% !important;
+  --nav-height: 4.75rem;
+  --tap-target: 2.65rem;
+  --type-page-title: 1.65rem;
+  --type-section-title: 1.4rem;
+  --type-row-title: 1.08rem;
+  --type-body: 1rem;
+  --type-supporting: 0.95rem;
+  --type-label: 0.9rem;
+  --type-meta: 0.85rem;
 }
 
-.home-goal-empty p { max-width: 30rem; margin: 0 0 16px; color: var(--muted); line-height: 1.5; }
-
-.home-destinations {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 11px;
-  margin: 22px 0;
-}
-
-.home-destination {
-  min-width: 0;
-  min-height: 82px;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 18px;
+html.compact-device .topbar {
   align-items: center;
-  gap: 11px;
-  padding: 13px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  text-align: left;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer;
+  gap: 0.55rem;
 }
 
-.home-destination:nth-child(2),
-.home-destination:nth-child(3) { transform: translateY(2px); }
-
-.home-destination-icon,
-.home-wallet-icon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 2px 11px 2px 11px;
-  background: var(--brand);
-  color: #fff;
+html.compact-device .topbar > div:first-child {
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  column-gap: 0.5rem;
 }
 
-.home-destination:nth-child(2) .home-destination-icon { background: var(--sun); color: var(--sun-ink); }
-.home-destination:nth-child(3) .home-destination-icon { background: #ff6962; color: #fff; }
-.home-destination:nth-child(4) .home-destination-icon { background: var(--ink); color: var(--bg); }
-.home-destination svg,
-.home-wallet-icon svg { width: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-.home-destination strong,
-.home-destination small { display: block; overflow: hidden; text-overflow: ellipsis; }
-.home-destination strong { font-size: .98rem; }
-.home-destination small { margin-top: 2px; color: var(--muted); font-size: .76rem; }
-.home-destination-arrow { font-weight: 900; }
-
-.home-wallet {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
-  padding: 13px 15px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
+html.compact-device .topbar > div:first-child::before {
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
-.home-wallet-icon { background: var(--sun); color: var(--sun-ink); }
-.home-wallet-copy { min-width: 0; }
-.home-wallet-copy .money { margin: 0; font-size: 1.35rem; line-height: 1; letter-spacing: -.035em; }
-.home-wallet-pending { margin-left: auto; color: var(--muted); font-size: .74rem; text-align: right; }
-
-.home-now-list { display: grid; gap: 9px; }
-.home-now-card {
-  width: 100%;
-  min-height: 76px;
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 20px;
-  gap: 11px;
-  align-items: center;
-  padding: 11px 13px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-  text-align: left;
-  cursor: pointer;
-}
-.home-now-index { font: 850 .72rem/1 "SFMono-Regular", Consolas, monospace; color: var(--brand); }
-.home-now-card small,
-.home-now-card strong,
-.home-now-card span { display: block; }
-.home-now-card small { margin-bottom: 2px; color: var(--muted); font: 800 .66rem/1.35 "SFMono-Regular", Consolas, monospace; letter-spacing: .07em; }
-.home-now-card strong { font-size: .9rem; line-height: 1.3; }
-.home-now-card .home-now-note { margin-top: 2px; color: var(--muted); font-size: .72rem; }
-
-.home-side-stack { display: grid; gap: 16px; align-content: start; }
-.home-style-card {
-  display: grid;
-  grid-template-columns: 66px minmax(0, 1fr) auto;
-  gap: 13px;
-  align-items: center;
-  padding: 13px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
-}
-.home-pattern-swatch {
-  position: relative;
-  width: 66px;
-  height: 66px;
-  border: 1px solid var(--ink);
-  background-color: var(--bg);
-  background-image: var(--sophie-pattern-image);
-  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
-  image-rendering: pixelated;
-}
-.home-pattern-swatch::after { content: "32"; position: absolute; right: 2px; bottom: 2px; padding: 2px 3px; background: var(--ink); color: var(--bg); font: 800 .6rem/1 monospace; }
-.home-style-card h3 { margin: 1px 0 3px; }
-.home-style-card p { margin: 0; color: var(--muted); font-size: .75rem; line-height: 1.4; }
-.home-impact-card { border: 1px solid var(--ink); background: var(--surface); }
-.home-impact-card .impact-number { color: var(--brand); }
-
-.sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+html.compact-device .icon-button,
+html.compact-device .avatar-button {
+  width: 2.65rem;
+  min-width: 2.65rem;
+  height: 2.65rem;
 }
 
-#refresh-button,
-.home-goal-head .text-button,
-.home-now-head .text-button,
-.home-style-card .secondary-button,
-.pattern-tool,
-.pattern-colour,
-.pattern-custom-colour,
-.saved-pattern-actions button {
-  min-width: 48px;
-  min-height: 48px;
+html.compact-device #topbar-title {
+  font-size: 1.5rem;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
-/* Pattern Studio */
-#pattern-studio-dialog { width: min(100% - 20px, 820px); max-height: calc(100dvh - 20px); padding: 0; }
-.pattern-studio-body { padding: 20px; }
-.pattern-studio-intro { margin: -2px 0 16px; color: var(--muted); line-height: 1.45; }
-.pattern-studio-layout { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(230px, .75fr); gap: 20px; align-items: start; }
-.pattern-studio-layout > section,
-.pattern-studio-layout > aside { min-width: 0; }
-.pattern-tool-row { display: flex; max-width: 100%; gap: 7px; overflow-x: auto; margin-bottom: 10px; padding: 2px 2px 5px; scrollbar-width: none; }
-.pattern-tool-row::-webkit-scrollbar { display: none; }
-.pattern-tool {
-  flex: 0 0 auto;
-  padding: 8px 11px;
-  border: 1px solid var(--line);
-  border-radius: 2px 10px 2px 10px;
-  background: var(--surface-2);
-  font-size: .76rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-.pattern-tool.active { border-color: var(--ink); background: var(--ink); color: var(--bg); }
-.pattern-tool:disabled { opacity: .4; }
-.pattern-canvas-wrap { position: relative; width: min(100%, 430px); aspect-ratio: 1; border: 2px solid var(--ink); background: var(--surface); touch-action: none; }
-#pattern-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; cursor: crosshair; }
-.pattern-canvas-wrap:focus-within { outline: 3px solid var(--brand); outline-offset: 3px; }
-.pattern-keyboard-cursor {
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  top: 0;
-  width: calc(100% / 32);
-  height: calc(100% / 32);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #101225;
-  opacity: 0;
-  pointer-events: none;
-}
-.pattern-canvas-wrap:focus-within .pattern-keyboard-cursor { opacity: 1; }
-.pattern-canvas-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(to right, rgba(16,18,37,.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,18,37,.12) 1px, transparent 1px);
-  background-size: calc(100% / 32) calc(100% / 32);
-}
-.pattern-palette { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 11px; }
-.pattern-colour { width: 48px; height: 48px; padding: 0; border: 2px solid var(--surface); outline: 1px solid var(--ink); cursor: pointer; }
-.pattern-colour.active { outline: 3px solid var(--brand); outline-offset: 2px; }
-.pattern-custom-colour { width: 48px; height: 48px; padding: 3px; border: 1px solid var(--ink); background: var(--surface); }
-.pattern-preview-label { margin-bottom: 7px; }
-.pattern-repeat-preview {
-  min-height: 190px;
-  display: grid;
-  align-items: end;
-  padding: 15px;
-  border: 1px solid var(--ink);
-  background-color: var(--bg);
-  background-image: var(--sophie-pattern-image);
-  background-repeat: repeat;
-  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
-  image-rendering: pixelated;
-}
-.pattern-readability-card { padding: 14px; border: 1px solid var(--ink); background: var(--surface); box-shadow: 4px 4px 0 #ff6962; }
-.pattern-readability-card small,
-.pattern-readability-card strong { display: block; }
-.pattern-readability-card small { font: 800 .66rem/1.3 monospace; letter-spacing: .08em; color: var(--muted); }
-.pattern-readability-card p { margin: 5px 0 0; color: var(--muted); font-size: .78rem; }
-.pattern-save-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 15px; }
-.pattern-save-row input { min-width: 0; }
-.saved-patterns { display: grid; gap: 7px; margin-top: 11px; }
-.saved-pattern { min-width: 0; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 7px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
-.saved-pattern-swatch { width: 44px; height: 44px; border: 1px solid var(--ink); background-size: 32px 32px; image-rendering: pixelated; }
-.saved-pattern strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.saved-pattern-actions { display: flex; gap: 5px; }
-.saved-pattern-actions button { border: 0; background: var(--surface-2); font-weight: 800; cursor: pointer; }
-.pattern-studio-note { margin: 12px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.45; }
-
-@media (min-width: 800px) {
-  html:not(.compact-device) .home-os-grid { grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); align-items: start; }
-  html:not(.compact-device) .home-side-stack { position: sticky; top: 104px; }
+html.compact-device .topbar .eyebrow {
+  font-size: 0.8rem;
+  line-height: 1.25;
 }
 
-html.compact-device .home-os-grid { grid-template-columns: minmax(0, 1fr); }
-html.compact-device .home-side-stack { position: static; }
-
-@media (max-width: 600px) {
-  #active-goal .home-goal-card { min-height: 194px; grid-template-columns: minmax(0, 1fr) 118px; padding: 19px; }
-  .home-goal-emblem { width: 190px; right: -65px; }
-  .home-goal-product { width: 76px; height: 76px; }
-  .home-destination { min-height: 76px; grid-template-columns: 38px minmax(0,1fr) 14px; gap: 8px; padding: 10px; }
-  .home-destination-icon { width: 38px; height: 38px; }
-  .home-style-card { grid-template-columns: 58px minmax(0,1fr) auto; }
-  .home-pattern-swatch { width: 58px; height: 58px; }
-  #pattern-studio-dialog { width: 100%; max-width: none; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; }
-  .pattern-studio-body { min-height: 100%; padding: 16px 13px calc(18px + env(safe-area-inset-bottom)); }
-  .pattern-studio-layout { grid-template-columns: 1fr; }
-  .pattern-canvas-wrap { width: 100%; }
+html.compact-device .home-os-label,
+html.compact-device .home-now-kicker,
+html.compact-device .style-lab-kicker {
+  font-size: 0.85rem;
+  line-height: 1.3;
 }
 
-@media (max-width: 380px) {
-  .home-destinations { grid-template-columns: 1fr; }
-  .home-destination:nth-child(2), .home-destination:nth-child(3) { transform: none; }
-  #active-goal .home-goal-card { grid-template-columns: minmax(0, 1fr) 92px; }
-  .home-goal-emblem { right: -85px; opacity: .9; }
-  .home-wallet { align-items: flex-start; }
-  .home-wallet-pending { max-width: 115px; }
-  .home-style-card { grid-template-columns: 54px minmax(0,1fr); }
-  .home-style-card > button { grid-column: 1 / -1; width: 100%; }
+html.compact-device .home-goal-copy h3 {
+  font-size: 1.5rem;
+  line-height: 1.18;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  #active-goal .home-goal-card,
-  .home-goal-copy,
-  .home-goal-visual,
-  .home-destination { transform: none; }
+html.compact-device .home-goal-amount {
+  font-size: 0.95rem;
 }
 
-/* v2.9.2.4 DPR/goal draft — compact Current Goal keeps emblem and product separate. */
-html.compact-device #active-goal .home-goal-card {
-  min-height: 0;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  padding: 18px;
+html.compact-device .home-goal-amount strong {
+  font-size: 1.15rem;
+}
+
+html.compact-device .home-goal-card .goal-meta,
+html.compact-device .home-wallet-pending,
+html.compact-device .home-now-index,
+html.compact-device .home-pattern-swatch::after {
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+html.compact-device .home-destination strong,
+html.compact-device .home-now-card strong,
+html.compact-device .home-style-card h3 {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+html.compact-device .home-destination strong,
+html.compact-device .home-destination small {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+html.compact-device .home-destination small,
+html.compact-device .home-now-card small,
+html.compact-device .home-now-card .home-now-note,
+html.compact-device .home-style-card p,
+html.compact-device .pattern-studio-note {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+html.compact-device .text-button,
+html.compact-device .pattern-tool,
+html.compact-device .nav-button {
+  font-size: 0.85rem !important;
+}
+
+html.compact-device .pattern-readability-card small {
+  font-size: 0.8rem;
+}
+
+html.compact-device .pattern-readability-card p,
+html.compact-device .home-impact-card p {
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 html.compact-device .home-goal-visual {
-  min-height: 104px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 88px;
-  gap: 12px;
-  align-items: center;
+  min-height: 5rem;
+  justify-content: flex-end;
 }
 
-html.compact-device .home-goal-emblem {
-  position: static;
-  width: min(100%, 160px);
-  max-width: 160px;
-  right: auto;
-  top: auto;
-  justify-self: start;
-  transform: rotate(4deg);
+html.compact-device .bottom-nav {
+  min-height: var(--nav-height);
+  height: var(--nav-height);
 }
 
-html.compact-device .home-goal-product {
-  position: static;
-  width: 88px;
-  height: 88px;
-  right: auto;
-  bottom: auto;
-  justify-self: end;
-  align-self: center;
+html.compact-device .nav-button {
+  min-height: 3.7rem;
 }
-
