@@ -1,12 +1,12 @@
-const CACHE_NAME = "sophie-app-v2-22-saved-looks-six-colour-stage";
+const CACHE_NAME = "sophie-app-v2-9-2-candidate-2";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/android-first.css",
-  "./assets/concept-a.css",
-  "./assets/style-lab.js",
+  "./assets/concept-a.css?v=2.9.2-candidate-2",
+  "./assets/style-lab.js?v=2.9.2-candidate-2",
   "./assets/surreal-os-emblem.png",
   "./assets/skill-pathways-v28.js",
   "./assets/skill-pathways-v28-choice.js",
