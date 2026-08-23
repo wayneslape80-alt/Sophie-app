@@ -139,6 +139,19 @@
     technique.prerequisites.filter(edge => edge.prerequisiteTechniqueId === String(id))
       .map(edge => ({...edge, techniqueId:technique.id, title:technique.title}))
   );
+  function techniqueCatalogueOrder() {
+    const state = pathwayFor();
+    const config = activeDomainConfig();
+    return config.groups.flatMap(([groupId]) => state.techniques.filter(technique => technique.group === groupId));
+  }
+  function browseNeighboursFor(id) {
+    const ordered = techniqueCatalogueOrder();
+    const index = ordered.findIndex(technique => technique.id === String(id));
+    return {
+      previous:index > 0 ? ordered[index - 1] : null,
+      next:index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null
+    };
+  }
   app.v28CandidateIdsForTechnique = function(id, domain) {
     const state = pathwayFor(domain || activeDomainId());
     const technique = state.techniques.find(item => item.id === String(id));
@@ -183,10 +196,11 @@
       .technique-groups,.technique-detail,.technique-link-list{display:grid;gap:12px}
       .technique-group,.technique-detail-hero,.technique-detail-section,.technique-pathway-state{border:1px solid var(--line);border-radius:18px;background:var(--surface)}
       .technique-group{overflow:hidden}.technique-group>summary{display:flex;justify-content:space-between;gap:12px;min-height:52px;padding:12px 14px;cursor:pointer;list-style:none}.technique-group>summary::-webkit-details-marker{display:none}.technique-group>summary::after{content:"+";color:var(--brand);font-weight:900}.technique-group[open]>summary::after{content:"−"}.technique-group-title{display:block;font-weight:850}.technique-group-copy{display:block;margin-top:3px;color:var(--muted);font-size:.8125rem}.technique-group-body{padding:0 12px 12px}
-      .technique-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.technique-card,.technique-link{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;min-height:64px;width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink);text-align:left;cursor:pointer}.technique-link{grid-template-columns:minmax(0,1fr) auto;min-height:52px;background:var(--bg)}.technique-card:focus-visible,.technique-link:focus-visible{outline:3px solid var(--brand);outline-offset:3px}.technique-card-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--brand-soft)}.technique-card-copy strong,.technique-link strong{display:block}.technique-card-copy small,.technique-link small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.technique-card-arrow{color:var(--brand);font-weight:900}
+      .technique-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.technique-card,.technique-link{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;min-height:64px;width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink);text-align:left;cursor:pointer}.technique-link{grid-template-columns:minmax(0,1fr) auto;min-height:52px;background:var(--bg)}.technique-card:focus-visible,.technique-link:focus-visible,.technique-browse-link:focus-visible{outline:3px solid var(--brand);outline-offset:3px}.technique-card-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--brand-soft)}.technique-card-copy strong,.technique-link strong{display:block}.technique-card-copy small,.technique-link small{display:block;margin-top:3px;color:var(--muted);line-height:1.35}.technique-card-arrow{color:var(--brand);font-weight:900}
       .technique-badge{display:inline-flex;min-height:28px;margin-top:6px;padding:4px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);font-size:.7rem;font-weight:850}.technique-badge.hard{background:var(--sun);color:var(--sun-ink)}.technique-badge.safety,.technique-safety{background:var(--rose);color:var(--rose-ink)}
       .technique-detail-hero,.technique-detail-section,.technique-pathway-state{padding:18px}.technique-detail-hero{background:linear-gradient(145deg,var(--surface),var(--brand-soft))}.technique-detail-hero h2{margin:5px 0 7px}.technique-detail-hero p,.technique-detail-section>p,.technique-pathway-state{color:var(--muted);line-height:1.5}.technique-detail-section h3{margin:0 0 8px}.technique-safety,.technique-readonly-note{margin-top:10px;padding:11px 12px;border-radius:13px;line-height:1.45}.technique-readonly-note{background:var(--brand-soft)}.technique-readonly-note strong,.technique-pathway-state strong{display:block;margin-bottom:4px;color:var(--ink)}
-      @media(max-width:839px){.technique-grid{grid-template-columns:1fr}}html.compact-device .technique-grid{grid-template-columns:1fr}html.compact-device .technique-card{min-height:3rem;padding:.6875rem .75rem}html.compact-device .technique-detail-hero,html.compact-device .technique-detail-section{padding:1rem}
+      .technique-browse{display:grid;gap:10px}.technique-browse-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.technique-browse-link{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;min-height:58px;width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:15px;background:var(--bg);color:var(--ink);text-align:left;cursor:pointer}.technique-browse-link.next{grid-template-columns:minmax(0,1fr) auto;text-align:right}.technique-browse-link strong,.technique-browse-link small{display:block}.technique-browse-link small{margin-bottom:3px;color:var(--muted);font-size:.75rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.technique-browse-arrow{color:var(--brand);font-weight:900}.technique-browse-note{margin:0;color:var(--muted);line-height:1.45}
+      @media(max-width:839px){.technique-grid{grid-template-columns:1fr}.technique-browse-grid{grid-template-columns:1fr}}html.compact-device .technique-grid{grid-template-columns:1fr}html.compact-device .technique-card{min-height:3rem;padding:.6875rem .75rem}html.compact-device .technique-detail-hero,html.compact-device .technique-detail-section{padding:1rem}html.compact-device .technique-browse-grid{grid-template-columns:1fr}
     `;
     document.head.appendChild(style);
   }
@@ -214,6 +228,12 @@
     return `<button class="technique-link ${edge.kind === "hard" ? "hard" : ""}" type="button" data-v28-technique="${safe(targetId)}"><span><strong>${safe(edge.title || techniqueById(targetId)?.title || "Related technique")}</strong><small>${safe(label)} · ${safe(edge.rationale || edge.supportImplication)}</small></span><span aria-hidden="true">›</span></button>`;
   }
 
+  function browseLinkMarkup(technique,direction) {
+    if (!technique) return "";
+    const previous = direction === "previous";
+    return `<button class="technique-browse-link ${previous ? "previous" : "next"}" type="button" data-v28-browse-technique="${safe(technique.id)}">${previous ? '<span class="technique-browse-arrow" aria-hidden="true">←</span>' : ""}<span><small>${previous ? "Previous technique" : "Next technique"}</small><strong>${safe(technique.title)}</strong></span>${previous ? "" : '<span class="technique-browse-arrow" aria-hidden="true">→</span>'}</button>`;
+  }
+
   function renderTechniqueDetail(id) {
     const technique = techniqueById(id);
     if (!technique) return renderPathwayDomain();
@@ -221,6 +241,8 @@
     const hard = prerequisites.filter(edge => edge.kind === "hard");
     const recommended = prerequisites.filter(edge => edge.kind === "recommended");
     const leadsTo = unlocksFrom(id);
+    const neighbours = browseNeighboursFor(id);
+    const hasPathwayRelationships = hard.length || recommended.length || leadsTo.length;
     const directCount = directCandidateIds(id).length;
     return `<button class="skills-back" type="button" data-v28-technique-back>← ${safe(activeDomainConfig().name)}</button><div class="technique-detail">
       <article class="technique-detail-hero"><p class="eyebrow">${safe(activeDomainConfig().name)} technique</p><h2>${safe(technique.title)}</h2><p>${safe(technique.description)}</p></article>
@@ -228,7 +250,8 @@
       ${hard.length ? `<section class="technique-detail-section"><h3>Safety prerequisite</h3><p>This is a genuine pathway dependency. Activity availability is checked separately for the current setup.</p><div class="technique-link-list">${hard.map(edge => edgeLinkMarkup(edge)).join("")}</div></section>` : ""}
       ${recommended.length ? `<section class="technique-detail-section"><h3>Helpful before this</h3><p>These can make the technique easier to interpret, but they do not lock it.</p><div class="technique-link-list">${recommended.map(edge => edgeLinkMarkup(edge)).join("")}</div></section>` : ""}
       ${leadsTo.length ? `<section class="technique-detail-section"><h3>Where this can lead</h3><div class="technique-link-list">${leadsTo.map(edge => edgeLinkMarkup(edge,"next")).join("")}</div></section>` : ""}
-      <div class="technique-readonly-note"><strong>${directCount ? `${directCount} direct learning ${directCount === 1 ? "activity is" : "activities are"} linked to this technique.` : "No direct primary learning activity is linked yet."}</strong>${directCount ? "Choose it to ask rec-v1 what is eligible for this setup." : "You can still explore its pathway relationships."}</div>
+      <div class="technique-readonly-note"><strong>${directCount ? `${directCount} direct learning ${directCount === 1 ? "activity is" : "activities are"} linked to this technique.` : "No direct primary learning activity is linked yet."}</strong>${directCount ? "Choose it to ask rec-v1 what is eligible for this setup." : hasPathwayRelationships ? "You can still explore the linked pathway relationships above." : "You can still browse other techniques in this learning area."}</div>
+      ${(neighbours.previous || neighbours.next) ? `<section class="technique-detail-section technique-browse" aria-labelledby="v28-technique-browse-heading"><div><h3 id="v28-technique-browse-heading">Browse techniques</h3><p class="technique-browse-note">Previous and next follow the catalogue order only. They are not prerequisites, unlocks or a judgement of progress.</p></div><div class="technique-browse-grid">${browseLinkMarkup(neighbours.previous,"previous")}${browseLinkMarkup(neighbours.next,"next")}</div></section>` : ""}
     </div>`;
   }
 
@@ -287,6 +310,8 @@
   }
 
   document.addEventListener("click",event => {
+    const browse = event.target.closest("[data-v28-browse-technique]");
+    if (browse) { event.preventDefault(); openTechnique(browse.dataset.v28BrowseTechnique,{historyMode:"replace"}); return; }
     const technique = event.target.closest("[data-v28-technique]");
     if (technique) { event.preventDefault(); openTechnique(technique.dataset.v28Technique); return; }
     const retry = event.target.closest("[data-v28-retry-pathway]");
