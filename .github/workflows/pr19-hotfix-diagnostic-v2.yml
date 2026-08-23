@@ -1,0 +1,45 @@
+name: PR19 hotfix diagnostic v2
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static parsing
+        run: |
+          node --check assets/style-lab.js
+          node --check sw.js
+          node --check tests/pr19-hotfix-diagnostic.cjs
+      - name: Prepare base snapshot
+        run: |
+          mkdir -p /tmp/pr19-base
+          git archive 952d7a3459c68c6bc04a5d9202b7a40c078488ff | tar -x -C /tmp/pr19-base
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run exact hotfix browser gates
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/pr19-head-http.log 2>&1 &
+          HEAD_PID=$!
+          (cd /tmp/pr19-base && python3 -m http.server 4174 --bind 127.0.0.1 >/tmp/pr19-base-http.log 2>&1) &
+          BASE_PID=$!
+          trap 'kill $HEAD_PID $BASE_PID || true' EXIT
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null && curl -fsS http://127.0.0.1:4174/index.html >/dev/null; then break; fi
+            sleep 0.25
+          done
+          node tests/pr19-hotfix-diagnostic.cjs
