@@ -716,8 +716,7 @@ dialog {
  */
 html.compact-device {
   --nav-height: 6rem;
-  /* Physical Android feedback: 125% was still too small. */
-  font-size: 137.5% !important;
+  /* v2.9.2.4 draft: viewport width is corrected with DPR; do not magnify root text. */
 }
 
 html.compact-device .app-shell {
@@ -1186,20 +1185,5 @@ html.compact-device #skills-workspace .capability-card p {
 }
 
 
-/* v2.9.2.3: wide-reporting phone fallback. Keeps readable sizing and edge clearance
- * even during the brief period before JS classifies the device. */
-@media (pointer: coarse) and (max-width: 1200px), (hover: none) and (max-width: 1200px) {
-  html {
-    font-size: 137.5%;
-  }
-
-  .topbar {
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1.25rem, calc(env(safe-area-inset-right) + 0.75rem));
-  }
-
-  .top-actions {
-    flex: 0 0 auto;
-    margin-right: 0.75rem;
-  }
-}
+/* v2.9.2.4 draft: the DPR-aware viewport bootstrap makes phone CSS width authoritative;
+ * the previous coarse-pointer root-font fallback is deliberately removed. */

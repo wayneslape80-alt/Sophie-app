@@ -468,3 +468,40 @@ html.compact-device .home-side-stack { position: static; }
   .home-goal-visual,
   .home-destination { transform: none; }
 }
+
+/* v2.9.2.4 DPR/goal draft — compact Current Goal keeps emblem and product separate. */
+html.compact-device #active-goal .home-goal-card {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px;
+}
+
+html.compact-device .home-goal-visual {
+  min-height: 104px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 12px;
+  align-items: center;
+}
+
+html.compact-device .home-goal-emblem {
+  position: static;
+  width: min(100%, 160px);
+  max-width: 160px;
+  right: auto;
+  top: auto;
+  justify-self: start;
+  transform: rotate(4deg);
+}
+
+html.compact-device .home-goal-product {
+  position: static;
+  width: 88px;
+  height: 88px;
+  right: auto;
+  bottom: auto;
+  justify-self: end;
+  align-self: center;
+}
+
