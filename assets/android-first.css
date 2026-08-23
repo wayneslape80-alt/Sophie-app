@@ -716,7 +716,8 @@ dialog {
  */
 html.compact-device {
   --nav-height: 6rem;
-  font-size: 125% !important;
+  /* Physical Android feedback: 125% was still too small. */
+  font-size: 137.5% !important;
 }
 
 html.compact-device .app-shell {
@@ -728,12 +729,26 @@ html.compact-device .app-shell {
 
 html.compact-device .topbar {
   gap: 0.625rem;
-  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, calc(env(safe-area-inset-right) + 0.75rem));
+}
+
+html.compact-device .topbar > :first-child {
+  min-width: 0;
 }
 
 html.compact-device .top-actions {
   flex: 0 0 auto;
-  margin-right: 0.5rem;
+  margin-right: 0.75rem;
+}
+
+html.compact-device #topbar-title {
+  overflow-wrap: anywhere;
+}
+
+html.compact-device .avatar-button {
+  position: relative;
+  z-index: 2;
 }
 
 html.compact-device .icon-button,
@@ -1168,4 +1183,23 @@ html.compact-device #skills-workspace .capability-card p {
   margin: 0;
   font-size: var(--type-supporting);
   line-height: 1.45;
+}
+
+
+/* v2.9.2.3: wide-reporting phone fallback. Keeps readable sizing and edge clearance
+ * even during the brief period before JS classifies the device. */
+@media (pointer: coarse) and (max-width: 1200px), (hover: none) and (max-width: 1200px) {
+  html {
+    font-size: 137.5%;
+  }
+
+  .topbar {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, calc(env(safe-area-inset-right) + 0.75rem));
+  }
+
+  .top-actions {
+    flex: 0 0 auto;
+    margin-right: 0.75rem;
+  }
 }
