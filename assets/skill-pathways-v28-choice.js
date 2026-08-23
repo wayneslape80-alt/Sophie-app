@@ -32,6 +32,200 @@
     return document.querySelector(".technique-detail-hero h2")?.textContent?.trim() || "This technique";
   }
 
+  function catalogueRows(result) {
+    return Array.isArray(result) ? result : Array.isArray(result?.candidates) ? result.candidates : [];
+  }
+
+  function safetyPreflightKey() {
+    return `${String(flow.domain || "")}::${String(flow.techniqueId || "")}`;
+  }
+
+  function currentSafetyPreflight() {
+    const state = flow.safetyPreflight;
+    return state && state.key === safetyPreflightKey() ? state : null;
+  }
+
+  function ensureSafetyPreflightStyles() {
+    if (document.getElementById("v28-safety-preflight-styles")) return;
+    const style = document.createElement("style");
+    style.id = "v28-safety-preflight-styles";
+    style.textContent = `
+      .v28-safety-preflight-status {
+        margin: 0 0 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: var(--surface-2);
+        color: var(--muted);
+        font-size: .84rem;
+        line-height: 1.45;
+      }
+      .rec-choice[data-v28-technique-safety] {
+        display: block;
+        width: 100%;
+      }
+      .v28-safety-option-note {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: .78rem;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+      .rec-choice.v28-safety-unavailable,
+      .rec-choice.v28-safety-loading {
+        background: color-mix(in srgb, var(--surface) 78%, var(--surface-2));
+        color: var(--muted);
+      }
+      .rec-choice.v28-safety-unavailable {
+        opacity: .62;
+        filter: grayscale(.3);
+        border-style: dashed;
+        cursor: not-allowed;
+      }
+      .rec-choice.v28-safety-loading {
+        opacity: .76;
+        cursor: wait;
+      }
+      .rec-choice.v28-safety-check-error .v28-safety-option-note {
+        font-weight: 650;
+      }
+      html.compact-device .v28-safety-preflight-status,
+      html.compact-device .v28-safety-option-note {
+        font-size: 16px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function safetyPreflightStatusText(state) {
+    if (!state || state.status === "loading") return "Checking which safety setups currently have a linked learning choice…";
+    if (state.status === "error") return "Availability could not be checked yet. Choose a setup and the app will check it when you continue.";
+    return "Safety setup changes which linked activities are available. It is not a score of Sophie's ability.";
+  }
+
+  function safetyOptionMarkup(value, label, state) {
+    const support = String(value);
+    const result = state?.availability?.[support] || null;
+    const loading = !state || state.status === "loading" || !result;
+    const unavailable = result?.status === "ok" && result.eligibleCount === 0;
+    const failedOpen = result?.status === "error";
+    const selected = !loading && !unavailable && flow.safetySupport === support;
+    const noteId = `v28-safety-note-${support.replace(/[^a-z0-9_-]/gi, "-")}`;
+    let note = "";
+    if (loading) note = "Checking learning choices…";
+    else if (unavailable) note = "No learning choice for this setup";
+    else if (failedOpen) note = "Availability check unavailable - this setup will be checked when you continue";
+    else note = result.eligibleCount === 1 ? "1 linked learning choice available" : `${result.eligibleCount} linked learning choices available`;
+    const classes = ["rec-choice"];
+    if (loading) classes.push("v28-safety-loading");
+    if (unavailable) classes.push("v28-safety-unavailable");
+    if (failedOpen) classes.push("v28-safety-check-error");
+    const ariaDisabled = loading || unavailable ? ` aria-disabled="true"` : "";
+    return `<button class="${classes.join(" ")}" type="button" data-v28-technique-safety="${safe(support)}" aria-pressed="${selected}" aria-describedby="${safe(noteId)}"${ariaDisabled}>${safe(label)}<span id="${safe(noteId)}" class="v28-safety-option-note">${safe(note)}</span></button>`;
+  }
+
+  function normalisedLinkedCandidates(result, linkedIds) {
+    return catalogueRows(result)
+      .map(normaliseCatalogueCandidate)
+      .filter(candidate => linkedIds.has(String(candidate.candidateId)))
+      .sort((a, b) => Number(b.eligibility?.status === "eligible") - Number(a.eligibility?.status === "eligible") || String(a.title).localeCompare(String(b.title)));
+  }
+
+  async function preflightSafetyOptions() {
+    const linkedIds = new Set(candidateIdsFor(flow.techniqueId, flow.domain).map(String));
+    const safetyOptions = Array.isArray(REC_SAFETY_OPTIONS) ? REC_SAFETY_OPTIONS.map(([support]) => String(support)) : [];
+    if (!linkedIds.size || !flow.techniqueId || !flow.domain || !safetyOptions.length) return null;
+
+    const existing = currentSafetyPreflight();
+    if (existing?.promise && ["loading", "ready"].includes(existing.status)) return existing.promise;
+
+    const state = {
+      key: safetyPreflightKey(),
+      status: "loading",
+      availability: {},
+      requestCount: 0,
+      startedAt: performance.now(),
+      completedAt: 0,
+      durationMs: 0,
+      promise: null
+    };
+    flow.safetyPreflight = state;
+    flow.safetySupport = "";
+    renderRecommendationDialog();
+
+    const requestOne = async support => {
+      state.requestCount += 1;
+      const startedAt = performance.now();
+      try {
+        const result = await recommendationPost({
+          action: "getLearningCandidateCatalogue",
+          domain: flow.domain,
+          techniqueId: flow.techniqueId,
+          availableSafetySupport: support,
+          ...(app.rec.recommendationSessionId ? { recommendationSessionId: app.rec.recommendationSessionId } : {})
+        });
+        const candidates = normalisedLinkedCandidates(result, linkedIds);
+        return {
+          support,
+          status: "ok",
+          candidates,
+          eligibleCount: candidates.filter(candidate => candidate.eligibility?.status === "eligible").length,
+          durationMs: performance.now() - startedAt
+        };
+      } catch (error) {
+        return {
+          support,
+          status: "error",
+          candidates: [],
+          eligibleCount: null,
+          durationMs: performance.now() - startedAt,
+          errorCode: String(error?.code || "")
+        };
+      }
+    };
+
+    state.promise = Promise.all(safetyOptions.map(requestOne)).then(results => {
+      results.forEach(result => { state.availability[result.support] = result; });
+      state.completedAt = performance.now();
+      state.durationMs = state.completedAt - state.startedAt;
+      state.status = results.every(result => result.status === "error") ? "error" : "ready";
+      app.v28SafetyPreflightMetrics = {
+        techniqueId: String(flow.techniqueId),
+        domain: String(flow.domain),
+        requestCount: state.requestCount,
+        wallClockMs: Math.round(state.durationMs),
+        supports: results.map(result => ({
+          support: result.support,
+          status: result.status,
+          eligibleCount: result.eligibleCount,
+          durationMs: Math.round(result.durationMs)
+        }))
+      };
+      document.documentElement.dataset.v28SafetyPreflight = state.status;
+      document.documentElement.dataset.v28SafetyPreflightRequests = String(state.requestCount);
+      document.documentElement.dataset.v28SafetyPreflightMs = String(Math.round(state.durationMs));
+      renderRecommendationDialog();
+      return state;
+    });
+
+    return state.promise;
+  }
+
+  function useCachedTechniqueCandidates() {
+    const state = currentSafetyPreflight();
+    const selected = state?.availability?.[String(flow.safetySupport || "")];
+    if (!selected || selected.status !== "ok" || selected.eligibleCount < 1) return false;
+    flow.candidates = selected.candidates.slice();
+    app.rec.catalogue = flow.candidates;
+    app.rec.availableSafetySupport = flow.safetySupport;
+    app.rec.loading = false;
+    flow.error = "";
+    app.rec.view = "technique-candidates";
+    renderRecommendationDialog();
+    writeNavigationState("replace", { overlay: "recommendation", recView: "technique-candidates", techniqueId: flow.techniqueId });
+    return true;
+  }
+
   function enhanceTechniqueChoice() {
     const detail = document.querySelector(".technique-detail");
     const context = activeDomainContext();
@@ -60,7 +254,13 @@
     if (!body) return;
 
     if (app.rec.view === "technique-safety") {
-      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Set up this learning choice</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This checks safety eligibility; it is not a score of what you can do.</p><div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => `<button class="rec-choice" type="button" data-v28-technique-safety="${safe(value)}" aria-pressed="${flow.safetySupport === value}">${safe(label)}</button>`).join("")}</div>${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v28-check-technique ${flow.safetySupport && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show learning choices"}</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+      ensureSafetyPreflightStyles();
+      const state = currentSafetyPreflight();
+      const selected = state?.availability?.[String(flow.safetySupport || "")];
+      const canContinue = Boolean(flow.safetySupport) && (
+        selected?.status === "error" || (selected?.status === "ok" && selected.eligibleCount > 0)
+      );
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Set up this learning choice</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This checks safety eligibility; it is not a score of what you can do.</p><div class="v28-safety-preflight-status" role="status" aria-live="polite">${safe(safetyPreflightStatusText(state))}</div><div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => safetyOptionMarkup(value, label, state)).join("")}</div>${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v28-check-technique ${canContinue && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show learning choices"}</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
       return;
     }
 
@@ -79,6 +279,7 @@
   async function loadTechniqueCandidates() {
     const linkedIds = new Set(candidateIdsFor(flow.techniqueId, flow.domain));
     if (!linkedIds.size || !flow.safetySupport || app.rec.loading) return;
+    if (useCachedTechniqueCandidates()) return;
     app.rec.loading = true;
     flow.error = "";
     renderRecommendationDialog();
@@ -90,11 +291,7 @@
         availableSafetySupport: flow.safetySupport,
         ...(app.rec.recommendationSessionId ? { recommendationSessionId: app.rec.recommendationSessionId } : {})
       });
-      const rows = Array.isArray(result) ? result : result?.candidates;
-      flow.candidates = (Array.isArray(rows) ? rows : [])
-        .map(normaliseCatalogueCandidate)
-        .filter(candidate => linkedIds.has(candidate.candidateId))
-        .sort((a, b) => Number(b.eligibility?.status === "eligible") - Number(a.eligibility?.status === "eligible") || String(a.title).localeCompare(String(b.title)));
+      flow.candidates = normalisedLinkedCandidates(result, new Set(Array.from(linkedIds, String)));
       app.rec.catalogue = flow.candidates;
       app.rec.availableSafetySupport = flow.safetySupport;
       app.rec.loading = false;
@@ -121,6 +318,7 @@
     flow.techniqueTitle = currentTechniqueTitle();
     flow.domain = context ? app.skillsDomain : "";
     flow.safetySupport = "";
+    flow.safetyPreflight = null;
     flow.candidates = [];
     flow.error = "";
     app.rec.currentCandidate = null;
@@ -134,6 +332,7 @@
     const dialog = document.querySelector("#recommendation-dialog");
     if (dialog && !dialog.open) dialog.showModal();
     writeNavigationState("push", { overlay: "recommendation", recView: "technique-safety", techniqueId: flow.techniqueId });
+    void preflightSafetyOptions();
   }
 
   function selectTechniqueCandidate(candidateId) {
@@ -269,6 +468,7 @@
     const safety = event.target.closest("[data-v28-technique-safety]");
     if (safety) {
       event.preventDefault();
+      if (safety.getAttribute("aria-disabled") === "true") return;
       flow.safetySupport = safety.dataset.v28TechniqueSafety;
       renderRecommendationDialog();
       return;
