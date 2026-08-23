@@ -1,11 +1,11 @@
-/* Sophie App v2.9.2 candidate 2 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
+/* Sophie App v2.9.2.1 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
 (() => {
   "use strict";
 
   const SIZE = 32;
   const CELL_COUNT = SIZE * SIZE;
   const LOOK_VERSION = 2;
-  const CANDIDATE_VERSION = "v2.9.2 candidate 2";
+  const CANDIDATE_VERSION = "v2.9.2.1";
   const ACTIVE_LOOK_KEY = "sophie_style_look_v2";
   const SAVED_LOOKS_KEY = "sophie_style_saved_looks_v2";
   const LEGACY_ACTIVE_KEY = "sophie_style_pattern_v1";
@@ -375,8 +375,7 @@
     const style = document.createElement("style");
     style.id = "sophie-saved-look-v2-styles";
     style.textContent = `
-      /* Physical Android fallback: compact devices keep normal root text scale even if the browser reports a wide layout viewport. */
-      html.compact-device.effective-mobile-scale { font-size: 100% !important; }
+      /* Physical Android scale is bounded by the early head script; do not override its readable root size here. */
       .topbar { color: var(--sophie-bg-ink, var(--ink)); }
       .topbar .eyebrow { color: var(--sophie-bg-muted, var(--muted)); }
       .bottom-nav { color: var(--sophie-bg-ink, var(--ink)); }
