@@ -25,5 +25,5 @@ PASS: draft PWA cache bumped
 PASS: service worker remains GET-only
 PASS: candidate CSS cache busts present
 RESULT: 26/26 PASS
-PASS:w=500;overlap=false;emblem=static;product=static;cols=1
+PASS:w=1082;overlap=true;emblem=absolute;product=absolute;cols=2
 PASS:w=1280;overlap=true;emblem=absolute;product=absolute;cols=2
