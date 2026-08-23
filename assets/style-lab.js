@@ -1,10 +1,11 @@
-/* Sophie App v2.9.2 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
+/* Sophie App v2.9.2 candidate 2 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
 (() => {
   "use strict";
 
   const SIZE = 32;
   const CELL_COUNT = SIZE * SIZE;
   const LOOK_VERSION = 2;
+  const CANDIDATE_VERSION = "v2.9.2 candidate 2";
   const ACTIVE_LOOK_KEY = "sophie_style_look_v2";
   const SAVED_LOOKS_KEY = "sophie_style_saved_looks_v2";
   const LEGACY_ACTIVE_KEY = "sophie_style_pattern_v1";
@@ -308,8 +309,7 @@
       "--sophie-brand-contrast": values.brandContrast,
       "--sophie-accent-six": values.accent,
       "--sophie-accent-six-contrast": values.accentContrast,
-      "--sophie-ink-contrast": values.inkContrast,
-      "--sophie-pattern-size": "128px"
+      "--sophie-ink-contrast": values.inkContrast
     };
     Object.entries(variables).forEach(([name, value]) => root.style.setProperty(name, value));
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -377,8 +377,6 @@
     style.textContent = `
       /* Physical Android fallback: compact devices keep normal root text scale even if the browser reports a wide layout viewport. */
       html.compact-device.effective-mobile-scale { font-size: 100% !important; }
-      body::before { background-size: var(--sophie-pattern-size, 128px) var(--sophie-pattern-size, 128px) !important; }
-      .pattern-repeat-preview { background-size: var(--sophie-pattern-size, 128px) var(--sophie-pattern-size, 128px) !important; }
       .topbar { color: var(--sophie-bg-ink, var(--ink)); }
       .topbar .eyebrow { color: var(--sophie-bg-muted, var(--muted)); }
       .bottom-nav { color: var(--sophie-bg-ink, var(--ink)); }
@@ -392,15 +390,14 @@
       .pattern-readability-card { box-shadow: 4px 4px 0 var(--sophie-accent-six, #ff6962); }
       .pattern-palette { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
       .pattern-palette-help { grid-column: 1 / -1; margin: 0 0 2px; color: var(--muted); font-size: .78rem; line-height: 1.45; }
-      .pattern-theme-slot { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 6px; align-items: stretch; }
-      .pattern-slot-select { min-width: 0; min-height: 48px; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 7px; align-items: center; padding: 7px; border: 1px solid var(--line); border-radius: 2px 10px 2px 10px; background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; }
-      .pattern-slot-select[aria-pressed="true"] { outline: 3px solid var(--brand); outline-offset: 2px; }
-      .pattern-slot-swatch { width: 26px; height: 26px; border: 1px solid var(--ink); }
+      .pattern-theme-slot { min-width: 0; min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) 54px; gap: 8px; align-items: center; padding: 7px; border: 1px solid var(--line); border-radius: 2px 10px 2px 10px; background: var(--surface); color: var(--ink); cursor: pointer; }
+      .pattern-theme-slot[data-selected="true"] { outline: 3px solid var(--brand-strong); outline-offset: 2px; }
       .pattern-slot-copy { min-width: 0; }
       .pattern-slot-copy strong, .pattern-slot-copy small { display: block; overflow-wrap: anywhere; }
       .pattern-slot-copy strong { font-size: .75rem; }
       .pattern-slot-copy small { margin-top: 1px; color: var(--muted); font-size: .64rem; }
-      .pattern-slot-picker { width: 48px; min-width: 48px; height: 48px; padding: 3px; border: 1px solid var(--ink); border-radius: 2px 10px 2px 10px; background: var(--surface); cursor: pointer; }
+      .pattern-slot-picker { width: 54px; min-width: 54px; height: 54px; padding: 3px; border: 2px solid var(--ink); border-radius: 2px 10px 2px 10px; background: var(--surface); cursor: pointer; }
+      .pattern-candidate-version { display: inline-block; margin-top: 5px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font: 800 .62rem/1.2 monospace; letter-spacing: .04em; }
       .saved-look-palette { display: flex; gap: 2px; margin-top: 4px; }
       .saved-look-palette span { width: 14px; height: 6px; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); }
       .saved-pattern-copy { min-width: 0; }
@@ -443,6 +440,7 @@
   }
 
   function updateCopy() {
+    document.documentElement.dataset.sophieCandidate = CANDIDATE_VERSION;
     const intro = $("#pattern-studio-intro");
     if (intro) intro.textContent = "Draw one 32 x 32 tile with your six colours. Editing a colour recolours both the pattern and the app. The background repeats at four times the authored size.";
     const palette = $(".pattern-palette");
@@ -458,6 +456,13 @@
     if (use) use.textContent = "Use this look";
     const note = $(".pattern-studio-note");
     if (note) note.textContent = "Saved Looks keep both the 32 x 32 artwork and all six colours on this device. They are creative choices, not rewards.";
+    const title = $("#pattern-studio-title");
+    if (title && !$(".pattern-candidate-version")) {
+      const marker = document.createElement("span");
+      marker.className = "pattern-candidate-version";
+      marker.textContent = CANDIDATE_VERSION;
+      title.insertAdjacentElement("afterend", marker);
+    }
     const homeCard = $(".home-style-card");
     if (homeCard) {
       const heading = homeCard.querySelector("h3");
@@ -481,52 +486,40 @@
     host.innerHTML = "";
     const help = document.createElement("p");
     help.className = "pattern-palette-help";
-    help.textContent = "Select a colour to draw with. Use its square picker to edit that colour everywhere it appears.";
+    help.textContent = "Six colours control both the artwork and the app. Tap any colour box to select and edit that slot.";
     host.appendChild(help);
 
     state.palette.forEach((colour, index) => {
       const slot = index + 1;
-      const wrapper = document.createElement("div");
+      const wrapper = document.createElement("label");
       wrapper.className = "pattern-theme-slot";
+      wrapper.dataset.patternSlotControl = String(slot);
+      wrapper.dataset.selected = state.selectedSlot === slot ? "true" : "false";
 
-      const select = document.createElement("button");
-      select.type = "button";
-      select.className = "pattern-slot-select";
-      select.dataset.patternSlot = String(slot);
-      select.setAttribute("aria-pressed", state.selectedSlot === slot ? "true" : "false");
-      select.setAttribute("aria-label", `Use colour ${slot}, ${SLOT_LABELS[index]}, for drawing`);
-
-      const swatch = document.createElement("span");
-      swatch.className = "pattern-slot-swatch";
-      swatch.style.background = colour;
-      swatch.setAttribute("aria-hidden", "true");
       const copy = document.createElement("span");
       copy.className = "pattern-slot-copy";
       const strong = document.createElement("strong");
       strong.textContent = `Colour ${slot}`;
       const small = document.createElement("small");
-      small.textContent = SLOT_LABELS[index];
+      small.textContent = `${SLOT_LABELS[index]} - tap to edit`;
       copy.append(strong, small);
-      select.append(swatch, copy);
 
       const picker = document.createElement("input");
       picker.type = "color";
       picker.className = "pattern-slot-picker";
       picker.dataset.patternSlotPicker = String(slot);
       picker.value = colour;
-      picker.setAttribute("aria-label", `Edit colour ${slot}, ${SLOT_LABELS[index]}`);
+      picker.setAttribute("aria-label", `Select and edit colour ${slot}, ${SLOT_LABELS[index]}`);
 
-      wrapper.append(select, picker);
+      wrapper.append(copy, picker);
       host.appendChild(wrapper);
     });
   }
 
   function updatePaletteEditor() {
-    $$('[data-pattern-slot]').forEach(button => {
-      const slot = Number(button.dataset.patternSlot);
-      const colour = state.palette[slot - 1];
-      button.setAttribute("aria-pressed", state.selectedSlot === slot ? "true" : "false");
-      button.querySelector(".pattern-slot-swatch")?.style.setProperty("background", colour);
+    $$('[data-pattern-slot-control]').forEach(control => {
+      const slot = Number(control.dataset.patternSlotControl);
+      control.dataset.selected = state.selectedSlot === slot ? "true" : "false";
     });
     $$('[data-pattern-slot-picker]').forEach(input => {
       const slot = Number(input.dataset.patternSlotPicker);
@@ -918,8 +911,6 @@
       if (openButton) open();
       const tool = event.target.closest("[data-pattern-tool]");
       if (tool) selectTool(tool.dataset.patternTool);
-      const slot = event.target.closest("[data-pattern-slot]");
-      if (slot) selectSlot(slot.dataset.patternSlot);
       const action = event.target.closest("[data-pattern-command]");
       if (action) command(action.dataset.patternCommand);
       if (event.target.closest("[data-pattern-save]")) saveNamed();
@@ -931,7 +922,7 @@
       if (event.target.closest("[data-pattern-use]")) useLook();
     });
 
-    document.addEventListener("focusin", event => {
+    const beginPaletteEdit = event => {
       const picker = event.target.closest?.("[data-pattern-slot-picker]");
       if (!picker) return;
       const slot = Number(picker.dataset.patternSlotPicker);
@@ -940,7 +931,10 @@
         state.paletteEditSlot = slot;
       }
       selectSlot(slot);
-    });
+    };
+
+    document.addEventListener("pointerdown", beginPaletteEdit);
+    document.addEventListener("focusin", beginPaletteEdit);
 
     document.addEventListener("input", event => {
       const picker = event.target.closest?.("[data-pattern-slot-picker]");
@@ -974,7 +968,7 @@
     readActiveLook,
     readSavedLooks,
     getState: () => cloneLook(state),
-    constants: Object.freeze({ SIZE, CELL_COUNT, LOOK_VERSION, ACTIVE_LOOK_KEY, SAVED_LOOKS_KEY })
+    constants: Object.freeze({ SIZE, CELL_COUNT, LOOK_VERSION, CANDIDATE_VERSION, ACTIVE_LOOK_KEY, SAVED_LOOKS_KEY })
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
