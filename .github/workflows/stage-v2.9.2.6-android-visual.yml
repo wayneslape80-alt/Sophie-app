@@ -1,4 +1,4 @@
-name: Stage clean Android visual correction v2.9.2.6
+name: Stage clean Android visual correction v2.9.2.7 settings refinement
 
 on:
   pull_request:
@@ -32,8 +32,78 @@ jobs:
           python -m py_compile tools/apply_android_visual_v2926.py tests/test_android_visual_v2926.py tests/render_android_visual_v2926.py tests/mock_server.py
           node --check tests/cdp_android_visual_v2926.mjs
 
-      - name: Build candidate cleanly from main
+      - name: Build Android visual candidate cleanly from main
         run: python tools/apply_android_visual_v2926.py
+
+      - name: Apply reviewed Settings simplification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          old_actions = '''        <button class="icon-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻</button>
+        <button class="avatar-button" id="settings-button" aria-label="Open personalisation"><span id="avatar">🐉</span><span class="sync-dot" id="sync-dot"></span></button>'''
+          new_actions = '''        <button class="icon-button status-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻<span class="sync-dot" id="sync-dot" aria-hidden="true"></span></button>
+        <button class="icon-button settings-button" id="settings-button" aria-label="Open settings" title="Settings">⚙</button>'''
+          if old_actions not in html:
+              raise SystemExit('Expected avatar/settings action block not found')
+          html = html.replace(old_actions, new_actions, 1)
+
+          old_settings = '''      <div class="dialog-head"><div><span class="style-lab-kicker">SOPHIE // STYLE LAB</span><h2>Make it yours</h2></div><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
+      <div class="setting-row"><div><strong>Background pattern</strong><p>Draw a repeating 32 × 32 pixel tile. It stays on this device.</p></div><button class="secondary-button" type="button" data-open-pattern-studio>Open Pattern Studio</button></div>
+      <div class="setting-row"><div><strong>Your character</strong><p>Choose a companion for the app.</p></div><div class="avatar-options" id="avatar-options"></div></div>
+      <div class="setting-row"><div><strong>Colour theme</strong><p>Pick the style that feels most like you.</p></div><div class="theme-options" id="theme-options"></div></div>'''
+          new_settings = '''      <div class="dialog-head"><div><span class="style-lab-kicker">SOPHIE // SETTINGS</span><h2>Settings</h2></div><button class="close-button" data-close-dialog="settings-dialog" aria-label="Close">×</button></div>
+      <div class="setting-row"><div><strong>Visual look</strong><p>Pattern Studio controls the repeating artwork and six colours used across the app.</p></div><button class="secondary-button" type="button" data-open-pattern-studio>Open Pattern Studio</button></div>'''
+          if old_settings not in html:
+              raise SystemExit('Expected legacy Settings rows not found')
+          html = html.replace(old_settings, new_settings, 1)
+
+          start = html.find('    function setupPersonalisation() {')
+          end = html.find('\n\n    function lockParentMode', start)
+          if start < 0 or end < 0:
+              raise SystemExit('setupPersonalisation function boundary not found')
+          html = html[:start] + '''    function setupPersonalisation() {
+      // Pattern Studio / Saved Looks is the only visual customisation system.
+      document.documentElement.removeAttribute("data-theme");
+    }''' + html[end:]
+
+          avatar_handler = '''      const avatarChoice = event.target.closest("[data-avatar]");
+      if (avatarChoice) {
+        localStorage.setItem("sophie_avatar", avatarChoice.dataset.avatar);
+        setupPersonalisation();
+      }
+
+'''
+          theme_handler = '''      const themeChoice = event.target.closest(".theme-swatch");
+      if (themeChoice) {
+        localStorage.setItem("sophie_theme", themeChoice.dataset.value);
+        setupPersonalisation();
+      }
+
+'''
+          if avatar_handler not in html or theme_handler not in html:
+              raise SystemExit('Legacy avatar/theme handlers not found')
+          html = html.replace(avatar_handler, '', 1).replace(theme_handler, '', 1)
+
+          html = html.replace('2.9.2.6-android-visual', '2.9.2.7-settings')
+          path.write_text(html, encoding='utf-8')
+
+          css = Path('assets/concept-a.css')
+          concept = css.read_text(encoding='utf-8')
+          concept += '''\n\n/* v2.9.2.7 settings refinement: connectivity belongs to Refresh; Settings is a plain gear. */\n.top-actions .status-button { position: relative; }\n.top-actions .status-button .sync-dot { right: -2px; bottom: -2px; margin: 0; }\n.top-actions .settings-button { font-size: 1.15rem; }\nhtml.compact-device .top-actions .settings-button { font-size: 22px !important; }\n'''
+          css.write_text(concept, encoding='utf-8')
+
+          sw = Path('sw.js')
+          service_worker = sw.read_text(encoding='utf-8')
+          service_worker = service_worker.replace('sophie-app-v2-9-2-6-android-visual', 'sophie-app-v2-9-2-7-settings')
+          service_worker = service_worker.replace('2.9.2.6-android-visual', '2.9.2.7-settings')
+          sw.write_text(service_worker, encoding='utf-8')
+          PY
 
       - name: Syntax and preservation regression
         shell: bash
@@ -51,6 +121,30 @@ jobs:
           node --check sw.js
           mkdir -p docs/staging/android-v2926
           python tests/test_android_visual_v2926.py | tee /tmp/static-results.txt
+          python - <<'PY' | tee -a /tmp/static-results.txt
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          css = Path('assets/concept-a.css').read_text(encoding='utf-8')
+          sw = Path('sw.js').read_text(encoding='utf-8')
+          checks = {
+              'settings button is plain gear': 'class="icon-button settings-button" id="settings-button"' in html and '>⚙</button>' in html,
+              'settings button is not avatar button': 'class="avatar-button" id="settings-button"' not in html,
+              'legacy avatar element removed': 'id="avatar"' not in html,
+              'character row removed': 'Your character' not in html and 'id="avatar-options"' not in html,
+              'legacy colour theme row removed': 'Colour theme' not in html and 'id="theme-options"' not in html,
+              'legacy avatar click handler removed': 'const avatarChoice = event.target.closest("[data-avatar]")' not in html,
+              'legacy theme click handler removed': 'const themeChoice = event.target.closest(".theme-swatch")' not in html,
+              'settings heading is explicit': 'SOPHIE // SETTINGS' in html and '<h2>Settings</h2>' in html,
+              'Pattern Studio is sole visual settings row': '<strong>Visual look</strong>' in html and 'six colours used across the app' in html,
+              'sync status moved to refresh': 'id="refresh-button"' in html and 'id="sync-dot" aria-hidden="true"' in html and '.top-actions .status-button .sync-dot' in css,
+              'settings cache bust present': '2.9.2.7-settings' in html,
+              'settings service worker cache bumped': 'sophie-app-v2-9-2-7-settings' in sw,
+          }
+          failed = [name for name, ok in checks.items() if not ok]
+          for name, ok in checks.items(): print(('PASS' if ok else 'FAIL') + ': ' + name)
+          print(f'SETTINGS RESULT: {len(checks)-len(failed)}/{len(checks)} PASS')
+          if failed: raise SystemExit('Settings refinement regression failed: ' + ', '.join(failed))
+          PY
           git diff --quiet origin/main -- Code.gs
           git diff --quiet origin/main -- assets/style-lab.js
           git diff --name-only origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js Code.gs | sort | tee /tmp/product-diff-files.txt
@@ -89,7 +183,7 @@ jobs:
         run: |
           set -euo pipefail
           cat > docs/staging/android-v2926/README.md <<'EOF'
-          # Android visual correction v2.9.2.6 — staging only
+          # Android visual correction v2.9.2.7 — staging only
 
           Rebuilt cleanly from the current production tree. Closed PR #29 was inspected only as historical context and was not reused, cherry-picked, merged or imported.
 
@@ -100,6 +194,9 @@ jobs:
           - The v2.9.2.4 DPR viewport bootstrap is byte-preserved from `main`.
           - Compact Home remains single-column.
           - Pattern Studio JavaScript remains byte-preserved: six palette slots, Saved Looks v2, 32×32 editor and 128×128 CSS repeat remain intact.
+          - The former avatar control is now an explicit gear Settings button.
+          - Connection status remains visible on Refresh rather than masquerading as profile/avatar state.
+          - Settings no longer contains Your character or the legacy Colour theme chooser. Pattern Studio / Saved Looks is the single visual-customisation system.
           - Navigation and non-compact desktop layout rules remain present.
           - `index.html`, both affected CSS assets, the emblem URL and service-worker cache are cache-busted for this candidate.
 
@@ -133,5 +230,5 @@ jobs:
             echo 'Candidate already matches tested staged output.'
             exit 0
           fi
-          git commit -m 'Stage clean v2.9.2.6 Android visual correction'
+          git commit -m 'Stage v2.9.2.7 Settings simplification'
           git push origin HEAD:stage-v2.9.2.6-android-visual-clean
