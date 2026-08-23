@@ -259,8 +259,6 @@
     return baseApplyNavigationStateV28(state);
   };
 
-
-
   document.addEventListener("click", event => {
     const learn = event.target.closest("[data-v28-learn-technique]");
     if (learn) {
@@ -303,6 +301,60 @@
       writeNavigationState("replace", { overlay: "recommendation", recView: "technique-candidates", techniqueId: flow.techniqueId });
     }
   });
+
+  function applySettingsRefinementV2927() {
+    const settingsButton = document.querySelector("#settings-button");
+    if (settingsButton) {
+      const syncDot = settingsButton.querySelector("#sync-dot");
+      settingsButton.classList.remove("avatar-button");
+      settingsButton.classList.add("icon-button", "settings-button");
+      settingsButton.setAttribute("aria-label", "Open settings");
+      settingsButton.setAttribute("title", "Settings");
+      settingsButton.replaceChildren(document.createTextNode("⚙"));
+      if (syncDot) settingsButton.appendChild(syncDot);
+    }
+
+    const dialog = document.querySelector("#settings-dialog");
+    if (dialog) {
+      const kicker = dialog.querySelector(".dialog-head .style-lab-kicker");
+      const heading = dialog.querySelector(".dialog-head h2");
+      if (kicker) kicker.textContent = "SOPHIE // SETTINGS";
+      if (heading) heading.textContent = "Settings";
+
+      dialog.querySelectorAll(".setting-row").forEach(row => {
+        const label = row.querySelector("strong")?.textContent?.trim();
+        if (label === "Your character" || label === "Colour theme") row.remove();
+      });
+
+      const patternButton = dialog.querySelector("[data-open-pattern-studio]");
+      const patternRow = patternButton?.closest(".setting-row");
+      if (patternRow) {
+        const label = patternRow.querySelector("strong");
+        const copy = patternRow.querySelector("p");
+        if (label) label.textContent = "Visual look";
+        if (copy) copy.textContent = "Pattern Studio controls the repeating artwork and six colours used across the app.";
+      }
+    }
+
+    document.documentElement.removeAttribute("data-theme");
+
+    if (!document.getElementById("sophie-settings-v2927-styles")) {
+      const style = document.createElement("style");
+      style.id = "sophie-settings-v2927-styles";
+      style.textContent = `
+        #settings-button.settings-button { font-size: 1.15rem; }
+        #settings-button.settings-button .sync-dot { margin: 28px 0 0 28px; }
+        html.compact-device #settings-button.settings-button { font-size: 22px !important; }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applySettingsRefinementV2927, { once: true });
+  } else {
+    applySettingsRefinementV2927();
+  }
 
   enhanceTechniqueChoice();
 })();
