@@ -1,0 +1,97 @@
+name: Stage v2.9.2.4 DPR Android goal fix
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  stage-test:
+    if: github.head_ref == 'stage-v2.9.2.4-dpr-android-goal'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: stage-v2.9.2.4-dpr-android-goal
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore production product baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js
+
+      - name: Build DPR-aware draft candidate
+        run: python staging/v2.9.2.4/apply_dpr_goal_draft.py
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, re.S)
+          Path('/tmp/v2924-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/v2924-inline.js
+          node --check assets/style-lab.js
+          node --check sw.js
+
+      - name: Static DPR and preservation regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/staging
+          python staging/v2.9.2.4/test_dpr_goal_draft.py | tee docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+          git diff --exit-code origin/main -- assets/style-lab.js
+
+      - name: Browser layout regression and screenshot evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          python staging/v2.9.2.4/browser_probe.py
+          python3 -m http.server 8765 >/tmp/v2924-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 1
+          for SIZE in 412,915 1280,900; do
+            W=${SIZE%,*}; H=${SIZE#*,}
+            "$CHROME" --headless --no-sandbox --disable-gpu --window-size="$W,$H" --virtual-time-budget=3000 --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > "/tmp/v2924-dom-$W.html"
+            grep -q 'data-probe="pass"' "/tmp/v2924-dom-$W.html"
+            grep -o 'PASS:w=[^<]*' "/tmp/v2924-dom-$W.html" | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+          done
+          "$CHROME" --headless --no-sandbox --disable-gpu --window-size=412,915 --virtual-time-budget=3000 --screenshot="$GITHUB_WORKSPACE/docs/staging/v2.9.2.4-android-412x915.png" "http://127.0.0.1:8765/v2924-layout-probe.html"
+          rm -f v2924-layout-probe.html
+
+      - name: Diff scope gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js
+          git diff --exit-code origin/main -- assets/style-lab.js
+          grep -q 'sophie-app-v2-9-2-4-dpr-goal-draft' sw.js
+          ! grep -q 'font-size: 137.5%' assets/android-first.css
+          grep -q -- '--sophie-pattern-size: 128px' assets/concept-a.css
+          grep -q 'value.length === 6' assets/style-lab.js
+
+      - name: Commit tested draft candidate to staging branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt docs/staging/v2.9.2.4-android-412x915.png
+          if git diff --cached --quiet; then
+            echo 'Draft candidate already matches tested output.'
+            exit 0
+          fi
+          git commit -m 'Stage v2.9.2.4 DPR Android viewport and Current Goal fix'
+          git push origin HEAD:stage-v2.9.2.4-dpr-android-goal
