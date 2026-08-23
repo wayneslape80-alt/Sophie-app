@@ -30,5 +30,8 @@ PASS: draft PWA cache bumped
 PASS: service worker remains GET-only
 PASS: candidate CSS cache busts present
 RESULT: 31/31 PASS
-PASS:w=1082;overlap=true;emblem=absolute;product=absolute;cols=2
-PASS:w=1280;overlap=true;emblem=absolute;product=absolute;cols=2
+PASS: SM-S911B physical portrait repairs 980px layout to 411px CSS viewport
+PASS: normal 412px CSS phone keeps standard device-width viewport
+PASS: desktop viewport and classification remain unchanged
+PASS: compact visual proxy: PASS:w=500;overlap=false;emblem=static;product=static;cols=1
+PASS: desktop visual: PASS:w=1280;overlap=true;emblem=absolute;product=absolute;cols=2
