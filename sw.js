@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-9-2-6-android-visual";
+const CACHE_NAME = "sophie-app-v2-9-2-7-settings";
 
 const APP_FILES = [
   "./",
