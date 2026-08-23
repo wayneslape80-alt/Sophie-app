@@ -16,6 +16,7 @@
     future: [],
     drawing: false,
     touched: -1,
+    cursor: 0,
     ready: false
   };
 
@@ -101,6 +102,30 @@
     const redo = $("[data-pattern-command='redo']");
     if (undo) undo.disabled = !state.history.length;
     if (redo) redo.disabled = !state.future.length;
+    updateCursor();
+  }
+
+  function cellDescription(index = state.cursor) {
+    const x = index % SIZE;
+    const y = Math.floor(index / SIZE);
+    const value = state.cells[index] || "empty";
+    return `Column ${x + 1}, row ${y + 1}, ${value}.`;
+  }
+
+  function announceCursor(message = "") {
+    const status = $("#pattern-canvas-status");
+    if (status) status.textContent = message || cellDescription();
+  }
+
+  function updateCursor(announce = false) {
+    const cursor = $(".pattern-keyboard-cursor");
+    const canvas = $("#pattern-canvas");
+    if (!cursor || !canvas) return;
+    const x = state.cursor % SIZE;
+    const y = Math.floor(state.cursor / SIZE);
+    cursor.style.transform = `translate(${x * 100}%, ${y * 100}%)`;
+    canvas.setAttribute("aria-label", `Editable 32 by 32 pixel pattern canvas. ${cellDescription()}`);
+    if (announce) announceCursor();
   }
 
   function selectTool(tool) {
@@ -116,7 +141,9 @@
     if (!/^#[0-9a-f]{6}$/i.test(String(colour))) return;
     state.colour = colour.toLowerCase();
     $$("[data-pattern-colour]").forEach(button => {
-      button.classList.toggle("active", button.dataset.patternColour.toLowerCase() === state.colour);
+      const active = button.dataset.patternColour.toLowerCase() === state.colour;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
     });
     const picker = $("#pattern-custom-colour");
     if (picker) picker.value = state.colour;
@@ -167,6 +194,8 @@
   function beginPaint(event) {
     if (event.button !== undefined && event.button !== 0) return;
     const index = canvasIndex(event);
+    state.cursor = index;
+    updateCursor();
     if (state.tool === "fill") return floodFill(index, state.colour);
     if (state.tool === "eyedropper") {
       if (state.cells[index]) selectColour(state.cells[index]);
@@ -184,6 +213,7 @@
     if (!state.drawing) return;
     event.preventDefault();
     const index = canvasIndex(event);
+    state.cursor = index;
     if (index === state.touched) return;
     state.touched = index;
     if (setCell(index, state.tool === "eraser" ? null : state.colour)) renderCanvas();
@@ -192,6 +222,63 @@
   function endPaint() {
     state.drawing = false;
     state.touched = -1;
+  }
+
+  function useToolAt(index) {
+    if (state.tool === "fill") {
+      if (state.cells[index] === state.colour) {
+        announceCursor("That area already uses the selected colour. " + cellDescription(index));
+        return;
+      }
+      floodFill(index, state.colour);
+      announceCursor("Area filled. " + cellDescription(index));
+      return;
+    }
+    if (state.tool === "eyedropper") {
+      if (state.cells[index]) {
+        selectColour(state.cells[index]);
+        announceCursor("Colour selected. " + cellDescription(index));
+      } else {
+        announceCursor("That pixel is empty.");
+      }
+      return;
+    }
+    const replacement = state.tool === "eraser" ? null : state.colour;
+    if (state.cells[index] === replacement) {
+      announceCursor();
+      return;
+    }
+    remember();
+    setCell(index, replacement);
+    renderCanvas();
+    announceCursor(state.tool === "eraser" ? "Pixel erased. " + cellDescription(index) : "Pixel drawn. " + cellDescription(index));
+  }
+
+  function handleCanvasKeydown(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+      event.preventDefault();
+      if (event.shiftKey) redo();
+      else undo();
+      announceCursor(event.shiftKey ? "Redo." : "Undo.");
+      return;
+    }
+    const x = state.cursor % SIZE;
+    const y = Math.floor(state.cursor / SIZE);
+    let next = state.cursor;
+    if (event.key === "ArrowLeft") next = y * SIZE + Math.max(0, x - 1);
+    else if (event.key === "ArrowRight") next = y * SIZE + Math.min(SIZE - 1, x + 1);
+    else if (event.key === "ArrowUp") next = Math.max(0, y - 1) * SIZE + x;
+    else if (event.key === "ArrowDown") next = Math.min(SIZE - 1, y + 1) * SIZE + x;
+    else if (event.key === "Home") next = y * SIZE;
+    else if (event.key === "End") next = y * SIZE + SIZE - 1;
+    else if (event.key === " " || event.key === "Enter") {
+      event.preventDefault();
+      useToolAt(state.cursor);
+      return;
+    } else return;
+    event.preventDefault();
+    state.cursor = next;
+    updateCursor(true);
   }
 
   function undo() {
@@ -318,6 +405,8 @@
     canvas.addEventListener("pointermove", continuePaint);
     canvas.addEventListener("pointerup", endPaint);
     canvas.addEventListener("pointercancel", endPaint);
+    canvas.addEventListener("keydown", handleCanvasKeydown);
+    canvas.addEventListener("focus", () => updateCursor(true));
     canvas.addEventListener("contextmenu", event => event.preventDefault());
 
     document.addEventListener("click", event => {

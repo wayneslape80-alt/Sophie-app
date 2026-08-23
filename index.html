@@ -1004,13 +1004,13 @@
     </div>
   </dialog>
 
-  <dialog id="pattern-studio-dialog">
+  <dialog id="pattern-studio-dialog" aria-labelledby="pattern-studio-title" aria-describedby="pattern-studio-intro">
     <div class="pattern-studio-body">
       <div class="dialog-head">
-        <div><span class="style-lab-kicker">STYLE LAB / 01</span><h2>Pattern Studio</h2></div>
+        <div><span class="style-lab-kicker">STYLE LAB / 01</span><h2 id="pattern-studio-title">Pattern Studio</h2></div>
         <button class="close-button" type="button" data-pattern-cancel aria-label="Close Pattern Studio">×</button>
       </div>
-      <p class="pattern-studio-intro">Draw one 32 × 32 pixel tile. It repeats live behind solid, readable content surfaces.</p>
+      <p class="pattern-studio-intro" id="pattern-studio-intro">Draw one 32 × 32 pixel tile. It repeats live behind solid, readable content surfaces.</p>
       <div class="pattern-studio-layout">
         <section>
           <div class="pattern-tool-row" role="group" aria-label="Drawing tools">
@@ -1023,15 +1023,18 @@
             <button class="pattern-tool" type="button" data-pattern-command="clear">Clear</button>
             <button class="pattern-tool" type="button" data-pattern-command="reset">Reset</button>
           </div>
+          <p class="sr-only" id="pattern-canvas-help">Touch or drag to draw. With a keyboard, use the arrow keys to move between pixels and Space or Enter to use the selected tool.</p>
           <div class="pattern-canvas-wrap">
-            <canvas id="pattern-canvas" width="32" height="32" role="img" aria-label="Editable 32 by 32 pixel pattern canvas. Use the drawing tools and touch or drag on the canvas."></canvas>
+            <canvas id="pattern-canvas" width="32" height="32" role="application" tabindex="0" aria-describedby="pattern-canvas-help" aria-label="Editable 32 by 32 pixel pattern canvas"></canvas>
+            <span class="pattern-keyboard-cursor" aria-hidden="true"></span>
           </div>
+          <p class="sr-only" id="pattern-canvas-status" role="status" aria-live="polite"></p>
           <div class="pattern-palette" role="group" aria-label="Pattern colours">
-            <button class="pattern-colour" type="button" data-pattern-colour="#101225" style="background:#101225" aria-label="Ink"></button>
-            <button class="pattern-colour active" type="button" data-pattern-colour="#3f57ff" style="background:#3f57ff" aria-label="Electric blue"></button>
-            <button class="pattern-colour" type="button" data-pattern-colour="#f5ee38" style="background:#f5ee38" aria-label="Signal yellow"></button>
-            <button class="pattern-colour" type="button" data-pattern-colour="#ff6962" style="background:#ff6962" aria-label="Coral"></button>
-            <button class="pattern-colour" type="button" data-pattern-colour="#fffef7" style="background:#fffef7" aria-label="Paper"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#101225" style="background:#101225" aria-label="Ink" aria-pressed="false"></button>
+            <button class="pattern-colour active" type="button" data-pattern-colour="#3f57ff" style="background:#3f57ff" aria-label="Electric blue" aria-pressed="true"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#f5ee38" style="background:#f5ee38" aria-label="Signal yellow" aria-pressed="false"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#ff6962" style="background:#ff6962" aria-label="Coral" aria-pressed="false"></button>
+            <button class="pattern-colour" type="button" data-pattern-colour="#fffef7" style="background:#fffef7" aria-label="Paper" aria-pressed="false"></button>
             <input class="pattern-custom-colour" id="pattern-custom-colour" type="color" value="#3f57ff" aria-label="Choose a custom colour">
           </div>
         </section>
@@ -1655,7 +1658,7 @@
         <span class="home-os-label">CURRENT GOAL</span>
         <h3>${safe(goal.title)}</h3>
         <p class="home-goal-amount"><strong>${money(saved)}</strong> of ${money(target)}</p>
-        <div class="progress" aria-label="${Math.round(percent)} percent saved">
+        <div class="progress" role="progressbar" aria-label="Savings progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percent)}">
           <span style="width:${percent}%"></span>
         </div>
         <div class="goal-meta">
