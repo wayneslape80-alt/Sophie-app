@@ -30,6 +30,7 @@ jobs:
           base64 -d staging/android-v2926/payload.00 > /tmp/android-v2926-tools.tgz
           tar -xzf /tmp/android-v2926-tools.tgz
           python -m py_compile tools/apply_android_visual_v2926.py tests/test_android_visual_v2926.py tests/render_android_visual_v2926.py tests/mock_server.py
+          node --check tests/cdp_android_visual_v2926.mjs
 
       - name: Build candidate cleanly from main
         run: python tools/apply_android_visual_v2926.py
@@ -59,7 +60,7 @@ jobs:
       - name: Build screenshot fixtures
         run: python tests/render_android_visual_v2926.py
 
-      - name: Screenshot-equivalent verification at 360 390 412 plus desktop preservation
+      - name: Screenshot-equivalent verification at exact 360 390 412 CSS px plus desktop preservation
         shell: bash
         run: |
           set -euo pipefail
@@ -67,35 +68,21 @@ jobs:
           python tests/mock_server.py >/tmp/mock-server.log 2>&1 &
           SERVER=$!
           trap 'kill $SERVER || true' EXIT
-          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          export CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
           test -n "$CHROME"
           sleep 1
-          : > docs/staging/android-v2926/verification.txt
-          for W in 360 390 412; do
-            H=900
-            "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --window-size=${W},${H} --virtual-time-budget=6000 --screenshot="docs/staging/android-v2926/screenshots/home-${W}.png" http://127.0.0.1:8765/visual-index.html >/tmp/chrome-home-${W}.log 2>&1
-            "$CHROME" --headless --no-sandbox --disable-gpu --window-size=${W},${H} --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/visual-index.html > /tmp/dom-home-${W}.html 2>/tmp/chrome-home-dom-${W}.log
-            HOME_LINE="$(grep -o 'PASS {[^<]*' /tmp/dom-home-${W}.html | head -1 | sed 's/&quot;/"/g;s/&amp;/\&/g')"
-            test -n "$HOME_LINE"
-            echo "HOME ${W}px ${HOME_LINE}" | tee -a docs/staging/android-v2926/verification.txt
-
-            "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --window-size=${W},${H} --virtual-time-budget=6000 --screenshot="docs/staging/android-v2926/screenshots/pattern-${W}.png" http://127.0.0.1:8765/visual-pattern-index.html >/tmp/chrome-pattern-${W}.log 2>&1
-            "$CHROME" --headless --no-sandbox --disable-gpu --window-size=${W},${H} --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/visual-pattern-index.html > /tmp/dom-pattern-${W}.html 2>/tmp/chrome-pattern-dom-${W}.log
-            PATTERN_LINE="$(grep -o 'PASS_PATTERN {[^<]*' /tmp/dom-pattern-${W}.html | head -1 | sed 's/&quot;/"/g;s/&amp;/\&/g')"
-            test -n "$PATTERN_LINE"
-            echo "PATTERN ${W}px ${PATTERN_LINE}" | tee -a docs/staging/android-v2926/verification.txt
-          done
-
+          node tests/cdp_android_visual_v2926.mjs
           for PNG in docs/staging/android-v2926/screenshots/home-{360,390,412}.png docs/staging/android-v2926/screenshots/pattern-{360,390,412}.png; do
             test -s "$PNG"
             file "$PNG" | grep -q 'PNG image data'
           done
-
-          "$CHROME" --headless --no-sandbox --disable-gpu --window-size=1280,900 --virtual-time-budget=5000 --dump-dom http://127.0.0.1:8765/visual-desktop-index.html >/tmp/dom-desktop.html 2>/tmp/chrome-desktop.log
-          grep -q 'Make today yours.' /tmp/dom-desktop.html
-          grep -q 'Pattern Studio' /tmp/dom-desktop.html
-          ! grep -q '<html[^>]*class="[^"]*compact-device' /tmp/dom-desktop.html
-          echo 'DESKTOP 1280px PASS: non-compact layout retained; Home, Pattern Studio and navigation present.' | tee -a docs/staging/android-v2926/verification.txt
+          grep -q '^HOME 360px PASS ' docs/staging/android-v2926/verification.txt
+          grep -q '^HOME 390px PASS ' docs/staging/android-v2926/verification.txt
+          grep -q '^HOME 412px PASS ' docs/staging/android-v2926/verification.txt
+          grep -q '^PATTERN 360px PASS_PATTERN ' docs/staging/android-v2926/verification.txt
+          grep -q '^PATTERN 390px PASS_PATTERN ' docs/staging/android-v2926/verification.txt
+          grep -q '^PATTERN 412px PASS_PATTERN ' docs/staging/android-v2926/verification.txt
+          grep -q '^DESKTOP 1280px PASS ' docs/staging/android-v2926/verification.txt
 
       - name: Write durable staging report and hashes
         shell: bash
