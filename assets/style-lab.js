@@ -75,7 +75,7 @@
       context.fillStyle = cell;
       context.fillRect(index % SIZE, Math.floor(index / SIZE), 1, 1);
     });
-    return `url("${canvas.toDataURL("image/png")}")`;
+    return `url(${canvas.toDataURL("image/png")})`;
   }
 
   function applyPattern(cells = state.cells) {
