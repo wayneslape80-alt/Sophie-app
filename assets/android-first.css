@@ -715,7 +715,8 @@ dialog {
  * rail from winning on an actual phone.
  */
 html.compact-device {
-  --nav-height: 5.25rem;
+  --nav-height: 6rem;
+  font-size: 125% !important;
 }
 
 html.compact-device .app-shell {
@@ -735,17 +736,36 @@ html.compact-device .top-actions {
   margin-right: 0.5rem;
 }
 
+html.compact-device .icon-button,
+html.compact-device .avatar-button {
+  width: 3rem;
+  min-width: 3rem;
+  height: 3rem;
+}
+
 /*
  * Readable fallback for Android WebViews that retain a wide virtual viewport.
  * The early head script caps the root scale at 1.25; these layout rules make
  * the resulting controls use the phone as a phone rather than a tiny desktop.
  */
-html.compact-device.effective-mobile-scale .home-destinations {
+html.compact-device .home-destinations {
   grid-template-columns: minmax(0, 1fr);
 }
 
-html.compact-device.effective-mobile-scale .home-destination:nth-child(2),
-html.compact-device.effective-mobile-scale .home-destination:nth-child(3) {
+html.compact-device .home-destination {
+  min-height: 5.5rem;
+  grid-template-columns: 3rem minmax(0, 1fr) 1.125rem;
+  gap: 0.75rem;
+  padding: 0.875rem;
+}
+
+html.compact-device .home-destination-icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+html.compact-device .home-destination:nth-child(2),
+html.compact-device .home-destination:nth-child(3) {
   transform: none;
 }
 
