@@ -1,0 +1,150 @@
+name: Stage clean Android visual correction v2.9.2.6
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-render:
+    if: github.head_ref == 'stage-v2.9.2.6-android-visual-clean'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out clean staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: stage-v2.9.2.6-android-visual-clean
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore exact product inputs from current main and materialise staging tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js Code.gs
+          cp index.html /tmp/base-index.html
+          cp assets/style-lab.js /tmp/base-style-lab.js
+          base64 -d staging/android-v2926/payload.00 > /tmp/android-v2926-tools.tgz
+          tar -xzf /tmp/android-v2926-tools.tgz
+          python -m py_compile tools/apply_android_visual_v2926.py tests/test_android_visual_v2926.py tests/render_android_visual_v2926.py tests/mock_server.py
+
+      - name: Build candidate cleanly from main
+        run: python tools/apply_android_visual_v2926.py
+
+      - name: Syntax and preservation regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s+src="[^"]+")?>(.*?)</script>', html, re.S)
+          Path('/tmp/inline.js').write_text('\n'.join(s for s in scripts if s.strip()), encoding='utf-8')
+          PY
+          node --check /tmp/inline.js
+          node --check assets/style-lab.js
+          node --check sw.js
+          mkdir -p docs/staging/android-v2926
+          python tests/test_android_visual_v2926.py | tee /tmp/static-results.txt
+          git diff --quiet origin/main -- Code.gs
+          git diff --quiet origin/main -- assets/style-lab.js
+          git diff --name-only origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js Code.gs | sort | tee /tmp/product-diff-files.txt
+          printf '%s\n' assets/android-first.css assets/concept-a.css index.html sw.js > /tmp/expected-product-diff.txt
+          diff -u /tmp/expected-product-diff.txt /tmp/product-diff-files.txt
+
+      - name: Build screenshot fixtures
+        run: python tests/render_android_visual_v2926.py
+
+      - name: Screenshot-equivalent verification at 360 390 412 plus desktop preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/staging/android-v2926/screenshots
+          python tests/mock_server.py >/tmp/mock-server.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          sleep 1
+          : > docs/staging/android-v2926/verification.txt
+          for W in 360 390 412; do
+            H=900
+            "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --window-size=${W},${H} --virtual-time-budget=6000 --screenshot="docs/staging/android-v2926/screenshots/home-${W}.png" http://127.0.0.1:8765/visual-index.html >/tmp/chrome-home-${W}.log 2>&1
+            "$CHROME" --headless --no-sandbox --disable-gpu --window-size=${W},${H} --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/visual-index.html > /tmp/dom-home-${W}.html 2>/tmp/chrome-home-dom-${W}.log
+            HOME_LINE="$(grep -o 'PASS {[^<]*' /tmp/dom-home-${W}.html | head -1 | sed 's/&quot;/"/g;s/&amp;/\&/g')"
+            test -n "$HOME_LINE"
+            echo "HOME ${W}px ${HOME_LINE}" | tee -a docs/staging/android-v2926/verification.txt
+
+            "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --window-size=${W},${H} --virtual-time-budget=6000 --screenshot="docs/staging/android-v2926/screenshots/pattern-${W}.png" http://127.0.0.1:8765/visual-pattern-index.html >/tmp/chrome-pattern-${W}.log 2>&1
+            "$CHROME" --headless --no-sandbox --disable-gpu --window-size=${W},${H} --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/visual-pattern-index.html > /tmp/dom-pattern-${W}.html 2>/tmp/chrome-pattern-dom-${W}.log
+            PATTERN_LINE="$(grep -o 'PASS_PATTERN {[^<]*' /tmp/dom-pattern-${W}.html | head -1 | sed 's/&quot;/"/g;s/&amp;/\&/g')"
+            test -n "$PATTERN_LINE"
+            echo "PATTERN ${W}px ${PATTERN_LINE}" | tee -a docs/staging/android-v2926/verification.txt
+          done
+
+          for PNG in docs/staging/android-v2926/screenshots/home-{360,390,412}.png docs/staging/android-v2926/screenshots/pattern-{360,390,412}.png; do
+            test -s "$PNG"
+            file "$PNG" | grep -q 'PNG image data'
+          done
+
+          "$CHROME" --headless --no-sandbox --disable-gpu --window-size=1280,900 --virtual-time-budget=5000 --dump-dom http://127.0.0.1:8765/visual-desktop-index.html >/tmp/dom-desktop.html 2>/tmp/chrome-desktop.log
+          grep -q 'Make today yours.' /tmp/dom-desktop.html
+          grep -q 'Pattern Studio' /tmp/dom-desktop.html
+          ! grep -q '<html[^>]*class="[^"]*compact-device' /tmp/dom-desktop.html
+          echo 'DESKTOP 1280px PASS: non-compact layout retained; Home, Pattern Studio and navigation present.' | tee -a docs/staging/android-v2926/verification.txt
+
+      - name: Write durable staging report and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > docs/staging/android-v2926/README.md <<'EOF'
+          # Android visual correction v2.9.2.6 — staging only
+
+          Rebuilt cleanly from the current production tree. Closed PR #29 was inspected only as historical context and was not reused, cherry-picked, merged or imported.
+
+          ## Intended visual correction
+          - `surreal-os-emblem.png` is a real image in the top-left header immediately beside “Make today yours.”
+          - Current Goal contains no surreal emblem element; the existing product image remains.
+          - Compact Android ordinary/supporting text is explicitly 16–18px with 20–28px headings. No compact root-font magnification is used.
+          - The v2.9.2.4 DPR viewport bootstrap is byte-preserved from `main`.
+          - Compact Home remains single-column.
+          - Pattern Studio JavaScript remains byte-preserved: six palette slots, Saved Looks v2, 32×32 editor and 128×128 CSS repeat remain intact.
+          - Navigation and non-compact desktop layout rules remain present.
+          - `index.html`, both affected CSS assets, the emblem URL and service-worker cache are cache-busted for this candidate.
+
+          ## Release boundary
+          Draft staging only. Do not merge or deploy without separate approval.
+
+          ## Static/preservation checks
+          ```text
+          EOF
+          cat /tmp/static-results.txt >> docs/staging/android-v2926/README.md
+          cat >> docs/staging/android-v2926/README.md <<'EOF'
+          ```
+
+          ## Screenshot-equivalent metrics
+          ```text
+          EOF
+          cat docs/staging/android-v2926/verification.txt >> docs/staging/android-v2926/README.md
+          printf '```\n' >> docs/staging/android-v2926/README.md
+          sha256sum index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js > docs/staging/android-v2926/hashes.txt
+
+      - name: Commit tested candidate and evidence to staging branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f visual-index.html visual-pattern-index.html visual-desktop-index.html
+          rm -rf tools tests __pycache__
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/android-v2926
+          if git diff --cached --quiet; then
+            echo 'Candidate already matches tested staged output.'
+            exit 0
+          fi
+          git commit -m 'Stage clean v2.9.2.6 Android visual correction'
+          git push origin HEAD:stage-v2.9.2.6-android-visual-clean
