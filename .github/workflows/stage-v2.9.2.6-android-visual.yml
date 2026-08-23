@@ -4,20 +4,20 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [stage-v2.9.2.6-android-visual-clean]
+    branches: [stage-v2.9.2.7-settings-clean]
 
 permissions:
   contents: write
 
 jobs:
   build-test-render:
-    if: github.head_ref == 'stage-v2.9.2.6-android-visual-clean' || github.ref_name == 'stage-v2.9.2.6-android-visual-clean'
+    if: github.head_ref == 'stage-v2.9.2.7-settings-clean' || github.ref_name == 'stage-v2.9.2.7-settings-clean'
     runs-on: ubuntu-latest
     steps:
       - name: Check out clean staging branch
         uses: actions/checkout@v4
         with:
-          ref: stage-v2.9.2.6-android-visual-clean
+          ref: stage-v2.9.2.7-settings-clean
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -254,4 +254,4 @@ jobs:
             exit 0
           fi
           git commit -m 'Stage v2.9.2.7 Settings simplification'
-          git push origin HEAD:stage-v2.9.2.6-android-visual-clean
+          git push origin HEAD:stage-v2.9.2.7-settings-clean
