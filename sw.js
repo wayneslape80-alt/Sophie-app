@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-20-surreal-personal-os-stage";
+const CACHE_NAME = "sophie-app-v2-21-surreal-personal-os-android-hotfix";
 
 const APP_FILES = [
   "./",

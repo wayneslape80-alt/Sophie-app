@@ -429,9 +429,12 @@ dialog,
 .pattern-studio-note { margin: 12px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.45; }
 
 @media (min-width: 800px) {
-  .home-os-grid { grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); align-items: start; }
-  .home-side-stack { position: sticky; top: 104px; }
+  html:not(.compact-device) .home-os-grid { grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); align-items: start; }
+  html:not(.compact-device) .home-side-stack { position: sticky; top: 104px; }
 }
+
+html.compact-device .home-os-grid { grid-template-columns: minmax(0, 1fr); }
+html.compact-device .home-side-stack { position: static; }
 
 @media (max-width: 600px) {
   #active-goal .home-goal-card { min-height: 194px; grid-template-columns: minmax(0, 1fr) 118px; padding: 19px; }
