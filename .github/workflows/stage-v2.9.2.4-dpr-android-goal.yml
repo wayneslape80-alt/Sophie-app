@@ -43,16 +43,18 @@ jobs:
           node --check /tmp/v2924-inline.js
           node --check assets/style-lab.js
           node --check sw.js
+          node --check staging/v2.9.2.4/viewport_runtime_probe.js
 
-      - name: Static DPR and preservation regression
+      - name: Static and runtime DPR regression
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p docs/staging
           python staging/v2.9.2.4/test_dpr_goal_draft.py | tee docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+          node staging/v2.9.2.4/viewport_runtime_probe.js | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
           git diff --exit-code origin/main -- assets/style-lab.js
 
-      - name: Browser layout regression and physical-DPR screenshot evidence
+      - name: Compact and desktop visual regression
         shell: bash
         run: |
           set -euo pipefail
@@ -63,31 +65,33 @@ jobs:
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
 
+          # Headless Chrome enforces a ~500px minimum viewport. This is a compact
+          # visual/reflow proxy only; the exact 980 -> 411 DPR correction is
+          # verified above by executing the real early-head bootstrap with the
+          # supplied SM-S911B physical geometry.
           "$CHROME" --headless --no-sandbox --disable-gpu \
-            --window-size=1080,2340 \
-            --force-device-scale-factor=2.625 \
+            --window-size=500,915 \
             --virtual-time-budget=3000 \
-            --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > /tmp/v2924-dom-mobile.html
-          grep -q 'data-probe="pass"' /tmp/v2924-dom-mobile.html
-          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-mobile.html | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+            --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > /tmp/v2924-dom-compact.html
+          grep -q 'data-probe="pass"' /tmp/v2924-dom-compact.html
+          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-compact.html | sed 's/^/PASS: compact visual proxy: /' | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
 
           "$CHROME" --headless --no-sandbox --disable-gpu \
             --window-size=1280,900 \
             --virtual-time-budget=3000 \
             --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > /tmp/v2924-dom-desktop.html
           grep -q 'data-probe="pass"' /tmp/v2924-dom-desktop.html
-          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-desktop.html | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-desktop.html | sed 's/^/PASS: desktop visual: /' | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
 
           "$CHROME" --headless --no-sandbox --disable-gpu \
-            --window-size=1080,2340 \
-            --force-device-scale-factor=2.625 \
+            --window-size=500,915 \
             --virtual-time-budget=3000 \
-            --screenshot="$GITHUB_WORKSPACE/docs/staging/v2.9.2.4-sm-s911b-dpr.png" \
+            --screenshot="$GITHUB_WORKSPACE/docs/staging/v2.9.2.4-compact-goal-proxy.png" \
             "http://127.0.0.1:8765/v2924-layout-probe.html"
           rm -f v2924-layout-probe.html
-          rm -f docs/staging/v2.9.2.4-android-412x915.png
+          rm -f docs/staging/v2.9.2.4-android-412x915.png docs/staging/v2.9.2.4-sm-s911b-dpr.png
 
-      - name: Diff scope gate
+      - name: Diff scope and preservation gate
         shell: bash
         run: |
           set -euo pipefail
@@ -95,8 +99,10 @@ jobs:
           git diff --exit-code origin/main -- assets/style-lab.js
           grep -q 'sophie-app-v2-9-2-4-dpr-goal-draft' sw.js
           ! grep -q 'font-size: 137.5%' assets/android-first.css
+          ! grep -q 'font-size: 112.5%' assets/android-first.css
           grep -q -- '--sophie-pattern-size: 128px' assets/concept-a.css
           grep -q 'value.length === 6' assets/style-lab.js
+          grep -q 'sophie_style_saved_looks_v2' assets/style-lab.js
 
       - name: Commit tested draft candidate to staging branch only
         shell: bash
@@ -104,8 +110,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt docs/staging/v2.9.2.4-sm-s911b-dpr.png
-          git add -u -- docs/staging/v2.9.2.4-android-412x915.png || true
+          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt docs/staging/v2.9.2.4-compact-goal-proxy.png
+          git add -u -- docs/staging/v2.9.2.4-android-412x915.png docs/staging/v2.9.2.4-sm-s911b-dpr.png || true
           if git diff --cached --quiet; then
             echo 'Draft candidate already matches tested output.'
             exit 0
