@@ -52,7 +52,7 @@ jobs:
           python staging/v2.9.2.4/test_dpr_goal_draft.py | tee docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
           git diff --exit-code origin/main -- assets/style-lab.js
 
-      - name: Browser layout regression and screenshot evidence
+      - name: Browser layout regression and physical-DPR screenshot evidence
         shell: bash
         run: |
           set -euo pipefail
@@ -62,14 +62,30 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           sleep 1
-          for SIZE in 412,915 1280,900; do
-            W=${SIZE%,*}; H=${SIZE#*,}
-            "$CHROME" --headless --no-sandbox --disable-gpu --window-size="$W,$H" --virtual-time-budget=3000 --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > "/tmp/v2924-dom-$W.html"
-            grep -q 'data-probe="pass"' "/tmp/v2924-dom-$W.html"
-            grep -o 'PASS:w=[^<]*' "/tmp/v2924-dom-$W.html" | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
-          done
-          "$CHROME" --headless --no-sandbox --disable-gpu --window-size=412,915 --virtual-time-budget=3000 --screenshot="$GITHUB_WORKSPACE/docs/staging/v2.9.2.4-android-412x915.png" "http://127.0.0.1:8765/v2924-layout-probe.html"
+
+          "$CHROME" --headless --no-sandbox --disable-gpu \
+            --window-size=1080,2340 \
+            --force-device-scale-factor=2.625 \
+            --virtual-time-budget=3000 \
+            --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > /tmp/v2924-dom-mobile.html
+          grep -q 'data-probe="pass"' /tmp/v2924-dom-mobile.html
+          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-mobile.html | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+
+          "$CHROME" --headless --no-sandbox --disable-gpu \
+            --window-size=1280,900 \
+            --virtual-time-budget=3000 \
+            --dump-dom "http://127.0.0.1:8765/v2924-layout-probe.html" > /tmp/v2924-dom-desktop.html
+          grep -q 'data-probe="pass"' /tmp/v2924-dom-desktop.html
+          grep -o 'PASS:w=[^<]*' /tmp/v2924-dom-desktop.html | tee -a docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt
+
+          "$CHROME" --headless --no-sandbox --disable-gpu \
+            --window-size=1080,2340 \
+            --force-device-scale-factor=2.625 \
+            --virtual-time-budget=3000 \
+            --screenshot="$GITHUB_WORKSPACE/docs/staging/v2.9.2.4-sm-s911b-dpr.png" \
+            "http://127.0.0.1:8765/v2924-layout-probe.html"
           rm -f v2924-layout-probe.html
+          rm -f docs/staging/v2.9.2.4-android-412x915.png
 
       - name: Diff scope gate
         shell: bash
@@ -88,7 +104,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt docs/staging/v2.9.2.4-android-412x915.png
+          git add -- index.html assets/android-first.css assets/concept-a.css sw.js docs/staging/V2_9_2_4_DPR_ANDROID_GOAL_TEST_RESULTS.txt docs/staging/v2.9.2.4-sm-s911b-dpr.png
+          git add -u -- docs/staging/v2.9.2.4-android-412x915.png || true
           if git diff --cached --quiet; then
             echo 'Draft candidate already matches tested output.'
             exit 0
