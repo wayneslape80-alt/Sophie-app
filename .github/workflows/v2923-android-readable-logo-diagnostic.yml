@@ -1,0 +1,37 @@
+name: v2.9.2.3 Android readability diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static parsing
+        run: |
+          node --check assets/style-lab.js
+          node --check sw.js
+          node --check tests/v2923-android-readable-logo.cjs
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run browser gates
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/v2923-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then break; fi
+            sleep 0.25
+          done
+          node tests/v2923-android-readable-logo.cjs
