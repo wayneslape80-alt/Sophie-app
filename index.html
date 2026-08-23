@@ -25,7 +25,10 @@
         const needsScaleFallback = layoutRatio > 1.25;
         root.classList.toggle("effective-mobile-scale", needsScaleFallback);
         if (needsScaleFallback) {
-          const effectiveScale = Math.min(layoutRatio, 3.25);
+          // Some Android WebViews expose a desktop-like layout viewport. Scale
+          // compact UI up enough to remain readable without producing the
+          // 30-40px root text caused by multiplying by the full viewport ratio.
+          const effectiveScale = Math.min(1.25, 1 + ((layoutRatio - 1) * 0.35));
           root.style.fontSize = `${initialRootFontPx * effectiveScale}px`;
           root.dataset.effectiveMobileScale = effectiveScale.toFixed(3);
         } else if (root.dataset.effectiveMobileScale) {
@@ -866,7 +869,7 @@
       .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
     }
   </style>
-  <link rel="stylesheet" href="./assets/android-first.css">
+  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.1">
   <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2-candidate-2">
 </head>
 <body>
@@ -1291,7 +1294,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="./assets/style-lab.js?v=2.9.2-candidate-2"></script>
+  <script src="./assets/style-lab.js?v=2.9.2.1"></script>
   <script>
     // Keep this URL if you update the existing Apps Script deployment. Replace it only if you create a new deployment.
     const API_URL = "https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec";
@@ -4165,7 +4168,7 @@
     renderSchool();
     loadData({ quiet: true });
     if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2-candidate-2", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2.1", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
   </script>
   <script src="./assets/skill-pathways-v28.js"></script>
   <script src="./assets/skill-pathways-v28-choice.js"></script>

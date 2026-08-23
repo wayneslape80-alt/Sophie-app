@@ -727,10 +727,26 @@ html.compact-device .app-shell {
 
 html.compact-device .topbar {
   gap: 0.625rem;
+  padding-right: max(1rem, env(safe-area-inset-right));
 }
 
 html.compact-device .top-actions {
   flex: 0 0 auto;
+  margin-right: 0.5rem;
+}
+
+/*
+ * Readable fallback for Android WebViews that retain a wide virtual viewport.
+ * The early head script caps the root scale at 1.25; these layout rules make
+ * the resulting controls use the phone as a phone rather than a tiny desktop.
+ */
+html.compact-device.effective-mobile-scale .home-destinations {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html.compact-device.effective-mobile-scale .home-destination:nth-child(2),
+html.compact-device.effective-mobile-scale .home-destination:nth-child(3) {
+  transform: none;
 }
 
 html.compact-device .quick-grid,
