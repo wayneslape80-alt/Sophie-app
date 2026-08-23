@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - diag-pr19-hotfix-review
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
