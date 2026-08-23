@@ -140,7 +140,13 @@
     });
 
     const check = body.querySelector("[data-v28-check-technique]");
-    if (check) check.disabled = !(flow.safetySupport && state?.availability?.[flow.safetySupport]?.eligibleCount > 0) || Boolean(app.rec.loading);
+    if (check) {
+      const selected = state?.availability?.[String(flow.safetySupport || "")];
+      const canContinue = Boolean(flow.safetySupport) && (
+        selected?.status === "error" || (selected?.status === "ok" && selected.eligibleCount > 0)
+      );
+      check.disabled = !canContinue || Boolean(app.rec.loading);
+    }
   }
 
   async function preflightSafetyOptions() {
