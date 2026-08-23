@@ -1,29 +1,34 @@
 PASS: SM-S911B DPR model resolves to phone CSS width
 PASS: SM-S911B DPR model resolves near 411px
+PASS: SM-S911B CSS aspect stays phone-shaped
 PASS: 980px desktop-like layout exceeds repair threshold
 PASS: DPR read present
 PASS: physical screen detection present
 PASS: DPR short-side correction present
+PASS: orientation-aware CSS screen width present
 PASS: corrected viewport meta width present
 PASS: compact class still used
 PASS: old effective font scaler removed
 PASS: 137.5 percent root workaround removed
 PASS: wide-reporting root-font fallback removed
+PASS: compact goal tied to compact-device
 PASS: compact goal switches to one content column
 PASS: goal visual uses separate emblem/product columns
 PASS: emblem is normal-flow on compact
 PASS: product is normal-flow on compact
 PASS: compact visual widths fit a 360px phone card
 PASS: Pattern Studio remains 32x32
+PASS: six-colour Pattern Studio preserved
 PASS: 128x128 repeat preserved
 PASS: Saved Looks storage preserved
 PASS: style-lab remains v2.9.2.3 source
 PASS: desktop Home destination two-column rule preserved
+PASS: compact Home single-column override preserved
 PASS: navigation markup preserved
 PASS: desktop max shell preserved
 PASS: draft PWA cache bumped
 PASS: service worker remains GET-only
 PASS: candidate CSS cache busts present
-RESULT: 26/26 PASS
+RESULT: 31/31 PASS
 PASS:w=1082;overlap=true;emblem=absolute;product=absolute;cols=2
 PASS:w=1280;overlap=true;emblem=absolute;product=absolute;cols=2

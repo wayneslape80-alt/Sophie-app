@@ -19,20 +19,29 @@
       const resolvePhoneViewport = () => {
         const screenWidth = Number(window.screen?.width) || Infinity;
         const screenHeight = Number(window.screen?.height) || Infinity;
-        const shortScreenSide = Math.min(screenWidth, screenHeight);
-        const longScreenSide = Math.max(screenWidth, screenHeight);
-        const screenAspect = longScreenSide / Math.max(1, shortScreenSide);
+        const rawShortSide = Math.min(screenWidth, screenHeight);
+        const rawLongSide = Math.max(screenWidth, screenHeight);
+        const rawAspect = rawLongSide / Math.max(1, rawShortSide);
         const dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
-        const dprShortSide = shortScreenSide / dpr;
+        const dprShortSide = rawShortSide / dpr;
         const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
-        const screenLooksPhysical = dpr > 1.25 && shortScreenSide > 600 && dprShortSide >= 320 && dprShortSide <= 520;
-        const reportedCssShortSide = screenLooksPhysical ? dprShortSide : shortScreenSide;
-        const isPhoneScreen = isTouchDevice && (
-          (reportedCssShortSide >= 320 && reportedCssShortSide <= 600) ||
-          (shortScreenSide <= 1200 && screenAspect >= 1.75 && screenLooksPhysical)
-        );
-        const targetCssWidth = isPhoneScreen
-          ? Math.round(Math.min(520, Math.max(320, reportedCssShortSide)))
+        const screenLooksPhysical = isTouchDevice
+          && dpr > 1.25
+          && rawShortSide > 600
+          && dprShortSide >= 320
+          && dprShortSide <= 520
+          && rawAspect >= 1.4;
+        const cssScreenWidth = screenLooksPhysical ? screenWidth / dpr : screenWidth;
+        const cssScreenHeight = screenLooksPhysical ? screenHeight / dpr : screenHeight;
+        const cssShortSide = Math.min(cssScreenWidth, cssScreenHeight);
+        const cssLongSide = Math.max(cssScreenWidth, cssScreenHeight);
+        const cssAspect = cssLongSide / Math.max(1, cssShortSide);
+        const isPhoneScreen = isTouchDevice
+          && cssShortSide >= 320
+          && cssShortSide <= 600
+          && cssAspect >= 1.4;
+        const targetCssWidth = isPhoneScreen && Number.isFinite(cssScreenWidth)
+          ? Math.round(Math.min(900, Math.max(320, cssScreenWidth)))
           : 0;
         return { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr };
       };
@@ -40,7 +49,8 @@
       const applyDeviceLayout = () => {
         const { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr } = resolvePhoneViewport();
         root.classList.toggle("compact-device", isPhoneScreen);
-        const desktopLikeLayout = isPhoneScreen && targetCssWidth > 0 && window.innerWidth > targetCssWidth * 1.25;
+        const desktopLikeLayout = isPhoneScreen && targetCssWidth > 0
+          && Math.abs(window.innerWidth - targetCssWidth) > Math.max(80, targetCssWidth * 0.2);
         if (desktopLikeLayout || (isPhoneScreen && root.dataset.viewportRepair === "dpr")) {
           viewport.content = `width=${targetCssWidth}, initial-scale=1, viewport-fit=cover`;
           root.dataset.viewportRepair = "dpr";
