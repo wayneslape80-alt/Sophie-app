@@ -1,12 +1,12 @@
-const CACHE_NAME = "sophie-app-v2-9-2-2-android-large-ui-hotfix";
+const CACHE_NAME = "sophie-app-v2-9-2-3-android-readable-logo";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./assets/android-first.css?v=2.9.2.2",
+  "./assets/android-first.css?v=2.9.2.3",
   "./assets/concept-a.css?v=2.9.2-candidate-2",
-  "./assets/style-lab.js?v=2.9.2.2",
+  "./assets/style-lab.js?v=2.9.2.3",
   "./assets/surreal-os-emblem.png",
   "./assets/skill-pathways-v28.js",
   "./assets/skill-pathways-v28-choice.js",

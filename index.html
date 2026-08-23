@@ -40,11 +40,15 @@
         const screenWidth = Number(window.screen?.width) || Infinity;
         const screenHeight = Number(window.screen?.height) || Infinity;
         const shortScreenSide = Math.min(screenWidth, screenHeight);
+        const longScreenSide = Math.max(screenWidth, screenHeight);
+        const screenAspect = longScreenSide / Math.max(1, shortScreenSide);
         const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
-        // Android devices can report their physical/CSS short side well above
-        // 600px. A coarse pointer plus a sub-900px short side is still a phone
-        // class experience and must receive the readable compact layout.
-        const isPhoneScreen = isTouchDevice && shortScreenSide < 900;
+        // Some Android PWAs report a 1080-ish short side even though they are
+        // physically phone-shaped. Treat tall touch displays as phone-class too.
+        const isPhoneScreen = isTouchDevice && (
+          shortScreenSide < 900 ||
+          (shortScreenSide <= 1200 && screenAspect >= 1.75)
+        );
         root.classList.toggle("compact-device", isPhoneScreen);
         if (isPhoneScreen && (viewportRepairActive || window.innerWidth > screenWidth * 1.25)) {
           viewportRepairActive = true;
@@ -872,7 +876,7 @@
       .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
     }
   </style>
-  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.2">
+  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.3">
   <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2-candidate-2">
 </head>
 <body>
@@ -1297,7 +1301,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="./assets/style-lab.js?v=2.9.2.2"></script>
+  <script src="./assets/style-lab.js?v=2.9.2.3"></script>
   <script>
     // Keep this URL if you update the existing Apps Script deployment. Replace it only if you create a new deployment.
     const API_URL = "https://script.google.com/macros/s/AKfycbwy6vZDmria0kTYHt_VSfU3DBbLhz73DDh16KZcjLsK6OItytCcrUpGmbAJ0HlPtmtH/exec";
@@ -4171,7 +4175,7 @@
     renderSchool();
     loadData({ quiet: true });
     if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2.2", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2.3", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
   </script>
   <script src="./assets/skill-pathways-v28.js"></script>
   <script src="./assets/skill-pathways-v28-choice.js"></script>

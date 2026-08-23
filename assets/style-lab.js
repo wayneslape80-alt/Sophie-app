@@ -1,11 +1,11 @@
-/* Sophie App v2.9.2.2 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
+/* Sophie App v2.9.2.3 - device-local six-colour Saved Looks and 32 x 32 Pattern Studio. */
 (() => {
   "use strict";
 
   const SIZE = 32;
   const CELL_COUNT = SIZE * SIZE;
   const LOOK_VERSION = 2;
-  const CANDIDATE_VERSION = "v2.9.2.2";
+  const CANDIDATE_VERSION = "v2.9.2.3";
   const ACTIVE_LOOK_KEY = "sophie_style_look_v2";
   const SAVED_LOOKS_KEY = "sophie_style_saved_looks_v2";
   const LEGACY_ACTIVE_KEY = "sophie_style_pattern_v1";
