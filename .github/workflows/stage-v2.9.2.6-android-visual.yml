@@ -49,7 +49,7 @@ jobs:
 
           old_actions = '''        <button class="icon-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻</button>
         <button class="avatar-button" id="settings-button" aria-label="Open personalisation"><span id="avatar">🐉</span><span class="sync-dot" id="sync-dot"></span></button>'''
-          new_actions = '''        <button class="icon-button status-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻<span class="sync-dot" id="sync-dot" aria-hidden="true"></span></button>
+          new_actions = '''        <button class="icon-button status-button" id="refresh-button" aria-label="Refresh app" title="Refresh"><span id="refresh-glyph" aria-hidden="true">↻</span><span class="sync-dot" id="sync-dot" aria-hidden="true"></span></button>
         <button class="icon-button settings-button" id="settings-button" aria-label="Open settings" title="Settings">⚙</button>'''
           if old_actions not in html:
               raise SystemExit('Expected avatar/settings action block not found')
@@ -92,7 +92,26 @@ jobs:
               raise SystemExit('Legacy avatar/theme handlers not found')
           html = html.replace(avatar_handler, '', 1).replace(theme_handler, '', 1)
 
+          old_refresh = '''      const refresh = $("#refresh-button");
+      refresh.disabled = true;
+      refresh.textContent = "…";'''
+          new_refresh = '''      const refresh = $("#refresh-button");
+      const refreshGlyph = $("#refresh-glyph");
+      refresh.disabled = true;
+      refreshGlyph.textContent = "…";'''
+          if old_refresh not in html:
+              raise SystemExit('Expected refresh loading block not found')
+          html = html.replace(old_refresh, new_refresh, 1)
+          old_refresh_done = '''        refresh.disabled = false;
+        refresh.textContent = "↻";'''
+          new_refresh_done = '''        refresh.disabled = false;
+        refreshGlyph.textContent = "↻";'''
+          if old_refresh_done not in html:
+              raise SystemExit('Expected refresh completion block not found')
+          html = html.replace(old_refresh_done, new_refresh_done, 1)
+
           html = html.replace('2.9.2.6-android-visual', '2.9.2.7-settings')
+          html = html.replace('./sw.js?v=2.9.2.4-dpr-draft', './sw.js?v=2.9.2.7-settings')
           path.write_text(html, encoding='utf-8')
 
           css = Path('assets/concept-a.css')
@@ -138,8 +157,10 @@ jobs:
               'legacy theme click handler removed': 'const themeChoice = event.target.closest(".theme-swatch")' not in html,
               'settings heading is explicit': 'SOPHIE // SETTINGS' in html and '<h2>Settings</h2>' in html,
               'Pattern Studio is sole visual settings row': '<strong>Visual look</strong>' in html and 'six colours used across the app' in html,
-              'sync status moved to refresh': 'id="refresh-button"' in html and 'id="sync-dot" aria-hidden="true"' in html and '.top-actions .status-button .sync-dot' in css,
+              'sync status moved to refresh': 'id="refresh-glyph"' in html and 'id="sync-dot" aria-hidden="true"' in html and '.top-actions .status-button .sync-dot' in css,
+              'refresh loading preserves sync status': 'refreshGlyph.textContent = "…"' in html and 'refreshGlyph.textContent = "↻"' in html and 'refresh.textContent =' not in html,
               'settings cache bust present': '2.9.2.7-settings' in html,
+              'service worker registration cache-busted': 'navigator.serviceWorker.register("./sw.js?v=2.9.2.7-settings"' in html,
               'settings service worker cache bumped': 'sophie-app-v2-9-2-7-settings' in sw,
           }
           failed = [name for name, ok in checks.items() if not ok]
@@ -197,10 +218,10 @@ jobs:
           - Compact Home remains single-column.
           - Pattern Studio JavaScript remains byte-preserved: six palette slots, Saved Looks v2, 32×32 editor and 128×128 CSS repeat remain intact.
           - The former avatar control is now an explicit gear Settings button.
-          - Connection status remains visible on Refresh rather than masquerading as profile/avatar state.
+          - Connection status remains visible on Refresh and survives refresh loading state.
           - Settings no longer contains Your character or the legacy Colour theme chooser. Pattern Studio / Saved Looks is the single visual-customisation system.
           - Navigation and non-compact desktop layout rules remain present.
-          - `index.html`, both affected CSS assets, the emblem URL and service-worker cache are cache-busted for this candidate.
+          - `index.html`, both affected CSS assets, the emblem URL, service-worker registration and service-worker cache are cache-busted for this candidate.
 
           ## Release boundary
           Draft staging only. Do not merge or deploy without separate approval.
