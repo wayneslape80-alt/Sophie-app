@@ -1187,3 +1187,172 @@ html.compact-device #skills-workspace .capability-card p {
 
 /* v2.9.2.4 draft: the DPR-aware viewport bootstrap makes phone CSS width authoritative;
  * the previous coarse-pointer root-font fallback is deliberately removed. */
+
+
+/* v2.9.2.6 clean compact Android physical-size typography.
+ * Explicit px values are intentional: the DPR-corrected viewport is already authoritative. */
+html.compact-device {
+  --nav-height: 102px;
+  --type-page-title: 28px;
+  --type-section-title: 24px;
+  --type-row-title: 20px;
+  --type-body: 18px;
+  --type-supporting: 17px;
+  --type-label: 16px;
+  --type-meta: 16px;
+}
+
+html.compact-device body,
+html.compact-device button,
+html.compact-device input,
+html.compact-device select,
+html.compact-device textarea {
+  font-size: 17px;
+}
+
+/* Ordinary prose is never rendered below the physical-size target on compact Android. */
+html.compact-device p {
+  font-size: 17px !important;
+  line-height: 1.5;
+}
+
+html.compact-device small {
+  font-size: 16px !important;
+  line-height: 1.4;
+}
+
+html.compact-device h1 { font-size: 28px; }
+html.compact-device h2 { font-size: 24px; }
+html.compact-device h3 { font-size: 20px; }
+html.compact-device h4 { font-size: 18px; }
+
+html.compact-device #topbar-title {
+  font-size: 28px;
+  line-height: 1.08;
+}
+
+html.compact-device .page-intro h2,
+html.compact-device .home-goal-head h2,
+html.compact-device .home-now-head h2,
+html.compact-device .section-heading h2,
+html.compact-device #pattern-studio-title {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+html.compact-device .home-goal-copy h3,
+html.compact-device .home-style-card h3,
+html.compact-device .home-now-card strong,
+html.compact-device .home-destination strong {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+html.compact-device .home-os-label,
+html.compact-device .home-now-kicker,
+html.compact-device .style-lab-kicker,
+html.compact-device .eyebrow,
+html.compact-device .hero-label,
+html.compact-device .job-domain,
+html.compact-device .opportunity-detail-domain,
+html.compact-device .learning-resource-kicker,
+html.compact-device .learning-resource-status,
+html.compact-device .learning-resource-provenance,
+html.compact-device .home-goal-card .goal-meta,
+html.compact-device .home-wallet-pending,
+html.compact-device .home-now-index,
+html.compact-device .pattern-readability-card small,
+html.compact-device .home-pattern-swatch::after,
+html.compact-device .pill,
+html.compact-device .status,
+html.compact-device .job-requiredness {
+  font-size: 16px !important;
+  line-height: 1.35;
+}
+
+html.compact-device .home-destination small,
+html.compact-device .home-now-card small,
+html.compact-device .home-now-card .home-now-note,
+html.compact-device .home-style-card p,
+html.compact-device .home-impact-card p,
+html.compact-device .home-goal-amount,
+html.compact-device .home-goal-empty p,
+html.compact-device .pattern-studio-intro,
+html.compact-device .pattern-readability-card p,
+html.compact-device .pattern-studio-note,
+html.compact-device .saved-pattern strong,
+html.compact-device .section-heading p,
+html.compact-device .learn-workspace-section > p,
+html.compact-device .rec-entry p,
+html.compact-device .rec-helper,
+html.compact-device .rec-card p,
+html.compact-device .rec-consequence,
+html.compact-device .data-alert,
+html.compact-device .goal-amount,
+html.compact-device .job-purpose,
+html.compact-device .job-status-label,
+html.compact-device .school-meta,
+html.compact-device .school-next-label,
+html.compact-device .school-next-note,
+html.compact-device .school-support-explainer,
+html.compact-device .school-scaffold p,
+html.compact-device .school-help-zone p,
+html.compact-device .school-feedback-peek p,
+html.compact-device .school-history-item p,
+html.compact-device .activity-row p,
+html.compact-device .setting-row p,
+html.compact-device label,
+html.compact-device .parent-review p,
+html.compact-device .parent-stat span,
+html.compact-device .learning-resource-body > p,
+html.compact-device .learning-resource-admin-head p,
+html.compact-device .learning-resource-admin-copy {
+  font-size: 17px !important;
+  line-height: 1.5;
+}
+
+html.compact-device .text-button,
+html.compact-device .primary-button,
+html.compact-device .secondary-button,
+html.compact-device .danger-button,
+html.compact-device .filter-chip,
+html.compact-device .school-view-toggle button,
+html.compact-device .support-choice,
+html.compact-device .journey-step,
+html.compact-device .pattern-tool,
+html.compact-device .saved-pattern-actions button,
+html.compact-device .nav-button {
+  font-size: 16px !important;
+  line-height: 1.3;
+}
+
+html.compact-device .bottom-nav {
+  height: var(--nav-height);
+  min-height: var(--nav-height);
+}
+
+html.compact-device .nav-button {
+  min-height: 86px;
+  padding: 8px 3px;
+}
+
+html.compact-device .nav-button .nav-icon {
+  font-size: 22px;
+}
+
+html.compact-device .pattern-slot-copy strong {
+  font-size: 17px !important;
+  line-height: 1.35;
+}
+
+html.compact-device .pattern-candidate-version {
+  font-size: 16px !important;
+  line-height: 1.3;
+}
+
+html.compact-device .home-destination strong,
+html.compact-device .home-destination small {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}

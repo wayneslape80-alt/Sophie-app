@@ -884,15 +884,18 @@
       .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
     }
   </style>
-  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.4-dpr-draft">
-  <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2.4-goal-draft">
+  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.6-android-visual">
+  <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2.6-android-visual">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow" id="day-greeting">SOPHIE // HOME</p>
-        <h1 id="topbar-title">Make today yours.</h1>
+      <div class="topbar-title-block">
+        <img class="topbar-emblem" src="./assets/surreal-os-emblem.png?v=2.9.2.6-android-visual" alt="" aria-hidden="true">
+        <div class="topbar-title-copy">
+          <p class="eyebrow" id="day-greeting">SOPHIE // HOME</p>
+          <h1 id="topbar-title">Make today yours.</h1>
+        </div>
       </div>
       <div class="top-actions">
         <button class="icon-button" id="refresh-button" aria-label="Refresh app" title="Refresh">↻</button>
@@ -1660,7 +1663,7 @@
           <p>${app.dataUnavailable ? "Reconnect to see your real goals." : "Choose something that matters to you when you are ready."}</p>
           ${app.dataUnavailable ? "" : `<button class="primary-button" type="button" data-go-view="goals">Explore goals ↗</button>`}
         </div>
-        <div class="home-goal-visual" aria-hidden="true"><img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt=""></div>
+        
       </article>`;
     return;
   }
@@ -1684,10 +1687,7 @@
           <span>${money(Math.max(0, target - saved))} to go</span>
         </div>
       </div>
-      <div class="home-goal-visual" aria-hidden="true">
-        <img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt="">
-        ${imageUrl ? `<img class="home-goal-product" src="${safe(imageUrl)}" alt="">` : ""}
-      </div>
+      ${imageUrl ? `<div class="home-goal-visual" aria-hidden="true"><img class="home-goal-product" src="${safe(imageUrl)}" alt=""></div>` : ""}
     </article>`;
 }
 

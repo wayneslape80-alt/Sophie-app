@@ -1,13 +1,13 @@
-const CACHE_NAME = "sophie-app-v2-9-2-4-dpr-goal-draft";
+const CACHE_NAME = "sophie-app-v2-9-2-7-settings";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./assets/android-first.css?v=2.9.2.4-dpr-draft",
-  "./assets/concept-a.css?v=2.9.2.4-goal-draft",
+  "./assets/android-first.css?v=2.9.2.6-android-visual",
+  "./assets/concept-a.css?v=2.9.2.6-android-visual",
   "./assets/style-lab.js?v=2.9.2.3",
-  "./assets/surreal-os-emblem.png",
+  "./assets/surreal-os-emblem.png?v=2.9.2.6-android-visual",
   "./assets/skill-pathways-v28.js",
   "./assets/skill-pathways-v28-choice.js",
   "./icon-192.png",

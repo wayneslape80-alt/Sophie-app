@@ -185,16 +185,6 @@ dialog,
   transform: skewY(.35deg);
 }
 
-.home-goal-emblem {
-  position: absolute;
-  width: 220px;
-  max-width: none;
-  right: -48px;
-  top: 50%;
-  transform: translateY(-50%) rotate(4deg);
-  filter: drop-shadow(0 16px 16px rgba(16,18,37,.28));
-}
-
 .home-goal-product {
   position: absolute;
   z-index: 2;
@@ -439,8 +429,7 @@ html.compact-device .home-side-stack { position: static; }
 
 @media (max-width: 600px) {
   #active-goal .home-goal-card { min-height: 194px; grid-template-columns: minmax(0, 1fr) 118px; padding: 19px; }
-  .home-goal-emblem { width: 190px; right: -65px; }
-  .home-goal-product { width: 76px; height: 76px; }
+.home-goal-product { width: 76px; height: 76px; }
   .home-destination { min-height: 76px; grid-template-columns: 38px minmax(0,1fr) 14px; gap: 8px; padding: 10px; }
   .home-destination-icon { width: 38px; height: 38px; }
   .home-style-card { grid-template-columns: 58px minmax(0,1fr) auto; }
@@ -455,8 +444,7 @@ html.compact-device .home-side-stack { position: static; }
   .home-destinations { grid-template-columns: 1fr; }
   .home-destination:nth-child(2), .home-destination:nth-child(3) { transform: none; }
   #active-goal .home-goal-card { grid-template-columns: minmax(0, 1fr) 92px; }
-  .home-goal-emblem { right: -85px; opacity: .9; }
-  .home-wallet { align-items: flex-start; }
+.home-wallet { align-items: flex-start; }
   .home-wallet-pending { max-width: 115px; }
   .home-style-card { grid-template-columns: 54px minmax(0,1fr); }
   .home-style-card > button { grid-column: 1 / -1; width: 100%; }
@@ -478,21 +466,10 @@ html.compact-device #active-goal .home-goal-card {
 }
 
 html.compact-device .home-goal-visual {
-  min-height: 104px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 88px;
-  gap: 12px;
+  min-height: 96px;
+  display: flex;
   align-items: center;
-}
-
-html.compact-device .home-goal-emblem {
-  position: static;
-  width: min(100%, 160px);
-  max-width: 160px;
-  right: auto;
-  top: auto;
-  justify-self: start;
-  transform: rotate(4deg);
+  justify-content: flex-end;
 }
 
 html.compact-device .home-goal-product {
@@ -505,3 +482,45 @@ html.compact-device .home-goal-product {
   align-self: center;
 }
 
+
+
+/* v2.9.2.6 clean Android visual correction: emblem belongs to the header. */
+.topbar-title-block {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-title-copy {
+  min-width: 0;
+}
+
+.topbar-emblem {
+  display: block;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(16, 18, 37, .20));
+}
+
+html.compact-device .topbar-title-block {
+  flex: 1 1 auto;
+  gap: 10px;
+}
+
+html.compact-device .topbar-emblem {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+
+html.compact-device .topbar-title-copy {
+  min-width: 0;
+}
+
+html.compact-device .home-goal-product {
+  width: 88px;
+  height: 88px;
+}
