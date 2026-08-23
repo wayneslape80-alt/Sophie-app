@@ -1,1 +1,1 @@
-Exact-width verification retry after CDP screenshot response fix.
+Trigger v2.9.2.7 settings simplification verification after Android preview review.
