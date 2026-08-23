@@ -31,20 +31,29 @@ viewport_replacement = '''  <script>
       const resolvePhoneViewport = () => {
         const screenWidth = Number(window.screen?.width) || Infinity;
         const screenHeight = Number(window.screen?.height) || Infinity;
-        const shortScreenSide = Math.min(screenWidth, screenHeight);
-        const longScreenSide = Math.max(screenWidth, screenHeight);
-        const screenAspect = longScreenSide / Math.max(1, shortScreenSide);
+        const rawShortSide = Math.min(screenWidth, screenHeight);
+        const rawLongSide = Math.max(screenWidth, screenHeight);
+        const rawAspect = rawLongSide / Math.max(1, rawShortSide);
         const dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
-        const dprShortSide = shortScreenSide / dpr;
+        const dprShortSide = rawShortSide / dpr;
         const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
-        const screenLooksPhysical = dpr > 1.25 && shortScreenSide > 600 && dprShortSide >= 320 && dprShortSide <= 520;
-        const reportedCssShortSide = screenLooksPhysical ? dprShortSide : shortScreenSide;
-        const isPhoneScreen = isTouchDevice && (
-          (reportedCssShortSide >= 320 && reportedCssShortSide <= 600) ||
-          (shortScreenSide <= 1200 && screenAspect >= 1.75 && screenLooksPhysical)
-        );
-        const targetCssWidth = isPhoneScreen
-          ? Math.round(Math.min(520, Math.max(320, reportedCssShortSide)))
+        const screenLooksPhysical = isTouchDevice
+          && dpr > 1.25
+          && rawShortSide > 600
+          && dprShortSide >= 320
+          && dprShortSide <= 520
+          && rawAspect >= 1.4;
+        const cssScreenWidth = screenLooksPhysical ? screenWidth / dpr : screenWidth;
+        const cssScreenHeight = screenLooksPhysical ? screenHeight / dpr : screenHeight;
+        const cssShortSide = Math.min(cssScreenWidth, cssScreenHeight);
+        const cssLongSide = Math.max(cssScreenWidth, cssScreenHeight);
+        const cssAspect = cssLongSide / Math.max(1, cssShortSide);
+        const isPhoneScreen = isTouchDevice
+          && cssShortSide >= 320
+          && cssShortSide <= 600
+          && cssAspect >= 1.4;
+        const targetCssWidth = isPhoneScreen && Number.isFinite(cssScreenWidth)
+          ? Math.round(Math.min(900, Math.max(320, cssScreenWidth)))
           : 0;
         return { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr };
       };
@@ -52,7 +61,8 @@ viewport_replacement = '''  <script>
       const applyDeviceLayout = () => {
         const { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr } = resolvePhoneViewport();
         root.classList.toggle("compact-device", isPhoneScreen);
-        const desktopLikeLayout = isPhoneScreen && targetCssWidth > 0 && window.innerWidth > targetCssWidth * 1.25;
+        const desktopLikeLayout = isPhoneScreen && targetCssWidth > 0
+          && Math.abs(window.innerWidth - targetCssWidth) > Math.max(80, targetCssWidth * 0.2);
         if (desktopLikeLayout || (isPhoneScreen && root.dataset.viewportRepair === "dpr")) {
           viewport.content = `width=${targetCssWidth}, initial-scale=1, viewport-fit=cover`;
           root.dataset.viewportRepair = "dpr";
@@ -107,41 +117,39 @@ assert count == 1, f'wide-reporting font fallback removal count={count}'
 goal_css = r'''
 
 /* v2.9.2.4 DPR/goal draft — compact Current Goal keeps emblem and product separate. */
-@media (max-width: 599px) {
-  #active-goal .home-goal-card {
-    min-height: 0;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-    padding: 18px;
-  }
+html.compact-device #active-goal .home-goal-card {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px;
+}
 
-  .home-goal-visual {
-    min-height: 104px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 88px;
-    gap: 12px;
-    align-items: center;
-  }
+html.compact-device .home-goal-visual {
+  min-height: 104px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 12px;
+  align-items: center;
+}
 
-  .home-goal-emblem {
-    position: static;
-    width: min(100%, 160px);
-    max-width: 160px;
-    right: auto;
-    top: auto;
-    justify-self: start;
-    transform: rotate(4deg);
-  }
+html.compact-device .home-goal-emblem {
+  position: static;
+  width: min(100%, 160px);
+  max-width: 160px;
+  right: auto;
+  top: auto;
+  justify-self: start;
+  transform: rotate(4deg);
+}
 
-  .home-goal-product {
-    position: static;
-    width: 88px;
-    height: 88px;
-    right: auto;
-    bottom: auto;
-    justify-self: end;
-    align-self: center;
-  }
+html.compact-device .home-goal-product {
+  position: static;
+  width: 88px;
+  height: 88px;
+  right: auto;
+  bottom: auto;
+  justify-self: end;
+  align-self: center;
 }
 '''
 assert 'v2.9.2.4 DPR/goal draft' not in concept
