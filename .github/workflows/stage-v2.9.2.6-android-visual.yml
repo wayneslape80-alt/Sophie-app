@@ -27,7 +27,7 @@ jobs:
           git checkout origin/main -- index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js Code.gs
           cp index.html /tmp/base-index.html
           cp assets/style-lab.js /tmp/base-style-lab.js
-          base64 -d staging/android-v2926/payload.00 > /tmp/android-v2926-tools.tgz
+          cat staging/android-v2926/payload.00 staging/android-v2926/payload.01 staging/android-v2926/payload.02 staging/android-v2926/payload.03 | base64 -d > /tmp/android-v2926-tools.tgz
           tar -xzf /tmp/android-v2926-tools.tgz
           python -m py_compile tools/apply_android_visual_v2926.py tests/test_android_visual_v2926.py tests/render_android_visual_v2926.py tests/mock_server.py
           node --check tests/cdp_android_visual_v2926.mjs
