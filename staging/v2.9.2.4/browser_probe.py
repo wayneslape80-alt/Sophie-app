@@ -5,6 +5,7 @@ html = r'''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>if (innerWidth < 600) document.documentElement.classList.add('compact-device');</script>
 <link rel="stylesheet" href="./assets/android-first.css">
 <link rel="stylesheet" href="./assets/concept-a.css">
 <style>
