@@ -1,0 +1,206 @@
+name: Temporary stage v2.9.2.5 readable logo
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  stage:
+    if: github.event.pull_request.head.ref == 'fix-v2.9.2.5-readable-logo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-v2.9.2.5-readable-logo
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply bounded product patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          version = '2.9.2.5-readable-logo'
+
+          index = Path('index.html')
+          text = index.read_text()
+          old_topbar = '''    <header class="topbar">\n      <div>\n        <p class="eyebrow" id="day-greeting">SOPHIE // HOME</p>\n        <h1 id="topbar-title">Make today yours.</h1>\n      </div>\n      <div class="top-actions">'''
+          new_topbar = '''    <header class="topbar">\n      <div class="topbar-identity">\n        <img class="topbar-brand-emblem" src="./assets/surreal-os-emblem.png" alt="" aria-hidden="true">\n        <div class="topbar-copy">\n          <p class="eyebrow" id="day-greeting">SOPHIE // HOME</p>\n          <h1 id="topbar-title">Make today yours.</h1>\n        </div>\n      </div>\n      <div class="top-actions">'''
+          if old_topbar not in text: raise SystemExit('expected topbar markup not found')
+          text = text.replace(old_topbar, new_topbar, 1)
+
+          empty_goal_visual = '<div class="home-goal-visual" aria-hidden="true"><img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt=""></div>'
+          if empty_goal_visual not in text: raise SystemExit('expected empty goal emblem not found')
+          text = text.replace(empty_goal_visual, '', 1)
+          goal_emblem_line = '        <img class="home-goal-emblem" src="./assets/surreal-os-emblem.png" alt="">\n'
+          if goal_emblem_line not in text: raise SystemExit('expected goal emblem line not found')
+          text = text.replace(goal_emblem_line, '', 1)
+
+          text = text.replace('android-first.css?v=2.9.2.4-dpr-draft', f'android-first.css?v={version}')
+          text = text.replace('concept-a.css?v=2.9.2.4-goal-draft', f'concept-a.css?v={version}')
+          text = text.replace('sw.js?v=2.9.2.4-dpr-draft', f'sw.js?v={version}')
+          index.write_text(text)
+
+          android = Path('assets/android-first.css')
+          text = android.read_text()
+          old_compact = '''html.compact-device {\n  --nav-height: 6rem;\n  /* v2.9.2.4 draft: viewport width is corrected with DPR; do not magnify root text. */\n}'''
+          new_compact = '''html.compact-device {\n  --nav-height: 6.25rem;\n  /* Physical Android review: DPR repair is now correct, but 16px remained too small. */\n  font-size: 125% !important;\n  --tap-target: 3.1rem;\n  --type-page-title: 1.65rem;\n  --type-section-title: 1.4rem;\n  --type-row-title: 1.08rem;\n  --type-body: 1rem;\n  --type-supporting: 0.95rem;\n  --type-label: 0.9rem;\n  --type-meta: 0.85rem;\n}'''
+          if old_compact not in text: raise SystemExit('expected compact root block not found')
+          android.write_text(text.replace(old_compact, new_compact, 1))
+
+          concept = Path('assets/concept-a.css')
+          text = concept.read_text()
+          addition = r'''
+
+/* v2.9.2.5 - physical Android readability and brand placement. */
+.topbar-identity { min-width: 0; display: flex; align-items: center; gap: 12px; }
+.topbar-copy { min-width: 0; }
+.topbar-brand-emblem {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 7px rgba(16,18,37,.2));
+}
+html.compact-device .topbar { align-items: center; gap: 0.6rem; }
+html.compact-device .topbar-identity { gap: 0.5rem; }
+html.compact-device .topbar-brand-emblem { width: 2.5rem; height: 2.5rem; }
+html.compact-device #topbar-title { font-size: 1.45rem; line-height: 1.08; }
+html.compact-device .topbar .eyebrow { font-size: 0.82rem; line-height: 1.25; }
+html.compact-device .home-os-label,
+html.compact-device .home-now-kicker,
+html.compact-device .style-lab-kicker { font-size: 0.85rem; line-height: 1.3; }
+html.compact-device .home-goal-card .goal-meta,
+html.compact-device .home-wallet-pending,
+html.compact-device .home-now-index,
+html.compact-device .home-pattern-swatch::after { font-size: 0.82rem; line-height: 1.3; }
+html.compact-device .home-destination strong,
+html.compact-device .home-now-card strong,
+html.compact-device .home-style-card h3 { font-size: 1rem; line-height: 1.3; }
+html.compact-device .home-destination small,
+html.compact-device .home-now-card small,
+html.compact-device .home-now-card .home-now-note,
+html.compact-device .home-style-card p,
+html.compact-device .pattern-studio-note {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: normal;
+  text-overflow: clip;
+}
+html.compact-device .home-goal-amount,
+html.compact-device .pattern-tool,
+html.compact-device .text-button,
+html.compact-device .nav-button { font-size: 0.9rem !important; }
+html.compact-device .pattern-readability-card small { font-size: 0.8rem; }
+html.compact-device .pattern-readability-card p,
+html.compact-device .home-impact-card p { font-size: 0.9rem; line-height: 1.45; }
+html.compact-device .home-goal-visual { min-height: 5.25rem; justify-content: flex-end; }
+'''
+          if 'v2.9.2.5 - physical Android readability and brand placement' in text: raise SystemExit('concept patch already present')
+          concept.write_text(text.rstrip() + addition + '\n')
+
+          sw = Path('sw.js')
+          text = sw.read_text()
+          text = text.replace('sophie-app-v2-9-2-4-dpr-goal-draft', 'sophie-app-v2-9-2-5-readable-logo')
+          text = text.replace('android-first.css?v=2.9.2.4-dpr-draft', f'android-first.css?v={version}')
+          text = text.replace('concept-a.css?v=2.9.2.4-goal-draft', f'concept-a.css?v={version}')
+          sw.write_text(text)
+          PY
+
+      - name: Verify product patch
+        run: |
+          node --check assets/style-lab.js
+          node --check sw.js
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text()
+          css = Path('assets/android-first.css').read_text()
+          concept = Path('assets/concept-a.css').read_text()
+          sw = Path('sw.js').read_text()
+          checks = {
+            'header logo': 'class="topbar-brand-emblem"' in html,
+            'goal logo removed': 'class="home-goal-emblem"' not in html,
+            'compact 125': 'font-size: 125% !important' in css,
+            'readable metadata': 'font-size: 0.85rem' in concept,
+            'cache bust css': 'android-first.css?v=2.9.2.5-readable-logo' in html,
+            'cache bust concept': 'concept-a.css?v=2.9.2.5-readable-logo' in html,
+            'cache bust sw': 'sw.js?v=2.9.2.5-readable-logo' in html,
+            'new cache': 'sophie-app-v2-9-2-5-readable-logo' in sw,
+          }
+          failed = [k for k,v in checks.items() if not v]
+          for k,v in checks.items(): print(('PASS' if v else 'FAIL'), k)
+          if failed: raise SystemExit(', '.join(failed))
+          PY
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Browser gates
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/v2925-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..40}; do curl -fsS http://127.0.0.1:4173/index.html >/dev/null && break || sleep 0.25; done
+          cat >/tmp/v2925.cjs <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = require('node:assert/strict');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            for (const [width,height] of [[360,800],[390,844],[412,915]]) {
+              const context = await browser.newContext({viewport:{width,height},screen:{width,height},isMobile:true,hasTouch:true,deviceScaleFactor:3,serviceWorkers:'block'});
+              const page = await context.newPage();
+              await page.route('https://script.google.com/**', route => route.abort());
+              await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+              await page.waitForTimeout(250);
+              const r = await page.evaluate(() => {
+                const box = s => { const e=document.querySelector(s); if(!e)return null; const x=e.getBoundingClientRect(); return {left:x.left,right:x.right,width:x.width}; };
+                return {
+                  compact:document.documentElement.classList.contains('compact-device'),
+                  rootPx:parseFloat(getComputedStyle(document.documentElement).fontSize),
+                  overflow:document.body.scrollWidth-window.innerWidth,
+                  logo:box('.topbar-brand-emblem'), title:box('#topbar-title'), actions:box('.top-actions'),
+                  goalLogoCount:document.querySelectorAll('.home-goal-emblem').length,
+                  colours:document.querySelectorAll('.pattern-colour').length,
+                  patternSize:getComputedStyle(document.body,'::before').backgroundSize,
+                  supportingPx:parseFloat(getComputedStyle(document.querySelector('.home-destination small')).fontSize)
+                };
+              });
+              assert.equal(r.compact,true,`${width}: not compact`);
+              assert(r.rootPx>=19.5,`${width}: root ${r.rootPx}`);
+              assert(r.logo&&r.title&&r.actions,`${width}: header pieces missing`);
+              assert(r.logo.right<=r.title.left+1,`${width}: logo/title overlap`);
+              assert(r.title.right<=r.actions.left+1,`${width}: title/actions overlap`);
+              assert(r.overflow<=2,`${width}: overflow ${r.overflow}`);
+              assert.equal(r.goalLogoCount,0,`${width}: old goal logo remains`);
+              assert.equal(r.colours,6,`${width}: six colours regressed`);
+              assert(r.patternSize.includes('128px'),`${width}: 128px repeat regressed`);
+              assert(r.supportingPx>=16,`${width}: supporting text ${r.supportingPx}`);
+              console.log(`PHONE_${width}_OK`,JSON.stringify(r));
+              await context.close();
+            }
+            const c=await browser.newContext({viewport:{width:1280,height:1000},serviceWorkers:'block'});
+            const p=await c.newPage(); await p.route('https://script.google.com/**',route=>route.abort()); await p.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+            const d=await p.evaluate(()=>({compact:document.documentElement.classList.contains('compact-device'),rootPx:parseFloat(getComputedStyle(document.documentElement).fontSize),overflow:document.body.scrollWidth-window.innerWidth}));
+            assert.equal(d.compact,false); assert.equal(d.rootPx,16); assert(d.overflow<=2); console.log('DESKTOP_OK',JSON.stringify(d));
+            await c.close(); await browser.close(); console.log('ALL_V2925_GATES_OK');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v2925.cjs
+
+      - name: Commit staged product files to PR branch
+        run: |
+          rm -f .github/workflows/apply-v2925-readable-logo.yml .github/trigger-v2925.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets/android-first.css assets/concept-a.css sw.js .github/workflows/apply-v2925-readable-logo.yml .github/trigger-v2925.txt
+          git commit -m 'Stage v2.9.2.5 larger Android text and top-left emblem'
+          git push origin HEAD:fix-v2.9.2.5-readable-logo
