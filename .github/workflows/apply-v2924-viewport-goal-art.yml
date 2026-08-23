@@ -1,0 +1,152 @@
+name: Apply v2.9.2.4 Android viewport and goal-art fix
+
+on:
+  push:
+    branches:
+      - fix-v2.9.2.4-android-viewport-goal-art
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-v2.9.2.4-android-viewport-goal-art
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply bounded product patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          version = '2.9.2.4'
+
+          index = Path('index.html')
+          text = index.read_text()
+          start = text.index('      const approvedViewport = "width=device-width, initial-scale=1, viewport-fit=cover";')
+          end_marker = '      window.addEventListener("orientationchange", applyDeviceLayout, { passive: true });'
+          end = text.index(end_marker, start) + len(end_marker)
+          replacement = '''      const approvedViewport = "width=device-width, initial-scale=1, viewport-fit=cover";
+      let viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) {
+        viewport = document.createElement("meta");
+        viewport.name = "viewport";
+        document.head.insertBefore(viewport, document.currentScript);
+      }
+
+      const applyDeviceLayout = () => {
+        const rawScreenWidth = Number(window.screen?.width) || Infinity;
+        const rawScreenHeight = Number(window.screen?.height) || Infinity;
+        const dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
+        const rawShort = Math.min(rawScreenWidth, rawScreenHeight);
+        const rawLong = Math.max(rawScreenWidth, rawScreenHeight);
+        const rawAspect = rawLong / Math.max(1, rawShort);
+        const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
+
+        // Some Android PWAs expose screen dimensions in physical pixels. When
+        // that happens, divide by DPR to recover the intended CSS phone width.
+        const screenLooksPhysical = isTouchDevice && dpr >= 1.5 && rawShort >= 700 && rawAspect >= 1.6;
+        const cssScreenWidth = screenLooksPhysical ? rawScreenWidth / dpr : rawScreenWidth;
+        const cssScreenHeight = screenLooksPhysical ? rawScreenHeight / dpr : rawScreenHeight;
+        const cssShort = Math.min(cssScreenWidth, cssScreenHeight);
+        const cssLong = Math.max(cssScreenWidth, cssScreenHeight);
+        const cssAspect = cssLong / Math.max(1, cssShort);
+        const isPhoneScreen = isTouchDevice && cssShort <= 600 && cssAspect >= 1.4;
+        const targetWidth = Math.round(cssScreenWidth);
+        const needsViewportRepair = isPhoneScreen && Number.isFinite(targetWidth) && targetWidth >= 320 && targetWidth <= 900 &&
+          Math.abs(window.innerWidth - targetWidth) > Math.max(80, targetWidth * 0.2);
+
+        root.classList.toggle("compact-device", isPhoneScreen);
+        root.classList.toggle("viewport-repair-active", needsViewportRepair);
+
+        if (needsViewportRepair) {
+          viewport.content = `width=${targetWidth}, initial-scale=1, viewport-fit=cover`;
+          root.dataset.viewportRepair = String(targetWidth);
+        } else {
+          viewport.content = approvedViewport;
+          delete root.dataset.viewportRepair;
+        }
+      };
+      applyDeviceLayout();
+      window.addEventListener("resize", applyDeviceLayout, { passive: true });
+      window.addEventListener("orientationchange", applyDeviceLayout, { passive: true });'''
+          text = text[:start] + replacement + text[end:]
+          text = text.replace('android-first.css?v=2.9.2.3', f'android-first.css?v={version}')
+          text = text.replace('concept-a.css?v=2.9.2-candidate-2', f'concept-a.css?v={version}')
+          text = text.replace('style-lab.js?v=2.9.2.3', f'style-lab.js?v={version}')
+          text = text.replace('sw.js?v=2.9.2.3', f'sw.js?v={version}')
+          index.write_text(text)
+
+          css = Path('assets/android-first.css')
+          text = css.read_text()
+          old = '''html.compact-device {\n  --nav-height: 6rem;\n  /* Physical Android feedback: 125% was still too small. */\n  font-size: 137.5% !important;\n}'''
+          new = '''html.compact-device {\n  --nav-height: 5.5rem;\n  /* The viewport is now repaired to a true phone CSS width. 18px gives a\n   * deliberately readable phone baseline without magnifying a 980px desktop. */\n  font-size: 112.5% !important;\n}'''
+          if old not in text:
+            raise SystemExit('expected v2.9.2.3 compact root block not found')
+          text = text.replace(old, new, 1)
+          fallback_start = text.find('\n\n/* v2.9.2.3: wide-reporting phone fallback.')
+          if fallback_start != -1:
+            text = text[:fallback_start].rstrip() + '\n'
+          css.write_text(text)
+
+          concept = Path('assets/concept-a.css')
+          text = concept.read_text()
+          text += '''\n\n/* v2.9.2.4 physical Android correction.\n * The screenshot showed that the product photo was covering the decorative\n * goal emblem. On phone-class layouts the two assets now occupy separate\n * flex positions, and the goal card becomes a true mobile single-column card. */\nhtml.compact-device #active-goal .home-goal-card {\n  grid-template-columns: minmax(0, 1fr);\n  gap: 0.8rem;\n  min-height: 0;\n  padding: 1rem;\n}\n\nhtml.compact-device .home-goal-copy h3 {\n  font-size: 1.5rem;\n  line-height: 1.18;\n}\n\nhtml.compact-device .home-goal-amount {\n  font-size: 1rem;\n}\n\nhtml.compact-device .home-goal-amount strong {\n  font-size: 1.2rem;\n}\n\nhtml.compact-device .home-goal-card .goal-meta {\n  font-size: 0.8rem;\n}\n\nhtml.compact-device .home-goal-visual {\n  min-height: 6rem;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  gap: 0.85rem;\n}\n\nhtml.compact-device .home-goal-emblem {\n  position: static;\n  flex: 0 0 auto;\n  width: 6.25rem;\n  max-width: 48%;\n  transform: rotate(4deg);\n}\n\nhtml.compact-device .home-goal-product {\n  position: static;\n  flex: 0 0 auto;\n  width: 5rem;\n  height: 5rem;\n}\n\nhtml.compact-device .home-goal-head h2,\nhtml.compact-device .home-now-head h2 {\n  font-size: 1.55rem;\n  line-height: 1.15;\n}\n\nhtml.compact-device .home-os-label,\nhtml.compact-device .home-now-kicker,\nhtml.compact-device .style-lab-kicker {\n  font-size: 0.82rem;\n}\n\nhtml.compact-device .home-destination strong {\n  font-size: 1rem;\n}\n\nhtml.compact-device .home-destination small,\nhtml.compact-device .home-now-card .home-now-note,\nhtml.compact-device .home-style-card p {\n  font-size: 0.82rem;\n}\n\nhtml.compact-device .nav-button {\n  font-size: 0.82rem;\n}\n'''
+          concept.write_text(text)
+
+          style = Path('assets/style-lab.js')
+          text = style.read_text()
+          text = text.replace('Sophie App v2.9.2.3', f'Sophie App v{version}', 1)
+          text = text.replace('const CANDIDATE_VERSION = "v2.9.2.3";', f'const CANDIDATE_VERSION = "v{version}";', 1)
+          style.write_text(text)
+
+          sw = Path('sw.js')
+          text = sw.read_text()
+          text = text.replace('sophie-app-v2-9-2-3-android-readable-logo', 'sophie-app-v2-9-2-4-android-viewport-goal-art')
+          text = text.replace('android-first.css?v=2.9.2.3', f'android-first.css?v={version}')
+          text = text.replace('concept-a.css?v=2.9.2-candidate-2', f'concept-a.css?v={version}')
+          text = text.replace('style-lab.js?v=2.9.2.3', f'style-lab.js?v={version}')
+          sw.write_text(text)
+          PY
+
+      - name: Verify bounded patch
+        run: |
+          node --check assets/style-lab.js
+          node --check sw.js
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text()
+          css = Path('assets/android-first.css').read_text()
+          concept = Path('assets/concept-a.css').read_text()
+          sw = Path('sw.js').read_text()
+          checks = {
+            'DPR normalisation': 'rawScreenWidth / dpr' in html,
+            'viewport target width': 'width=${targetWidth}' in html,
+            'no old effective scale': 'applyEffectivePhoneScale' not in html,
+            'phone root baseline': 'font-size: 112.5% !important' in css,
+            'single-column goal card': 'html.compact-device #active-goal .home-goal-card' in concept,
+            'emblem static': 'html.compact-device .home-goal-emblem' in concept and 'position: static' in concept,
+            'product static': 'html.compact-device .home-goal-product' in concept,
+            'v2.9.2.4 css': 'android-first.css?v=2.9.2.4' in html,
+            'v2.9.2.4 concept': 'concept-a.css?v=2.9.2.4' in html,
+            'v2.9.2.4 sw': 'sophie-app-v2-9-2-4-android-viewport-goal-art' in sw,
+          }
+          failed = [k for k,v in checks.items() if not v]
+          for k,v in checks.items(): print(('PASS' if v else 'FAIL'), k)
+          if failed: raise SystemExit(', '.join(failed))
+          PY
+
+      - name: Remove temporary workflow and commit product patch
+        run: |
+          rm -f .github/workflows/apply-v2924-viewport-goal-art.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets/android-first.css assets/concept-a.css assets/style-lab.js sw.js .github/workflows/apply-v2924-viewport-goal-art.yml
+          git commit -m 'Stage v2.9.2.4 Android viewport and goal-art correction'
+          git push origin HEAD:fix-v2.9.2.4-android-viewport-goal-art
