@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix-v2.9.2.4-android-viewport-goal-art
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
