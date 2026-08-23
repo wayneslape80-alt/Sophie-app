@@ -8,57 +8,55 @@
       const root = document.documentElement;
       const coarsePointer = window.matchMedia("(pointer: coarse)");
       const approvedViewport = "width=device-width, initial-scale=1, viewport-fit=cover";
-      const initialRootFontPx = Number.parseFloat(getComputedStyle(root).fontSize) || 16;
       let viewport = document.querySelector('meta[name="viewport"]');
-      let viewportRepairActive = false;
-      let scaleCheckFrame = 0;
       if (!viewport) {
         viewport = document.createElement("meta");
         viewport.name = "viewport";
         viewport.content = approvedViewport;
         document.head.insertBefore(viewport, document.currentScript);
       }
-      const applyEffectivePhoneScale = (isPhoneScreen, screenWidth) => {
-        const layoutRatio = isPhoneScreen && Number.isFinite(screenWidth) && screenWidth > 0
-          ? window.innerWidth / screenWidth
-          : 1;
-        const needsScaleFallback = layoutRatio > 1.25;
-        root.classList.toggle("effective-mobile-scale", needsScaleFallback);
-        if (needsScaleFallback) {
-          // Some Android WebViews expose a desktop-like layout viewport. Scale
-          // compact UI up enough to remain readable without producing the
-          // 30-40px root text caused by multiplying by the full viewport ratio.
-          const effectiveScale = Math.min(1.25, 1 + ((layoutRatio - 1) * 0.35));
-          root.style.fontSize = `${initialRootFontPx * effectiveScale}px`;
-          root.dataset.effectiveMobileScale = effectiveScale.toFixed(3);
-        } else if (root.dataset.effectiveMobileScale) {
-          root.style.removeProperty("font-size");
-          delete root.dataset.effectiveMobileScale;
-        }
-      };
-      const applyDeviceLayout = () => {
+
+      const resolvePhoneViewport = () => {
         const screenWidth = Number(window.screen?.width) || Infinity;
         const screenHeight = Number(window.screen?.height) || Infinity;
         const shortScreenSide = Math.min(screenWidth, screenHeight);
         const longScreenSide = Math.max(screenWidth, screenHeight);
         const screenAspect = longScreenSide / Math.max(1, shortScreenSide);
+        const dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
+        const dprShortSide = shortScreenSide / dpr;
         const isTouchDevice = coarsePointer.matches || navigator.maxTouchPoints > 0;
-        // Some Android PWAs report a 1080-ish short side even though they are
-        // physically phone-shaped. Treat tall touch displays as phone-class too.
+        const screenLooksPhysical = dpr > 1.25 && shortScreenSide > 600 && dprShortSide >= 320 && dprShortSide <= 520;
+        const reportedCssShortSide = screenLooksPhysical ? dprShortSide : shortScreenSide;
         const isPhoneScreen = isTouchDevice && (
-          shortScreenSide < 900 ||
-          (shortScreenSide <= 1200 && screenAspect >= 1.75)
+          (reportedCssShortSide >= 320 && reportedCssShortSide <= 600) ||
+          (shortScreenSide <= 1200 && screenAspect >= 1.75 && screenLooksPhysical)
         );
-        root.classList.toggle("compact-device", isPhoneScreen);
-        if (isPhoneScreen && (viewportRepairActive || window.innerWidth > screenWidth * 1.25)) {
-          viewportRepairActive = true;
-          viewport.content = `width=${Math.round(screenWidth)}, initial-scale=1, viewport-fit=cover`;
-          root.dataset.viewportRepair = "active";
-        }
-        applyEffectivePhoneScale(isPhoneScreen, screenWidth);
-        cancelAnimationFrame(scaleCheckFrame);
-        scaleCheckFrame = requestAnimationFrame(() => applyEffectivePhoneScale(isPhoneScreen, screenWidth));
+        const targetCssWidth = isPhoneScreen
+          ? Math.round(Math.min(520, Math.max(320, reportedCssShortSide)))
+          : 0;
+        return { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr };
       };
+
+      const applyDeviceLayout = () => {
+        const { isPhoneScreen, targetCssWidth, screenLooksPhysical, dpr } = resolvePhoneViewport();
+        root.classList.toggle("compact-device", isPhoneScreen);
+        const desktopLikeLayout = isPhoneScreen && targetCssWidth > 0 && window.innerWidth > targetCssWidth * 1.25;
+        if (desktopLikeLayout || (isPhoneScreen && root.dataset.viewportRepair === "dpr")) {
+          viewport.content = `width=${targetCssWidth}, initial-scale=1, viewport-fit=cover`;
+          root.dataset.viewportRepair = "dpr";
+          root.dataset.phoneCssWidth = String(targetCssWidth);
+          root.dataset.phoneDpr = dpr.toFixed(3);
+          if (screenLooksPhysical) root.dataset.physicalPixelScreen = "true";
+          else delete root.dataset.physicalPixelScreen;
+        } else if (!isPhoneScreen) {
+          viewport.content = approvedViewport;
+          delete root.dataset.viewportRepair;
+          delete root.dataset.phoneCssWidth;
+          delete root.dataset.phoneDpr;
+          delete root.dataset.physicalPixelScreen;
+        }
+      };
+
       applyDeviceLayout();
       window.addEventListener("resize", applyDeviceLayout, { passive: true });
       window.addEventListener("orientationchange", applyDeviceLayout, { passive: true });
@@ -876,8 +874,8 @@
       .rec-controls .primary-button, .rec-controls .secondary-button { flex: 1 1 100%; min-height: 46px; }
     }
   </style>
-  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.3">
-  <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2-candidate-2">
+  <link rel="stylesheet" href="./assets/android-first.css?v=2.9.2.4-dpr-draft">
+  <link rel="stylesheet" href="./assets/concept-a.css?v=2.9.2.4-goal-draft">
 </head>
 <body>
   <main class="app-shell">
@@ -4175,7 +4173,7 @@
     renderSchool();
     loadData({ quiet: true });
     if (app.schoolKey) loadSchoolWorkspace({ quiet: true });
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2.3", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js?v=2.9.2.4-dpr-draft", { updateViaCache: "none" }).then(registration => registration.update().catch(() => {})).catch(() => {});
   </script>
   <script src="./assets/skill-pathways-v28.js"></script>
   <script src="./assets/skill-pathways-v28-choice.js"></script>

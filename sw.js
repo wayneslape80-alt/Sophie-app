@@ -1,11 +1,11 @@
-const CACHE_NAME = "sophie-app-v2-9-2-3-android-readable-logo";
+const CACHE_NAME = "sophie-app-v2-9-2-4-dpr-goal-draft";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./assets/android-first.css?v=2.9.2.3",
-  "./assets/concept-a.css?v=2.9.2-candidate-2",
+  "./assets/android-first.css?v=2.9.2.4-dpr-draft",
+  "./assets/concept-a.css?v=2.9.2.4-goal-draft",
   "./assets/style-lab.js?v=2.9.2.3",
   "./assets/surreal-os-emblem.png",
   "./assets/skill-pathways-v28.js",
