@@ -1,4 +1,4 @@
-/* Sophie App v2.9 — Concept A: Surreal Personal OS */
+/* Sophie App v2.9.2 candidate 2 — Concept A: Surreal Personal OS */
 :root {
   --bg: #eeecde;
   --surface: #fffef7;
@@ -21,6 +21,7 @@
   --radius-lg: 3px 20px 3px 20px;
   --radius-md: 3px 14px 3px 14px;
   --sophie-pattern-image: none;
+  --sophie-pattern-size: 128px;
 }
 
 [data-theme="forest"] {
@@ -73,7 +74,7 @@ body::before {
   background-color: var(--bg);
   background-image: var(--sophie-pattern-image);
   background-repeat: repeat;
-  background-size: 32px 32px;
+  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
   image-rendering: pixelated;
   opacity: .16;
   pointer-events: none;
@@ -318,7 +319,7 @@ dialog,
   border: 1px solid var(--ink);
   background-color: var(--bg);
   background-image: var(--sophie-pattern-image);
-  background-size: 32px 32px;
+  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
   image-rendering: pixelated;
 }
 .home-pattern-swatch::after { content: "32"; position: absolute; right: 2px; bottom: 2px; padding: 2px 3px; background: var(--ink); color: var(--bg); font: 800 .6rem/1 monospace; }
@@ -410,7 +411,7 @@ dialog,
   background-color: var(--bg);
   background-image: var(--sophie-pattern-image);
   background-repeat: repeat;
-  background-size: 32px 32px;
+  background-size: var(--sophie-pattern-size) var(--sophie-pattern-size);
   image-rendering: pixelated;
 }
 .pattern-readability-card { padding: 14px; border: 1px solid var(--ink); background: var(--surface); box-shadow: 4px 4px 0 #ff6962; }
