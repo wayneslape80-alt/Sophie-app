@@ -14,12 +14,19 @@
     "[data-rec-catalogue]",
     "[data-rec-add-to-learn]"
   ].join(",");
+  const STALE_CHOICE_SELECTORS = [
+    "[data-v28-technique-safety]",
+    "[data-v28-check-technique]",
+    "[data-v28-technique-candidate]",
+    "[data-rec-add-to-learn]"
+  ].join(",");
 
   let registration = null;
   let waitingWorker = null;
   let updateDeferred = false;
   let reloadRequested = false;
   let refreshQueued = false;
+  let authorityNeedsReopen = false;
 
   function isOnline() {
     return navigator.onLine !== false;
@@ -69,20 +76,10 @@
       else document.body.prepend(stack);
     }
 
-    if (!document.getElementById("wave1-offline-banner")) {
+    for (const id of ["wave1-offline-banner", "wave1-update-banner"]) {
+      if (document.getElementById(id)) continue;
       const banner = document.createElement("div");
-      banner.id = "wave1-offline-banner";
-      banner.className = "wave1-trust-banner";
-      banner.setAttribute("role", "status");
-      banner.setAttribute("aria-live", "polite");
-      banner.setAttribute("aria-atomic", "true");
-      banner.hidden = true;
-      stack.appendChild(banner);
-    }
-
-    if (!document.getElementById("wave1-update-banner")) {
-      const banner = document.createElement("div");
-      banner.id = "wave1-update-banner";
+      banner.id = id;
       banner.className = "wave1-trust-banner";
       banner.setAttribute("role", "status");
       banner.setAttribute("aria-live", "polite");
@@ -115,20 +112,22 @@
       p.textContent = message;
       copy.appendChild(p);
     }
+
     const nodes = [copy];
     if (actions.length) {
       const controls = document.createElement("div");
       controls.className = "wave1-trust-actions";
-      actions.forEach(action => {
+      for (const action of actions) {
         const button = document.createElement("button");
         button.type = "button";
         button.className = action.primary ? "primary-button" : "secondary-button";
         button.textContent = action.label;
         button.dataset.wave1TrustAction = action.action;
         controls.appendChild(button);
-      });
+      }
       nodes.push(controls);
     }
+
     banner.replaceChildren(...nodes);
     banner.dataset.wave1Signature = signature;
     banner.hidden = false;
@@ -143,8 +142,7 @@
     }
 
     if (techniqueChoiceActive()) {
-      const step = String(app.rec?.view || "");
-      setBanner(banner, step === "technique-safety"
+      setBanner(banner, app.rec.view === "technique-safety"
         ? {
             title: "You're offline.",
             message: "Connect to check which practice activities are available for each safety setup."
@@ -161,39 +159,45 @@
         title: "You're offline.",
         message: "You can look at techniques already loaded, but checking learning choices needs a connection."
       });
-    } else {
-      setBanner(banner, {
-        title: "You're offline.",
-        message: "These techniques haven't been loaded on this device yet. Connect and try again.",
-        actions: [{ label: "Try again", action: "offline-retry", primary: false }]
-      });
+      return;
     }
+
+    setBanner(banner, {
+      title: "You're offline.",
+      message: "These techniques haven't been loaded on this device yet. Connect and try again.",
+      actions: [{ label: "Try again", action: "offline-retry", primary: false }]
+    });
   }
 
   function renderChoiceNetworkStatus() {
     document.querySelectorAll(".wave1-choice-network").forEach(node => node.remove());
-    if (isOnline() || !techniqueChoiceActive()) return;
+    if (!techniqueChoiceActive()) return;
+
     const body = document.querySelector("#recommendation-dialog-body");
     if (!body) return;
+
+    let message = "";
+    if (!isOnline()) {
+      message = app.rec.view === "technique-safety"
+        ? "Connect to check which practice activities are available for each safety setup."
+        : "You can still read this choice, but the app needs a connection before it can check or add it to Learn.";
+    } else if (authorityNeedsReopen) {
+      message = "Connection is back. Close this learning choice and open it again to check current availability.";
+    }
+    if (!message) return;
+
     const status = document.createElement("div");
     status.className = "wave1-choice-network";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
     const strong = document.createElement("strong");
-    strong.textContent = "You're offline.";
-    const text = document.createTextNode(
-      app.rec.view === "technique-safety"
-        ? "Connect to check which practice activities are available for each safety setup."
-        : "You can still read this choice, but the app needs a connection before it can check or add it to Learn."
-    );
-    status.append(strong, text);
+    strong.textContent = !isOnline() ? "You're offline." : "Check this choice again.";
+    status.append(strong, document.createTextNode(message));
     const copy = body.querySelector(".rec-copy");
     if (copy) copy.insertAdjacentElement("afterend", status);
     else body.prepend(status);
 
-    if (app.rec.view === "technique-safety") {
-      body.querySelectorAll(".v28-safety-option-note").forEach(note => { note.hidden = true; });
-    }
+    body.querySelectorAll(".v28-safety-option-note,.rec-eligibility").forEach(node => { node.hidden = true; });
   }
 
   function rememberAndDisable(button) {
@@ -221,9 +225,16 @@
   }
 
   function applyNetworkControlState() {
-    const buttons = document.querySelectorAll(NETWORK_REQUIRED_SELECTORS);
-    if (!isOnline()) buttons.forEach(rememberAndDisable);
-    else buttons.forEach(restoreNetworkDisabled);
+    document.querySelectorAll("[data-wave1-network-disabled='true']").forEach(restoreNetworkDisabled);
+
+    if (!isOnline()) {
+      document.querySelectorAll(NETWORK_REQUIRED_SELECTORS).forEach(rememberAndDisable);
+      return;
+    }
+
+    if (authorityNeedsReopen && techniqueChoiceActive()) {
+      document.querySelectorAll(`#recommendation-dialog ${STALE_CHOICE_SELECTORS}`).forEach(rememberAndDisable);
+    }
   }
 
   function updatePromptCopy() {
@@ -233,6 +244,7 @@
       setBanner(banner);
       return;
     }
+
     if (techniqueChoiceActive()) {
       setBanner(banner, {
         title: "Sophie App has an update ready.",
@@ -242,16 +254,17 @@
           { label: "Reload and close", action: "update-reload", primary: true }
         ]
       });
-    } else {
-      setBanner(banner, {
-        title: "Sophie App has an update ready.",
-        message: "Reload when you're ready.",
-        actions: [
-          { label: "Reload now", action: "update-reload", primary: true },
-          { label: "Later", action: "update-later", primary: false }
-        ]
-      });
+      return;
     }
+
+    setBanner(banner, {
+      title: "Sophie App has an update ready.",
+      message: "Reload when you're ready.",
+      actions: [
+        { label: "Reload now", action: "update-reload", primary: true },
+        { label: "Later", action: "update-later", primary: false }
+      ]
+    });
   }
 
   function refreshTrustUi() {
@@ -302,7 +315,7 @@
       });
       registration.update().catch(() => {});
     } catch {
-      // The app remains usable without lifecycle UI when service workers are unavailable.
+      // The app remains usable when service workers are unavailable.
     }
   }
 
@@ -374,9 +387,22 @@
       return;
     }
 
+    const learn = event.target.closest?.("[data-v28-learn-technique]");
+    if (learn && isOnline()) authorityNeedsReopen = false;
+
     if (!isOnline()) {
       const liveAction = event.target.closest?.(NETWORK_REQUIRED_SELECTORS);
       if (liveAction) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        scheduleRefresh();
+      }
+      return;
+    }
+
+    if (authorityNeedsReopen && techniqueChoiceActive()) {
+      const staleAction = event.target.closest?.(STALE_CHOICE_SELECTORS);
+      if (staleAction) {
         event.preventDefault();
         event.stopImmediatePropagation();
         scheduleRefresh();
@@ -387,14 +413,13 @@
   document.addEventListener("click", () => setTimeout(scheduleRefresh, 0));
   document.addEventListener("close", scheduleRefresh, true);
   window.addEventListener("popstate", scheduleRefresh);
-  window.addEventListener("offline", scheduleRefresh);
-  window.addEventListener("online", () => {
-    if (techniqueChoiceActive() && typeof renderRecommendationDialog === "function") {
-      renderRecommendationDialog();
-    }
+  window.addEventListener("offline", () => {
+    if (techniqueChoiceActive()) authorityNeedsReopen = true;
     scheduleRefresh();
   });
+  window.addEventListener("online", scheduleRefresh);
 
+  if (!isOnline() && techniqueChoiceActive()) authorityNeedsReopen = true;
   document.documentElement.dataset.wave1PwaTrust = TRUST_BUILD;
   refreshTrustUi();
   void setupServiceWorkerLifecycle();
