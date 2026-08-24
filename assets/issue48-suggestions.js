@@ -1,15 +1,11 @@
-/* Sophie App issue #48 - Sophie-authored suggestions frontend.
+/* Sophie App issue #48 - suggestions-v1 frontend.
  * DRAFT ONLY. Suggestions remain non-authoritative until parent review.
- *
- * IMPORTANT BACKEND ADAPTER NOTE:
- * The accepted 00.03 contract defines capabilities, authority, concurrency and
- * idempotency, but does not yet fix Apps Script action names/response envelopes.
- * ACTIONS and the suggestionKey response/property below are provisional adapter
- * names to be reconciled with 00.03 before frontend acceptance.
+ * Uses the fixed 00.03 suggestions-v1 Apps Script contract.
  */
 (() => {
   "use strict";
 
+  const CONTRACT_VERSION = "suggestions-v1";
   const DEVICE_STORAGE_KEY = "sophie_suggestion_device_key";
   const ACTIONS = Object.freeze({
     list: "getSuggestions",
@@ -22,21 +18,26 @@
     rotate: "rotateSuggestionDeviceKey"
   });
   const DOMAIN_LABELS = Object.freeze({ contribute: "CONTRIBUTE", earn: "EARN", learn: "LEARN" });
-  const state = app.issue48Suggestions = app.issue48Suggestions || {
-    items: [],
-    parentItems: [],
-    loaded: false,
+  const VALID_DOMAINS = new Set(Object.keys(DOMAIN_LABELS));
+  const VALID_STATUSES = new Set(["pending", "withdrawn", "approved", "declined", "not_yet"]);
+  const state = app.issue48Suggestions = app.issue48Suggestions || {};
+  Object.assign(state, {
+    contractVersion: CONTRACT_VERSION,
+    items: Array.isArray(state.items) ? state.items : [],
+    parentItems: Array.isArray(state.parentItems) ? state.parentItems : [],
+    loaded: Boolean(state.loaded),
     loading: false,
-    unavailable: false,
-    parentLoaded: false,
+    unavailable: Boolean(state.unavailable),
+    parentLoaded: Boolean(state.parentLoaded),
     parentLoading: false,
-    parentUnavailable: false,
-    currentId: "",
-    currentDomain: "",
-    createRequestId: "",
-    reviewRequestId: "",
-    formDirty: false
-  };
+    parentUnavailable: Boolean(state.parentUnavailable),
+    currentId: String(state.currentId || ""),
+    currentDomain: String(state.currentDomain || ""),
+    createRequestId: String(state.createRequestId || ""),
+    reviewRequestId: String(state.reviewRequestId || ""),
+    reviewSuggestionId: String(state.reviewSuggestionId || ""),
+    formDirty: Boolean(state.formDirty)
+  });
 
   function suggestionCredential() {
     try { return localStorage.getItem(DEVICE_STORAGE_KEY) || ""; }
@@ -55,51 +56,70 @@
     return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
   }
 
-  function firstDefined(source, names, fallback = "") {
-    for (const name of names) {
-      if (source && source[name] !== undefined && source[name] !== null) return source[name];
-    }
-    return fallback;
-  }
-
-  function normaliseSuggestion(row = {}) {
-    const finalPlan = row.finalPlan && typeof row.finalPlan === "object" ? row.finalPlan : {};
-    const item = {
-      id: String(firstDefined(row, ["suggestionId", "SuggestionID", "id"], "")),
-      domain: String(firstDefined(row, ["domain", "Domain"], "")).toLowerCase(),
-      status: String(firstDefined(row, ["status", "Status"], "pending")).toLowerCase(),
-      title: String(firstDefined(row, ["title", "Title"], "")),
-      description: String(firstDefined(row, ["description", "Description"], "")),
-      timingOrFrequency: String(firstDefined(row, ["timingOrFrequency", "TimingOrFrequency"], "")),
-      suggestedAmount: Number(firstDefined(row, ["suggestedAmount", "SuggestedAmount"], 0)) || 0,
-      interestReason: String(firstDefined(row, ["interestReason", "InterestReason"], "")),
-      suggestedLink: String(firstDefined(row, ["suggestedLink", "SuggestedLink"], "")),
-      submittedAt: String(firstDefined(row, ["submittedAt", "SubmittedAt"], "")),
-      updatedAt: String(firstDefined(row, ["updatedAt", "UpdatedAt"], "")),
-      revision: Number(firstDefined(row, ["revision", "Revision"], 0)) || 0,
-      reviewReasonText: String(firstDefined(row, ["reviewReasonText", "ReviewReasonText"], "")),
-      finalTitle: String(firstDefined(row, ["finalTitle", "FinalTitle"], firstDefined(finalPlan, ["title"], ""))),
-      finalScope: String(firstDefined(row, ["finalScope", "FinalScope"], firstDefined(finalPlan, ["scope"], ""))),
-      finalRequiredness: String(firstDefined(row, ["finalRequiredness", "FinalRequiredness"], firstDefined(finalPlan, ["requiredness"], ""))),
-      finalFrequency: String(firstDefined(row, ["finalFrequency", "FinalFrequency"], firstDefined(finalPlan, ["frequency"], ""))),
-      finalCompletionStandard: String(firstDefined(row, ["finalCompletionStandard", "FinalCompletionStandard"], firstDefined(finalPlan, ["completionStandard"], ""))),
-      finalEstimatedMinutes: Number(firstDefined(row, ["finalEstimatedMinutes", "FinalEstimatedMinutes"], firstDefined(finalPlan, ["estimatedMinutes"], 0))) || 0,
-      finalAgreedPay: Number(firstDefined(row, ["finalAgreedPay", "FinalAgreedPay"], firstDefined(finalPlan, ["agreedPay"], 0))) || 0,
-      finalSkillArea: String(firstDefined(row, ["finalSkillArea", "FinalSkillArea"], firstDefined(finalPlan, ["skillArea"], ""))),
-      finalTechniqueTitle: String(firstDefined(row, ["finalTechniqueTitle", "FinalTechniqueTitle"], firstDefined(finalPlan, ["techniqueTitle"], ""))),
-      finalActivityTitle: String(firstDefined(row, ["finalActivityTitle", "FinalActivityTitle"], firstDefined(finalPlan, ["activityTitle"], ""))),
-      mappingOptions: Array.isArray(row.mappingOptions) ? row.mappingOptions.map(option => ({
-        label: String(firstDefined(option, ["label", "title"], "Learning activity")),
-        candidateId: String(firstDefined(option, ["candidateId", "CandidateID"], "")),
-        techniqueId: String(firstDefined(option, ["techniqueId", "TechniqueID"], "")),
-        skillArea: String(firstDefined(option, ["skillArea", "domainName"], ""))
-      })).filter(option => option.candidateId && option.techniqueId) : []
+  function normaliseMappingOption(option) {
+    if (!option || typeof option !== "object") return null;
+    const normalised = {
+      candidateId: String(option.candidateId || ""),
+      techniqueId: String(option.techniqueId || ""),
+      skillArea: String(option.skillArea || ""),
+      techniqueTitle: String(option.techniqueTitle || ""),
+      activityTitle: String(option.activityTitle || ""),
+      label: String(option.label || "")
     };
-    return item.id && ["contribute", "earn", "learn"].includes(item.domain) ? item : null;
+    if (!normalised.candidateId || !normalised.techniqueId || !normalised.label) return null;
+    return normalised;
   }
 
-  function suggestionRows(result) {
-    return Array.isArray(result) ? result : Array.isArray(result?.suggestions) ? result.suggestions : [];
+  function normaliseSuggestion(row, { parent = false } = {}) {
+    if (!row || typeof row !== "object") return null;
+    const id = String(row.suggestionId || "");
+    const domain = String(row.domain || "").toLowerCase();
+    const status = String(row.status || "").toLowerCase();
+    if (!id || !VALID_DOMAINS.has(domain) || !VALID_STATUSES.has(status)) return null;
+
+    const mappingOptions = parent && domain === "learn" && status === "pending" && Array.isArray(row.mappingOptions)
+      ? row.mappingOptions.map(normaliseMappingOption).filter(Boolean)
+      : [];
+
+    return {
+      id,
+      domain,
+      status,
+      title: String(row.title || ""),
+      description: String(row.description || ""),
+      timingOrFrequency: String(row.timingOrFrequency || ""),
+      suggestedAmount: Number(row.suggestedAmount) || 0,
+      interestReason: String(row.interestReason || ""),
+      suggestedLink: String(row.suggestedLink || ""),
+      submittedAt: String(row.submittedAt || ""),
+      updatedAt: String(row.updatedAt || ""),
+      revision: Number(row.revision) || 0,
+      reviewReasonText: String(row.reviewReasonText || ""),
+      finalTitle: String(row.finalTitle || ""),
+      finalScope: String(row.finalScope || ""),
+      finalRequiredness: String(row.finalRequiredness || ""),
+      finalFrequency: String(row.finalFrequency || ""),
+      finalCompletionStandard: String(row.finalCompletionStandard || ""),
+      finalEstimatedMinutes: Number(row.finalEstimatedMinutes) || 0,
+      finalAgreedPay: Number(row.finalAgreedPay) || 0,
+      finalSkillArea: String(row.finalSkillArea || ""),
+      finalTechniqueTitle: String(row.finalTechniqueTitle || ""),
+      finalActivityTitle: String(row.finalActivityTitle || ""),
+      mappingOptions
+    };
+  }
+
+  function requireSuggestionList(result, { parent = false } = {}) {
+    if (!result || !Array.isArray(result.suggestions)) throw new Error("The Suggestions response was not valid.");
+    const items = result.suggestions.map(row => normaliseSuggestion(row, { parent }));
+    if (items.some(item => !item)) throw new Error("The Suggestions response contained an invalid item.");
+    return items;
+  }
+
+  function requireSuggestionResult(result, expectedStatus, { parent = false } = {}) {
+    const item = normaliseSuggestion(result?.suggestion, { parent });
+    if (!item || item.status !== expectedStatus) throw new Error("The backend did not confirm the expected suggestion state.");
+    return item;
   }
 
   function itemById(id, parent = false) {
@@ -121,6 +141,8 @@
     return "Reviewed";
   }
 
+  // apiPost is the shared Apps Script envelope boundary. On success it returns
+  // envelope.data; on handled failure it throws with the stable envelope code.
   function suggestionPost(operation, { parent = false } = {}) {
     const payload = { ...operation };
     if (parent) {
@@ -259,7 +281,7 @@
   function payloadFromForm() {
     const data = new FormData(document.getElementById("issue48-suggestion-form"));
     const domain = state.currentDomain;
-    const payload = { domain, title: String(data.get("title") || "").trim() };
+    const payload = { title: String(data.get("title") || "").trim() };
     if (domain === "contribute") {
       payload.description = String(data.get("description") || "").trim();
       payload.timingOrFrequency = String(data.get("timingOrFrequency") || "").trim();
@@ -274,6 +296,8 @@
         const cleaned = safeUrl(link);
         if (!cleaned || !/^https?:/i.test(cleaned)) throw new Error("Use a normal http or https link, or leave the link blank.");
         payload.suggestedLink = cleaned;
+      } else {
+        payload.suggestedLink = "";
       }
     }
     return payload;
@@ -293,17 +317,21 @@
     let fields;
     try { fields = payloadFromForm(); }
     catch (error) { return setFormError(error.message); }
+
     const current = state.currentId ? itemById(state.currentId) : null;
+    if (state.currentId && (!current || current.status !== "pending" || current.revision < 1)) {
+      return setFormError("This suggestion changed. Refresh My suggestions before editing it again.");
+    }
+
     button.disabled = true;
     button.textContent = state.currentId ? "Saving…" : "Sending…";
     setFormError("");
     try {
       const operation = state.currentId
-        ? { action: ACTIONS.update, suggestionId: state.currentId, expectedRevision: current?.revision, ...fields }
-        : { action: ACTIONS.create, createRequestId: state.createRequestId, ...fields };
+        ? { action: ACTIONS.update, suggestionId: state.currentId, expectedRevision: current.revision, ...fields }
+        : { action: ACTIONS.create, createRequestId: state.createRequestId, domain: state.currentDomain, ...fields };
       const result = await suggestionPost(operation);
-      const authoritative = normaliseSuggestion(result?.suggestion || result);
-      if (!authoritative || authoritative.status !== "pending") throw new Error("The backend did not confirm a pending suggestion.");
+      const authoritative = requireSuggestionResult(result, "pending");
       const index = state.items.findIndex(item => item.id === authoritative.id);
       if (index >= 0) state.items[index] = authoritative;
       else state.items.unshift(authoritative);
@@ -317,8 +345,12 @@
         showSubmissionConfirmation();
       }
     } catch (error) {
-      if (error?.code === "SUGGESTION_CONFLICT") setFormError("This suggestion has already been reviewed. Refresh to see the outcome.");
-      else setFormError("Couldn't send your suggestion. Your text is still here.", true);
+      if (error?.code === "SUGGESTION_CONFLICT") {
+        await loadSuggestions({ quiet: true });
+        setFormError("This suggestion changed or was already reviewed. Your text is still here. Refresh My suggestions before trying again.");
+      } else {
+        setFormError("Couldn't send your suggestion. Your text is still here.", true);
+      }
     } finally {
       button.disabled = false;
       button.textContent = state.currentId ? "Save changes" : "Send suggestion";
@@ -386,16 +418,11 @@
     renderMySuggestions();
     try {
       const result = await suggestionPost({ action: ACTIONS.list });
-      state.items = suggestionRows(result).map(normaliseSuggestion).filter(Boolean).sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0) - new Date(a.updatedAt || a.submittedAt || 0));
+      state.items = requireSuggestionList(result).sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0) - new Date(a.updatedAt || a.submittedAt || 0));
       state.loaded = true;
       state.unavailable = false;
       return state.items;
     } catch (error) {
-      if (/key|authoris|provision|suggestion_device/i.test(String(error?.message || error?.code || ""))) {
-        setSuggestionCredential("");
-        state.items = [];
-        state.loaded = false;
-      }
       state.unavailable = true;
       if (!quiet) toast("Couldn't load My suggestions.");
       return state.items;
@@ -452,7 +479,7 @@
     if (item.status === "approved" && item.domain === "learn") return "Your idea has been connected to a learning activity that follows the current Skills and safety rules.";
     if (item.status === "not_yet" && item.domain === "learn") return "Your idea is still saved. You can come back to it later.";
     if (item.status === "approved" && item.domain === "contribute") {
-      const changed = item.finalTitle && item.finalTitle !== item.title || item.finalScope && item.finalScope !== item.description || item.finalFrequency && item.finalFrequency !== item.timingOrFrequency;
+      const changed = (item.finalTitle && item.finalTitle !== item.title) || (item.finalScope && item.finalScope !== item.description) || (item.finalFrequency && item.finalFrequency !== item.timingOrFrequency);
       return changed ? "The final plan is a little different from your suggestion." : "";
     }
     return "";
@@ -483,7 +510,7 @@
 
   async function withdrawSuggestion(id, button) {
     const item = itemById(id);
-    if (!item || item.status !== "pending") return;
+    if (!item || item.status !== "pending" || item.revision < 1) return;
     if (navigator.onLine === false) {
       document.getElementById("issue48-withdraw-error").innerHTML = `<div class="issue48-error" role="status">You're offline. Reconnect before withdrawing this suggestion.</div>`;
       return;
@@ -491,8 +518,7 @@
     button.disabled = true;
     try {
       const result = await suggestionPost({ action: ACTIONS.withdraw, suggestionId: item.id, expectedRevision: item.revision });
-      const authoritative = normaliseSuggestion(result?.suggestion || result);
-      if (!authoritative || authoritative.status !== "withdrawn") throw new Error("The backend did not confirm withdrawal.");
+      const authoritative = requireSuggestionResult(result, "withdrawn");
       const index = state.items.findIndex(row => row.id === item.id);
       if (index >= 0) state.items[index] = authoritative;
       document.getElementById("issue48-confirm-dialog").close();
@@ -500,7 +526,8 @@
       renderMySuggestions();
       toast("Withdrawn");
     } catch (error) {
-      const message = error?.code === "SUGGESTION_CONFLICT" ? "This suggestion has already been reviewed. Refresh to see the outcome." : "Couldn't withdraw this suggestion. Try again.";
+      if (error?.code === "SUGGESTION_CONFLICT") await loadSuggestions({ quiet: true });
+      const message = error?.code === "SUGGESTION_CONFLICT" ? "This suggestion changed or was already reviewed. My suggestions has been refreshed." : "Couldn't withdraw this suggestion. Try again.";
       document.getElementById("issue48-withdraw-error").innerHTML = `<div class="issue48-error" role="status">${safe(message)}</div>`;
     } finally {
       button.disabled = false;
@@ -543,7 +570,7 @@
     renderParentSuggestions();
     try {
       const result = await suggestionPost({ action: ACTIONS.parentList }, { parent: true });
-      state.parentItems = suggestionRows(result).map(normaliseSuggestion).filter(Boolean).sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0) - new Date(a.updatedAt || a.submittedAt || 0));
+      state.parentItems = requireSuggestionList(result, { parent: true }).sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0) - new Date(a.updatedAt || a.submittedAt || 0));
       state.parentLoaded = true;
       state.parentUnavailable = false;
       return state.parentItems;
@@ -562,9 +589,11 @@
     if (navigator.onLine === false) return toast("Reconnect before setting up Suggestions.");
     button.disabled = true;
     try {
-      const result = await suggestionPost({ action: mode === "rotate" ? ACTIONS.rotate : ACTIONS.provision }, { parent: true });
-      const credential = String(result?.suggestionKey || result?.deviceKey || "");
-      if (!credential) throw new Error("Suggestions setup could not be completed.");
+      const rotating = mode === "rotate";
+      const result = await suggestionPost({ action: rotating ? ACTIONS.rotate : ACTIONS.provision }, { parent: true });
+      const credential = typeof result?.suggestionKey === "string" ? result.suggestionKey : "";
+      const confirmed = rotating ? result?.rotated === true : result?.provisioned === true;
+      if (!credential || !confirmed) throw new Error("Suggestions setup could not be completed.");
       setSuggestionCredential(credential);
       state.loaded = false;
       state.items = [];
@@ -592,20 +621,26 @@
   function finalPlanFields(item) {
     if (item.domain === "contribute") return `<div class="form-field"><label>Final title<input name="finalTitle" maxlength="240" value="${safe(item.title)}" required></label></div><div class="form-field"><label>Final scope<textarea name="finalScope" maxlength="1500" required>${safe(item.description)}</textarea></label></div><div class="form-field"><label>Requiredness<select name="finalRequiredness" required><option value="expected">Part of normal responsibilities</option><option value="negotiated">Agreed together</option></select></label></div><div class="form-field"><label>When or how often <span style="font-weight:500">(Optional)</span><input name="finalFrequency" maxlength="240" value="${safe(item.timingOrFrequency)}"></label></div><div class="form-field"><label>What done looks like<textarea name="finalCompletionStandard" maxlength="1500" required></textarea></label></div>`;
     if (item.domain === "earn") return `<div class="issue48-device-state"><strong>Paid jobs are optional extra work.</strong><br>If this is part of Sophie's normal responsibilities, don't approve it as Earn.</div><div class="form-field"><label>Final title<input name="finalTitle" maxlength="240" value="${safe(item.title)}" required></label></div><div class="form-field"><label>Agreed scope<textarea name="finalScope" maxlength="1500" required>${safe(item.description)}</textarea></label></div><div class="form-field"><label>Completion standard<textarea name="finalCompletionStandard" maxlength="1500" required></textarea></label></div><div class="form-field"><label>Estimated time <span style="font-weight:500">(Optional)</span><input name="finalEstimatedMinutes" type="number" min="0" max="1440"></label></div><div class="form-field"><label>Agreed pay<input name="finalAgreedPay" type="number" min="0.01" step="0.01" inputmode="decimal" ${item.suggestedAmount > 0 ? `value="${safe(item.suggestedAmount)}"` : ""} required></label><p class="issue48-helper">Entering the same amount Sophie suggested is still a parent decision.</p></div>`;
-    if (item.mappingOptions.length) return `<div class="form-field"><label>Learning activity<select name="learningMap" required>${item.mappingOptions.map((option, index) => `<option value="${index}">${safe(option.label)}</option>`).join("")}</select></label><p class="issue48-helper">The backend must still recheck current pathway and safety rules when approving.</p></div>`;
-    return `<div class="issue48-device-state"><strong>This idea needs a learning setup before it can be added to Learn.</strong><br>Keep it pending until an authoritative learning activity can be mapped.</div>`;
+    if (item.mappingOptions.length) return `<div class="form-field"><label for="issue48-learning-map">Learning activity</label><select id="issue48-learning-map" name="learningMap" required>${item.mappingOptions.map((option, index) => `<option value="${index}">${safe(option.label)}</option>`).join("")}</select><p class="issue48-helper">Choose the learning activity this idea should map to. Approval rechecks the current pathway, safety and feasibility rules.</p></div>`;
+    return `<div class="issue48-device-state" id="issue48-learning-map-required"><strong>This idea needs a learning setup before it can be added to Learn.</strong><br>Keep it pending until an authoritative learning activity can be mapped.</div>`;
   }
 
   function reviewActions(item) {
-    const canApprove = item.domain !== "learn" || item.mappingOptions.length > 0;
-    return `<div class="form-actions">${canApprove ? `<button class="primary-button" type="submit" data-issue48-review-outcome="approved">Approve</button><button class="secondary-button" type="submit" data-issue48-review-outcome="approved">Edit then approve</button>` : ""}<button class="secondary-button" type="submit" data-issue48-review-outcome="${item.domain === "learn" ? "not_yet" : "declined"}">${item.domain === "learn" ? "Not yet" : "Decline"}</button><button class="text-button" type="button" data-issue48-close="issue48-parent-review-dialog">Cancel</button></div>`;
+    const hasLearnMapping = item.domain !== "learn" || item.mappingOptions.length > 0;
+    const approveButtons = hasLearnMapping
+      ? `<button class="primary-button" type="submit" data-issue48-review-outcome="approved">Approve</button><button class="secondary-button" type="submit" data-issue48-review-outcome="approved">Edit then approve</button>`
+      : `<button class="primary-button" type="button" disabled aria-describedby="issue48-learning-map-required">Approve</button><button class="secondary-button" type="button" disabled aria-describedby="issue48-learning-map-required">Edit then approve</button>`;
+    return `<div class="form-actions">${approveButtons}<button class="secondary-button" type="submit" data-issue48-review-outcome="${item.domain === "learn" ? "not_yet" : "declined"}">${item.domain === "learn" ? "Not yet" : "Decline"}</button><button class="text-button" type="button" data-issue48-close="issue48-parent-review-dialog">Cancel</button></div>`;
   }
 
   function openParentReview(id) {
     const item = itemById(id, true);
     if (!item || item.status !== "pending" || !parentSessionValid()) return;
     state.currentId = item.id;
-    state.reviewRequestId = requestId("suggestion-review");
+    if (state.reviewSuggestionId !== item.id || !state.reviewRequestId) {
+      state.reviewSuggestionId = item.id;
+      state.reviewRequestId = requestId("suggestion-review");
+    }
     const reasons = reviewReasonOptions(item.domain);
     const form = document.getElementById("issue48-parent-review-form");
     form.innerHTML = `<div class="dialog-head"><div><span class="job-domain">${DOMAIN_LABELS[item.domain]}</span><h2>Review Sophie's suggestion</h2></div><button class="close-button" type="button" data-issue48-close="issue48-parent-review-dialog" aria-label="Close">×</button></div><div class="issue48-parent-grid"><section class="issue48-source"><h3>Sophie's suggestion</h3>${rowsMarkup(sourceRows(item, true))}${linkMarkup(item)}</section><section class="issue48-final"><h3>Final plan</h3><p>You can approve the idea as a final plan, adjust the final plan before approving it, or decline it. Sophie's original suggestion stays visible.</p>${finalPlanFields(item)}</section></div><div class="issue48-review-reason"><label for="issue48-review-reason">Reason <span style="font-weight:500">(required for Decline / Not yet)</span></label><select id="issue48-review-reason-preset"><option value="">Choose a reason</option>${reasons.map(reason => `<option value="${safe(reason)}">${safe(reason)}</option>`).join("")}</select><textarea id="issue48-review-reason" name="reviewReasonText" maxlength="1000" placeholder="Factual reason"></textarea></div><div id="issue48-parent-review-error"></div>${reviewActions(item)}`;
@@ -637,10 +672,11 @@
       expectedRevision: item.revision,
       reviewRequestId: state.reviewRequestId,
       outcome,
-      reviewReasonCode: preset && preset !== "Something else" ? reasonCode(preset) : "other",
+      reviewReasonCode: reviewReasonText ? (preset && preset !== "Something else" ? reasonCode(preset) : "other") : "",
       reviewReasonText
     };
     if (outcome !== "approved") return payload;
+
     if (item.domain === "contribute") {
       payload.finalTitle = String(data.get("finalTitle") || "").trim();
       payload.finalScope = String(data.get("finalScope") || "").trim();
@@ -653,7 +689,6 @@
       payload.finalCompletionStandard = String(data.get("finalCompletionStandard") || "").trim();
       payload.finalEstimatedMinutes = Number(data.get("finalEstimatedMinutes")) || 0;
       payload.finalAgreedPay = Number(data.get("finalAgreedPay"));
-      payload.finalRequiredness = "optional";
     } else {
       const mapping = item.mappingOptions[Number(data.get("learningMap"))];
       if (!mapping) throw new Error("This idea needs a learning setup before it can be added to Learn.");
@@ -674,28 +709,48 @@
     const button = event.submitter;
     const item = itemById(state.currentId, true);
     const outcome = button?.dataset.issue48ReviewOutcome || "";
-    if (!item || item.status !== "pending" || !outcome) return;
+    if (!item || item.status !== "pending" || item.revision < 1 || !outcome) return;
     if (navigator.onLine === false) return parentReviewError("Reconnect before reviewing this suggestion.");
     let payload;
     try { payload = parentReviewPayload(item, form, outcome); }
     catch (error) { return parentReviewError(error.message); }
+
     button.disabled = true;
     parentReviewError("");
     try {
       const result = await suggestionPost(payload, { parent: true });
-      const authoritative = normaliseSuggestion(result?.suggestion || result);
       const expectedStatus = outcome === "approved" ? "approved" : outcome;
-      if (!authoritative || authoritative.status !== expectedStatus) throw new Error("The backend did not confirm the review outcome.");
+      const authoritative = requireSuggestionResult(result, expectedStatus, { parent: true });
       const index = state.parentItems.findIndex(row => row.id === item.id);
       if (index >= 0) state.parentItems[index] = authoritative;
+      state.reviewSuggestionId = "";
+      state.reviewRequestId = "";
       document.getElementById("issue48-parent-review-dialog").close();
       renderParentSuggestions();
       await loadSuggestions({ quiet: true });
       toast(authoritative.status === "not_yet" ? "Not yet saved with the idea retained" : "Suggestion review saved");
     } catch (error) {
-      if (error?.code === "SUGGESTION_CONFLICT") parentReviewError("This suggestion changed while you were reviewing it. Reload before making a decision.");
-      else if (/mapping|eligible|prerequisite|safety/i.test(String(error?.message || "")) && item.domain === "learn") parentReviewError("This idea needs a learning setup before it can be added to Learn. It is still waiting for review.");
-      else parentReviewError(error.message || "The suggestion review could not be saved.");
+      if (error?.code === "SUGGESTION_CONFLICT") {
+        await loadParentSuggestions({ quiet: true });
+        parentReviewError("This suggestion changed while you were reviewing it. The parent list has been refreshed. Close and reopen the suggestion before deciding.");
+      } else if (item.domain === "learn" && outcome === "approved") {
+        await loadParentSuggestions({ quiet: true });
+        const refreshed = !state.parentUnavailable ? itemById(item.id, true) : null;
+        if (refreshed?.status === "approved") {
+          state.reviewSuggestionId = "";
+          state.reviewRequestId = "";
+          document.getElementById("issue48-parent-review-dialog").close();
+          renderParentSuggestions();
+          await loadSuggestions({ quiet: true });
+          toast("Suggestion review saved");
+        } else if (refreshed?.status === "pending") {
+          parentReviewError("This idea needs a learning setup before it can be added to Learn. It is still waiting for review.");
+        } else {
+          parentReviewError(error.message || "The suggestion review could not be confirmed. Reload before making another decision.");
+        }
+      } else {
+        parentReviewError(error.message || "The suggestion review could not be saved.");
+      }
     } finally {
       button.disabled = false;
     }
@@ -745,6 +800,8 @@
     state.parentItems = [];
     state.parentLoaded = false;
     state.parentUnavailable = false;
+    state.reviewSuggestionId = "";
+    state.reviewRequestId = "";
     return baseLockParentIssue48(...args);
   };
 
