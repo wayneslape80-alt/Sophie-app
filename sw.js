@@ -47,7 +47,8 @@ function unavailableResponse() {
 
 self.addEventListener("fetch", event => {
   const request = event.request;
-  if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) return;
+  const requestUrl = new URL(request.url);
+  if (request.method !== "GET" || requestUrl.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
     event.respondWith((async () => {
