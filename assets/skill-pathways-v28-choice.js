@@ -550,6 +550,15 @@
     }
   }
 
+  function loadWave1PwaTrust() {
+    if (document.querySelector("script[data-wave1-pwa-trust]")) return;
+    const script = document.createElement("script");
+    script.src = "./assets/wave1-pwa-trust.js?v=wave1-pwa-trust-draft";
+    script.dataset.wave1PwaTrust = "true";
+    script.async = false;
+    document.head.appendChild(script);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applySettingsRefinementV2927, { once: true });
   } else {
@@ -557,4 +566,5 @@
   }
 
   enhanceTechniqueChoice();
+  loadWave1PwaTrust();
 })();
