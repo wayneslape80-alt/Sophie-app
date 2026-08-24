@@ -152,6 +152,10 @@
       next:index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null
     };
   }
+  function browseAreaName() {
+    const name = activeDomainConfig().name;
+    return name === "Lagotto care" ? name : name.toLowerCase();
+  }
   app.v28CandidateIdsForTechnique = function(id, domain) {
     const state = pathwayFor(domain || activeDomainId());
     const technique = state.techniques.find(item => item.id === String(id));
@@ -244,14 +248,19 @@
     const neighbours = browseNeighboursFor(id);
     const hasPathwayRelationships = hard.length || recommended.length || leadsTo.length;
     const directCount = directCandidateIds(id).length;
+    const bridge = directCount
+      ? `<strong>${directCount} direct learning ${directCount === 1 ? "activity is" : "activities are"} linked to this technique.</strong>Choose it to ask rec-v1 what is eligible for this setup.`
+      : hasPathwayRelationships
+        ? `<strong>No direct primary learning activity is linked yet.</strong>You can still explore the linked pathway relationships above.`
+        : `<strong>There isn't a practice activity for this technique yet.</strong>You can still browse other techniques below.`;
     return `<button class="skills-back" type="button" data-v28-technique-back>← ${safe(activeDomainConfig().name)}</button><div class="technique-detail">
       <article class="technique-detail-hero"><p class="eyebrow">${safe(activeDomainConfig().name)} technique</p><h2>${safe(technique.title)}</h2><p>${safe(technique.description)}</p></article>
       <section class="technique-detail-section"><h3>Safety and support</h3><p>${safe(supportLabel(technique.safetySupport))}</p>${technique.safetyNote ? `<div class="technique-safety">${safe(technique.safetyNote)}</div>` : ""}</section>
       ${hard.length ? `<section class="technique-detail-section"><h3>Safety prerequisite</h3><p>This is a genuine pathway dependency. Activity availability is checked separately for the current setup.</p><div class="technique-link-list">${hard.map(edge => edgeLinkMarkup(edge)).join("")}</div></section>` : ""}
       ${recommended.length ? `<section class="technique-detail-section"><h3>Helpful before this</h3><p>These can make the technique easier to interpret, but they do not lock it.</p><div class="technique-link-list">${recommended.map(edge => edgeLinkMarkup(edge)).join("")}</div></section>` : ""}
       ${leadsTo.length ? `<section class="technique-detail-section"><h3>Where this can lead</h3><div class="technique-link-list">${leadsTo.map(edge => edgeLinkMarkup(edge,"next")).join("")}</div></section>` : ""}
-      <div class="technique-readonly-note"><strong>${directCount ? `${directCount} direct learning ${directCount === 1 ? "activity is" : "activities are"} linked to this technique.` : "No direct primary learning activity is linked yet."}</strong>${directCount ? "Choose it to ask rec-v1 what is eligible for this setup." : hasPathwayRelationships ? "You can still explore the linked pathway relationships above." : "You can still browse other techniques in this learning area."}</div>
-      ${(neighbours.previous || neighbours.next) ? `<section class="technique-detail-section technique-browse" aria-labelledby="v28-technique-browse-heading"><div><h3 id="v28-technique-browse-heading">Browse techniques</h3><p class="technique-browse-note">Previous and next follow the catalogue order only. They are not prerequisites, unlocks or a judgement of progress.</p></div><div class="technique-browse-grid">${browseLinkMarkup(neighbours.previous,"previous")}${browseLinkMarkup(neighbours.next,"next")}</div></section>` : ""}
+      <div class="technique-readonly-note">${bridge}</div>
+      ${(neighbours.previous || neighbours.next) ? `<section class="technique-detail-section technique-browse" aria-labelledby="v28-technique-browse-heading"><div><h3 id="v28-technique-browse-heading">Browse ${safe(browseAreaName())} techniques</h3><p class="technique-browse-note">Just browsing — this doesn't change your progress.</p></div><div class="technique-browse-grid">${browseLinkMarkup(neighbours.previous,"previous")}${browseLinkMarkup(neighbours.next,"next")}</div></section>` : ""}
     </div>`;
   }
 
