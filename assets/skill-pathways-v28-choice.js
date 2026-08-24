@@ -16,8 +16,56 @@
 
   const APPROVED_SAFETY_NOTE_REWRITES = new Map([
     [
+      "Hot liquids require the safety conditions of the candidate using them.",
+      "Hot liquids can burn. If an activity uses them, follow the safety setup for that activity."
+    ],
+    [
+      "Hot cookware and steam require candidate-specific supervision even when heat judgement is the learning focus.",
+      "Hot cookware and steam can burn. Follow the safety setup for the activity while you practise heat control."
+    ],
+    [
+      "Hot pan and possible oil splatter require candidate-specific supervision.",
+      "Hot pans and oil splatter can burn. Follow the safety setup for the activity."
+    ],
+    [
+      "Steam, hot liquid and pot handles require candidate-specific supervision.",
+      "Steam, hot liquid and pot handles can burn. Follow the safety setup for the activity."
+    ],
+    [
+      "Large volumes of boiling water and draining create burn and lifting hazards; candidate-level allocation may keep draining adult-led.",
+      "Large pots of boiling water are hot and heavy. The safety setup may mean an adult does the draining."
+    ],
+    [
+      "Oven burns and awkward/heavy cookware require candidate-specific support.",
+      "Ovens and hot or heavy cookware can burn or be awkward to handle. Follow the safety setup for the activity."
+    ],
+    [
+      "No special hazard beyond normal hygiene for the seeded applications.",
+      "No special hazard beyond normal kitchen hygiene for the current practice activities."
+    ],
+    [
+      "Hot pot and steam safety apply; risk depends on the candidate and quantity.",
+      "Hot pots and steam can burn. The safety setup may change with the amount being cooked and the activity."
+    ],
+    [
+      "Oven and mixer safety are candidate-specific.",
+      "If an activity uses an oven or mixer, follow that activity's safety setup."
+    ],
+    [
+      "Coordination itself is not a hazard, but combining multiple hot or sharp processes may require stronger candidate-level support.",
+      "Planning the meal itself isn't hazardous, but combining hot or sharp steps may need more adult support."
+    ],
+    [
+      "Candidate-specific requirements increase when raw high-risk foods or specialised hazards are introduced.",
+      "Raw high-risk foods or specialised hazards may need more adult support."
+    ],
+    [
       "Seeded hummus use assigns this component to an adult; future Sophie-led applications require explicit candidate design.",
       "For this hummus activity, an adult uses the food processor."
+    ],
+    [
+      "Direct grilling is a higher-heat method and requires candidate-specific direct supervision in the seeded catalogue.",
+      "Direct grilling uses high heat. For the current practice activities, an adult stays with you."
     ]
   ]);
 
