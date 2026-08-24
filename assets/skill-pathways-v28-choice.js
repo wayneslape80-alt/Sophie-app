@@ -14,12 +14,24 @@
     error: ""
   };
 
+  const APPROVED_SAFETY_NOTE_REWRITES = new Map([
+    [
+      "Seeded hummus use assigns this component to an adult; future Sophie-led applications require explicit candidate design.",
+      "For this hummus activity, an adult uses the food processor."
+    ]
+  ]);
+
   function activeDomainContext() {
     return typeof app.v28DomainContext === "function" ? app.v28DomainContext(app.skillsDomain) : null;
   }
 
   function currentDomainName() {
     return activeDomainContext()?.name || "Learning";
+  }
+
+  function currentDomainLower() {
+    const name = currentDomainName();
+    return name === "Lagotto care" ? name : name.toLowerCase();
   }
 
   function candidateIdsFor(techniqueId, domain=flow.domain || app.skillsDomain) {
@@ -89,8 +101,14 @@
       .rec-choice.v28-safety-check-error .v28-safety-option-note {
         font-weight: 650;
       }
+      .technique-choice-unavailable {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
       html.compact-device .v28-safety-preflight-status,
-      html.compact-device .v28-safety-option-note {
+      html.compact-device .v28-safety-option-note,
+      html.compact-device .technique-choice-unavailable {
         font-size: 16px;
       }
     `;
@@ -98,9 +116,9 @@
   }
 
   function safetyPreflightStatusText(state) {
-    if (!state || state.status === "loading") return "Checking which safety setups currently have a linked learning choice…";
-    if (state.status === "error") return "Availability could not be checked yet. Choose a setup and the app will check it when you continue.";
-    return "Safety setup changes which linked activities are available. It is not a score of Sophie's ability.";
+    if (!state || state.status === "loading") return "Checking which activities work with each safety setup…";
+    if (state.status === "error") return "Couldn't check every setup yet. You can still choose one, and the app will check again when you continue.";
+    return "Different safety setups can make different activities available. This isn't a score of your ability.";
   }
 
   function safetyOptionMarkup(value, label, state) {
@@ -112,16 +130,17 @@
     const selected = !loading && !unavailable && flow.safetySupport === support;
     const noteId = `v28-safety-note-${support.replace(/[^a-z0-9_-]/gi, "-")}`;
     let note = "";
-    if (loading) note = "Checking learning choices…";
-    else if (unavailable) note = "No learning choice for this setup";
-    else if (failedOpen) note = "Availability check unavailable - this setup will be checked when you continue";
-    else note = result.eligibleCount === 1 ? "1 linked learning choice available" : `${result.eligibleCount} linked learning choices available`;
+    if (loading) note = "Checking…";
+    else if (unavailable) note = "No practice activity is available with this setup right now.";
+    else if (failedOpen) note = "Couldn't check this setup yet. It will be checked again if you continue.";
+    else note = result.eligibleCount === 1 ? "1 practice activity available" : `${result.eligibleCount} practice activities available`;
     const classes = ["rec-choice"];
     if (loading) classes.push("v28-safety-loading");
     if (unavailable) classes.push("v28-safety-unavailable");
     if (failedOpen) classes.push("v28-safety-check-error");
+    const disabled = loading ? " disabled" : "";
     const ariaDisabled = loading || unavailable ? ` aria-disabled="true"` : "";
-    return `<button class="${classes.join(" ")}" type="button" data-v28-technique-safety="${safe(support)}" aria-pressed="${selected}" aria-describedby="${safe(noteId)}"${ariaDisabled}>${safe(label)}<span id="${safe(noteId)}" class="v28-safety-option-note">${safe(note)}</span></button>`;
+    return `<button class="${classes.join(" ")}" type="button" data-v28-technique-safety="${safe(support)}" aria-pressed="${selected}" aria-describedby="${safe(noteId)}"${ariaDisabled}${disabled}>${safe(label)}<span id="${safe(noteId)}" class="v28-safety-option-note">${safe(note)}</span></button>`;
   }
 
   function normalisedLinkedCandidates(result, linkedIds) {
@@ -226,26 +245,47 @@
     return true;
   }
 
+  function hasVisiblePathwayRelationships(detail) {
+    return Array.from(detail.querySelectorAll(".technique-detail-section h3")).some(heading =>
+      ["Safety prerequisite", "Helpful before this", "Where this can lead"].includes(heading.textContent.trim())
+    );
+  }
+
   function enhanceTechniqueChoice() {
     const detail = document.querySelector(".technique-detail");
     const context = activeDomainContext();
     if (!detail || !context || !app.skillsTechniqueId) return;
+    ensureSafetyPreflightStyles();
     const linked = candidateIdsFor(app.skillsTechniqueId, context && app.skillsDomain);
     const note = detail.querySelector(".technique-readonly-note");
     if (note) {
-      note.innerHTML = linked.length
-        ? `<strong>${linked.length} direct learning ${linked.length === 1 ? "activity is" : "activities are"} linked to this technique.</strong>When you choose it, the app checks the current safety setup before showing which activities are actually available.`
-        : `<strong>No direct learning activity is linked to this technique yet.</strong>You can still explore what comes before it and where it can lead.`;
+      if (linked.length === 1) {
+        note.innerHTML = `<strong>This technique has 1 practice activity to check.</strong>Choose <strong>I want to learn this</strong> to see if it's available with your safety setup.`;
+      } else if (linked.length > 1) {
+        note.innerHTML = `<strong>This technique has ${linked.length} practice activities to check.</strong>Choose <strong>I want to learn this</strong> to see which ones are available with your safety setup.`;
+      } else if (hasVisiblePathwayRelationships(detail)) {
+        note.innerHTML = `<strong>There isn't a practice activity for this technique yet.</strong>You can still explore the related techniques above.`;
+      } else {
+        note.innerHTML = `<strong>There isn't a practice activity for this technique yet.</strong>You can still browse other techniques below.`;
+      }
     }
     if (!linked.length || detail.querySelector("[data-v28-learn-technique]")) return;
+    const ready = recommendationInteractionReady();
     const button = document.createElement("button");
     button.type = "button";
     button.className = "primary-button";
     button.dataset.v28LearnTechnique = app.skillsTechniqueId;
     button.style.width = "100%";
     button.style.minHeight = "3rem";
-    button.disabled = !recommendationInteractionReady();
-    button.textContent = button.disabled ? "Learning choices unavailable on this device" : "I want to learn this";
+    button.disabled = !ready;
+    button.textContent = "I want to learn this";
+    if (!ready) {
+      const unavailable = document.createElement("p");
+      unavailable.className = "technique-choice-unavailable";
+      unavailable.setAttribute("role", "status");
+      unavailable.textContent = "This skill area isn't available on this device right now.";
+      detail.appendChild(unavailable);
+    }
     detail.appendChild(button);
   }
 
@@ -260,19 +300,19 @@
       const canContinue = Boolean(flow.safetySupport) && (
         selected?.status === "error" || (selected?.status === "ok" && selected.eligibleCount > 0)
       );
-      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Set up this learning choice</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This checks safety eligibility; it is not a score of what you can do.</p><div class="v28-safety-preflight-status" role="status" aria-live="polite">${safe(safetyPreflightStatusText(state))}</div><div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label]) => safetyOptionMarkup(value, label, state)).join("")}</div>${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v28-check-technique ${canContinue && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show learning choices"}</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Choose a safety setup</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This changes which practice activities are available today. It isn't a score of what you can do.</p><div class="v28-safety-preflight-status" role="status" aria-live="polite">${safe(safetyPreflightStatusText(state))}</div><div class="rec-option-group rec-safety" role="group" aria-label="Safety setup">${REC_SAFETY_OPTIONS.map(([value,label]) => safetyOptionMarkup(value, label, state)).join("")}</div>${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="primary-button" type="button" data-v28-check-technique ${canContinue && !app.rec.loading ? "" : "disabled"}>${app.rec.loading ? "Checking…" : "Show practice activities"}</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
       return;
     }
 
     if (app.rec.view === "technique-candidates") {
-      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Choose a real activity</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 2 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">These are linked activities that fit the safety setup you chose.</p>${flow.candidates.length ? `<div class="rec-grid">${flow.candidates.map(candidate => { const eligible = candidate.eligibility?.status === "eligible"; return `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${safe(candidate.estimatedMinutes)} min</span>` : ""}</div><div class="rec-eligibility ${eligible ? "" : "locked"}"><strong>${eligible ? "Available for this setup" : "Not available for this setup"}</strong>${eligible ? "" : `<br>${safe(candidate.eligibility?.reason || "Try another setup.")}`}</div>${eligible ? `<div class="rec-controls"><button class="primary-button" type="button" data-v28-technique-candidate="${safe(candidate.candidateId)}">Choose this</button></div>` : ""}</article>`; }).join("")}</div>` : `<div class="rec-unavailable"><strong>No linked activity is available for this setup.</strong><br>Try a different setup or choose another technique.</div>`}${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="secondary-button" type="button" data-v28-back-technique-safety>Change who is around</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Choose a practice activity</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 2 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">These activities are available with the safety setup you chose.</p>${flow.candidates.length ? `<div class="rec-grid">${flow.candidates.map(candidate => { const eligible = candidate.eligibility?.status === "eligible"; return `<article class="rec-card"><h3>${safe(candidate.title)}</h3><div class="rec-meta">${candidate.estimatedMinutes ? `<span class="pill">About ${safe(candidate.estimatedMinutes)} min</span>` : ""}</div><div class="rec-eligibility ${eligible ? "" : "locked"}"><strong>${eligible ? "Available with this setup" : "Not available with this setup"}</strong>${eligible ? "" : `<br>${safe(candidate.eligibility?.reason || "Try a different safety setup.")}`}</div>${eligible ? `<div class="rec-controls"><button class="primary-button" type="button" data-v28-technique-candidate="${safe(candidate.candidateId)}">Choose this</button></div>` : ""}</article>`; }).join("")}</div>` : `<div class="rec-unavailable"><strong>No practice activity is available with this setup right now.</strong><br>Try a different safety setup or choose another technique.</div>`}${flow.error ? `<div class="rec-error" role="status">${safe(flow.error)}</div>` : ""}<div class="rec-controls"><button class="secondary-button" type="button" data-v28-back-technique-safety>Change who is around</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
       return;
     }
 
     if (app.rec.view === "technique-support") {
       const candidate = app.rec.currentCandidate;
       const blocked = candidate?.eligibility?.status && candidate.eligibility.status !== "eligible";
-      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Choose the support you want</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 3 of 3</div><h3>${safe(candidate?.title || flow.techniqueTitle)}</h3><p class="rec-copy">This choice is for this session. It does not become a permanent label about your ability.</p><div class="rec-option-group rec-safety" role="group" aria-label="Learning support choice">${REC_SUPPORT_OPTIONS.map(([value,label]) => `<button class="rec-choice" type="button" data-rec-support="${safe(value)}" aria-pressed="${app.rec.supportChoice === value}">${safe(label)}</button>`).join("")}</div>${recErrorMarkup()}${blocked ? `<div class="rec-unavailable"><strong>That activity is no longer available for this setup.</strong><br>${safe(candidate?.eligibility?.reason || "Try another setup or activity.")}</div>` : ""}<div class="rec-consequence"><strong>Add to Learn</strong><br>Adding it creates an available Learn activity. It does not start automatically and does not create money.</div><div class="rec-controls"><button class="primary-button" type="button" data-rec-add-to-learn ${app.rec.supportChoice && !app.rec.loading && !blocked ? "" : "disabled"}>${app.rec.loading ? "Adding…" : "Add to Learn"}</button><button class="secondary-button" type="button" data-v28-back-technique-candidates>Back</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+      body.innerHTML = `<div class="dialog-head"><div><span class="opportunity-detail-domain">${safe(currentDomainName().toUpperCase())} · LEARN</span><h2>Choose the help you want</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 3 of 3</div><h3>${safe(candidate?.title || flow.techniqueTitle)}</h3><p class="rec-copy">This choice is for this time. It doesn't become a permanent label about your ability.</p><div class="rec-option-group rec-safety" role="group" aria-label="Help choice">${REC_SUPPORT_OPTIONS.map(([value,label]) => `<button class="rec-choice" type="button" data-rec-support="${safe(value)}" aria-pressed="${app.rec.supportChoice === value}">${safe(label)}</button>`).join("")}</div>${recErrorMarkup()}${blocked ? `<div class="rec-unavailable"><strong>This activity isn't available with this setup anymore.</strong><br>${safe(candidate?.eligibility?.reason || "Try a different safety setup or activity.")}</div>` : ""}<div class="rec-consequence"><strong>Add to Learn</strong><br>This puts the activity in Learn so you can start when you're ready. It doesn't start automatically and it doesn't involve money.</div><div class="rec-controls"><button class="primary-button" type="button" data-rec-add-to-learn ${app.rec.supportChoice && !app.rec.loading && !blocked ? "" : "disabled"}>${app.rec.loading ? "Adding…" : "Add to Learn"}</button><button class="secondary-button" type="button" data-v28-back-technique-candidates>Back</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
     }
   }
 
@@ -300,7 +340,7 @@
       writeNavigationState("replace", { overlay: "recommendation", recView: "technique-candidates", techniqueId: flow.techniqueId });
     } catch (error) {
       app.rec.loading = false;
-      flow.error = error?.message || recommendationUnavailableMessage();
+      flow.error = "Couldn't check this safety setup right now. Try again or choose Not now.";
       renderRecommendationDialog();
     }
   }
@@ -311,7 +351,7 @@
     const linked = candidateIdsFor(techniqueId, context && app.skillsDomain);
     if (!linked.length) return;
     if (!recommendationInteractionReady()) {
-      toast(app.rec.unauthorised ? "Learning choices need to be set up again in Parent Mode." : "Learning choices are not available on this device yet.");
+      toast("This skill area isn't available on this device right now.");
       return;
     }
     flow.techniqueId = String(techniqueId);
@@ -376,6 +416,92 @@
       .replaceAll("Browse more Cooking ideas", "Browse more " + name + " ideas");
   }
 
+  function rewriteRelationshipCardLabels(detail) {
+    detail.querySelectorAll(".technique-link small").forEach(label => {
+      const text = label.textContent || "";
+      const separator = text.indexOf(" · ");
+      const prefix = separator >= 0 ? text.slice(0, separator) : text;
+      const rest = separator >= 0 ? text.slice(separator) : "";
+      const replacement = ({
+        "Safety-gated next step":"Where this can lead",
+        "Later technique":"Where this can lead",
+        "Helpful preparation":"Helpful before this"
+      })[prefix];
+      if (replacement) label.textContent = replacement + rest;
+    });
+  }
+
+  function applyWave1SkillsMicrocopy() {
+    const context = activeDomainContext();
+    const host = document.querySelector("#skills-workspace");
+    if (!context || !host) return;
+
+    const heroEyebrow = host.querySelector(".domain-hero .eyebrow");
+    if (heroEyebrow) heroEyebrow.textContent = "Skill area";
+
+    host.querySelectorAll(".skills-section .section-heading").forEach(heading => {
+      const copy = heading.querySelector("p");
+      const title = heading.querySelector("h2");
+      const text = copy?.textContent?.trim() || "";
+      if (text === "Activities already in your authoritative Learn list.") {
+        if (title) title.textContent = "What I'm practising";
+        copy.textContent = "Things you've already added to Learn.";
+      } else if (text === "Open a technique to see its safety dependencies and helpful preparation.") {
+        copy.textContent = "Open a technique to see safety steps, helpful techniques and ways to practise it.";
+      }
+    });
+
+    host.querySelectorAll(".technique-badge").forEach(badge => {
+      if (badge.textContent.trim() === "Ready to explore") badge.textContent = "Technique";
+    });
+
+    const detail = host.querySelector(".technique-detail");
+    if (detail) {
+      const sections = Array.from(detail.querySelectorAll(".technique-detail-section"));
+      const sectionFor = heading => sections.find(section => section.querySelector("h3")?.textContent?.trim() === heading);
+      const safetySection = sectionFor("Safety and support");
+      const support = safetySection?.querySelector(":scope > p");
+      if (support) {
+        support.textContent = ({
+          "No special support listed":"No special safety support listed",
+          "Adult available":"An adult needs to be available",
+          "Adult nearby":"An adult needs to be nearby",
+          "Adult stays with you":"An adult stays with you"
+        })[support.textContent.trim()] || support.textContent;
+      }
+      const safetyNote = safetySection?.querySelector(".technique-safety");
+      if (safetyNote) {
+        const approved = APPROVED_SAFETY_NOTE_REWRITES.get(safetyNote.textContent.trim());
+        if (approved) safetyNote.textContent = approved;
+      }
+      const hard = sectionFor("Safety prerequisite")?.querySelector(":scope > p");
+      if (hard) {
+        const count = sectionFor("Safety prerequisite")?.querySelectorAll(".technique-link").length || 0;
+        hard.textContent = count === 1
+          ? "You need this technique first for the way this is set up. What you can practise is checked again when you choose an activity."
+          : "You need these techniques first for the way this is set up. What you can practise is checked again when you choose an activity.";
+      }
+      const helpful = sectionFor("Helpful before this")?.querySelector(":scope > p");
+      if (helpful) helpful.textContent = "These can make this technique easier, but they aren't required.";
+      rewriteRelationshipCardLabels(detail);
+    }
+
+    const stateElement = host.querySelector(".technique-pathway-state");
+    const state = app.v28Pathways?.[app.skillsDomain];
+    if (stateElement && state) {
+      const controls = `<div class="rec-controls"><button class="secondary-button" type="button" data-v28-retry-pathway>Try again</button></div>`;
+      if (["idle", "loading"].includes(state.status)) {
+        stateElement.innerHTML = `<strong>Loading ${safe(currentDomainLower())} techniques…</strong>`;
+      } else if (state.status === "unavailable") {
+        stateElement.innerHTML = `<strong>This skill area isn't available on this device right now.</strong>${controls}`;
+      } else if (/^No active /i.test(String(state.error || ""))) {
+        stateElement.innerHTML = `<strong>No ${safe(currentDomainLower())} techniques are available right now.</strong>${controls}`;
+      } else if (state.status === "error") {
+        stateElement.innerHTML = `<strong>Couldn't load ${safe(currentDomainLower())} right now.</strong>Check your connection and try again.${controls}`;
+      }
+    }
+  }
+
   renderLearningRecommendationEntry = function() {
     baseRenderLearningRecommendationEntryV28();
     const context = activeDomainContext();
@@ -437,6 +563,7 @@
 
   renderSkills = function() {
     const result = baseRenderSkillsV28();
+    applyWave1SkillsMicrocopy();
     enhanceTechniqueChoice();
     return result;
   };
@@ -457,6 +584,13 @@
     }
     return baseApplyNavigationStateV28(state);
   };
+
+  document.addEventListener("keydown", event => {
+    if (!["Enter", " "].includes(event.key)) return;
+    const safety = event.target.closest?.("[data-v28-technique-safety][aria-disabled='true']");
+    if (!safety || safety.disabled) return;
+    event.preventDefault();
+  });
 
   document.addEventListener("click", event => {
     const learn = event.target.closest("[data-v28-learn-technique]");
@@ -556,5 +690,6 @@
     applySettingsRefinementV2927();
   }
 
+  applyWave1SkillsMicrocopy();
   enhanceTechniqueChoice();
 })();
