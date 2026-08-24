@@ -550,6 +550,15 @@
     }
   }
 
+  function loadIssue48Suggestions() {
+    if (document.querySelector("script[data-issue48-suggestions]")) return;
+    const script = document.createElement("script");
+    script.src = "./assets/issue48-suggestions.js?v=issue48-draft-1";
+    script.dataset.issue48Suggestions = "true";
+    script.async = false;
+    document.head.appendChild(script);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applySettingsRefinementV2927, { once: true });
   } else {
@@ -557,4 +566,5 @@
   }
 
   enhanceTechniqueChoice();
+  loadIssue48Suggestions();
 })();
