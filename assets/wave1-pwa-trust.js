@@ -97,8 +97,13 @@
     if (!title && !message) {
       banner.hidden = true;
       banner.replaceChildren();
+      delete banner.dataset.wave1Signature;
       return;
     }
+
+    const signature = JSON.stringify([title, message, actions.map(action => [action.label, action.action, Boolean(action.primary)])]);
+    if (banner.dataset.wave1Signature === signature && !banner.hidden) return;
+
     const copy = document.createElement("div");
     if (title) {
       const strong = document.createElement("strong");
@@ -125,6 +130,7 @@
       nodes.push(controls);
     }
     banner.replaceChildren(...nodes);
+    banner.dataset.wave1Signature = signature;
     banner.hidden = false;
   }
 
@@ -199,8 +205,8 @@
         ? String(button.getAttribute("aria-disabled"))
         : "__none__";
     }
-    button.disabled = true;
-    button.setAttribute("aria-disabled", "true");
+    if (!button.disabled) button.disabled = true;
+    if (button.getAttribute("aria-disabled") !== "true") button.setAttribute("aria-disabled", "true");
   }
 
   function restoreNetworkDisabled(button) {
@@ -316,6 +322,42 @@
     else if (typeof renderSkills === "function") renderSkills();
   }
 
+  const baseRenderSkillsTrust = typeof renderSkills === "function" ? renderSkills : null;
+  if (baseRenderSkillsTrust) {
+    renderSkills = function(...args) {
+      const result = baseRenderSkillsTrust(...args);
+      scheduleRefresh();
+      return result;
+    };
+  }
+
+  const baseRenderRecommendationDialogTrust = typeof renderRecommendationDialog === "function" ? renderRecommendationDialog : null;
+  if (baseRenderRecommendationDialogTrust) {
+    renderRecommendationDialog = function(...args) {
+      const result = baseRenderRecommendationDialogTrust(...args);
+      scheduleRefresh();
+      return result;
+    };
+  }
+
+  const baseSetViewTrust = typeof setView === "function" ? setView : null;
+  if (baseSetViewTrust) {
+    setView = function(...args) {
+      const result = baseSetViewTrust(...args);
+      scheduleRefresh();
+      return result;
+    };
+  }
+
+  const baseApplyNavigationStateTrust = typeof applyNavigationState === "function" ? applyNavigationState : null;
+  if (baseApplyNavigationStateTrust) {
+    applyNavigationState = function(...args) {
+      const result = baseApplyNavigationStateTrust(...args);
+      scheduleRefresh();
+      return result;
+    };
+  }
+
   document.addEventListener("click", event => {
     const action = event.target.closest?.("[data-wave1-trust-action]");
     if (action) {
@@ -342,6 +384,9 @@
     }
   }, true);
 
+  document.addEventListener("click", () => setTimeout(scheduleRefresh, 0));
+  document.addEventListener("close", scheduleRefresh, true);
+  window.addEventListener("popstate", scheduleRefresh);
   window.addEventListener("offline", scheduleRefresh);
   window.addEventListener("online", () => {
     if (techniqueChoiceActive() && typeof renderRecommendationDialog === "function") {
@@ -349,9 +394,6 @@
     }
     scheduleRefresh();
   });
-
-  const observer = new MutationObserver(scheduleRefresh);
-  observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["open", "class", "disabled", "aria-disabled"] });
 
   document.documentElement.dataset.wave1PwaTrust = TRUST_BUILD;
   refreshTrustUi();
