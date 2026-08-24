@@ -233,7 +233,8 @@
     }
 
     if (authorityNeedsReopen && techniqueChoiceActive()) {
-      document.querySelectorAll(`#recommendation-dialog ${STALE_CHOICE_SELECTORS}`).forEach(rememberAndDisable);
+      const dialog = document.querySelector("#recommendation-dialog");
+      dialog?.querySelectorAll(STALE_CHOICE_SELECTORS).forEach(rememberAndDisable);
     }
   }
 
