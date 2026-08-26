@@ -1,4 +1,4 @@
-const CACHE_NAME = "sophie-app-v2-9-2-8-safety-preflight";
+const CACHE_NAME = "sophie-app-v2-9-2-8-issue50-school-status";
 
 const APP_FILES = [
   "./",
@@ -10,6 +10,8 @@ const APP_FILES = [
   "./assets/surreal-os-emblem.png?v=2.9.2.6-android-visual",
   "./assets/skill-pathways-v28.js",
   "./assets/skill-pathways-v28-choice.js",
+  "./assets/skill-pathways-v28-choice-core.js",
+  "./assets/issue50-school-status.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
