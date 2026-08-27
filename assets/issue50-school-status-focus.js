@@ -20,5 +20,5 @@
     setTimeout(() => {
       document.querySelector(`#school-view-toggle [data-school-view="${targetView}"]`)?.focus();
     }, 0);
-  });
+  }, { capture: true });
 })();
