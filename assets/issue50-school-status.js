@@ -56,10 +56,7 @@
   }
 
   function submissionState(task) {
-    const state = normalise(task?.submissionState);
-    if (state === "received" || task?.receiptConfirmedAt) return "received";
-    if (state === "submitted" || task?.submittedAt) return "submitted";
-    return state || "not_submitted";
+    return normalise(task?.submissionState);
   }
 
   function classify(task) {
@@ -120,7 +117,7 @@
     const dueA = parseDate(a?.dueDate)?.getTime() || 0;
     const dueB = parseDate(b?.dueDate)?.getTime() || 0;
     if (dueB !== dueA) return dueB - dueA;
-    return recordIdentity(a).localeCompare(recordIdentity(b));
+    return String(a?.taskId || "").localeCompare(String(b?.taskId || ""));
   }
 
   function nowGroups(rows) {
