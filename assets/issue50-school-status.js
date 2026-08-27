@@ -8,8 +8,8 @@
   if (window.__sophieIssue50SchoolStatusLoaded) return;
   window.__sophieIssue50SchoolStatusLoaded = true;
 
-  const MAIN_VIEWS = new Set(["now", "submitted", "feedback"]);
-  const TRANSIENT_VIEWS = new Set(["submitted", "feedback"]);
+  const MAIN_VIEWS = new Set(["now", "submitted", "feedback", "overdue"]);
+  const TRANSIENT_VIEWS = new Set(["submitted", "feedback", "overdue"]);
   const RECENT_FEEDBACK_LIMIT = 6;
   const escapeHtml = typeof safe === "function"
     ? safe
@@ -66,12 +66,12 @@
     if (meaningfulFeedback(task)) return "feedback";
     const submitted = submissionState(task);
     if (submitted === "submitted" || submitted === "received") return "submitted";
-    if (recordState === "active" && submitted === "not_submitted") return "now";
+    if (recordState === "active" && submitted === "not_submitted") return dueDays(task) < 0 ? "overdue" : "now";
     return "history";
   }
 
   function school50Model() {
-    const model = { now: [], submitted: [], feedback: [], history: [], withheld: [] };
+    const model = { now: [], submitted: [], feedback: [], overdue: [], history: [], withheld: [] };
     recordsWithFallback().forEach(task => model[classify(task)].push(task));
     return model;
   }
@@ -121,14 +121,12 @@
   }
 
   function nowGroups(rows) {
-    const groups = { overdue: [], dueSoon: [], later: [] };
+    const groups = { dueSoon: [], later: [] };
     rows.forEach(task => {
       const days = dueDays(task);
-      if (days < 0) groups.overdue.push(task);
-      else if (days <= 7) groups.dueSoon.push(task);
+      if (days <= 7) groups.dueSoon.push(task);
       else groups.later.push(task);
     });
-    groups.overdue.sort((a, b) => dueDays(b) - dueDays(a) || stableTaskCompare(a, b));
     groups.dueSoon.sort((a, b) => dueDays(a) - dueDays(b) || stableTaskCompare(a, b));
     groups.later.sort((a, b) => {
       const da = dueDays(a);
@@ -184,13 +182,28 @@
   }
 
   function renderNow(rows) {
-    if (!rows.length) return `<div class="surface empty school50-empty"><span class="empty-icon">▣</span><strong>Nothing needs action right now.</strong><p>Check Submitted if you're waiting on something, or Feedback to see what came back.</p></div>`;
+    if (!rows.length) return `<div class="surface empty school50-empty"><span class="empty-icon">▣</span><strong>Nothing needs action right now.</strong><p>Check Submitted if you're waiting, Feedback to see what came back, or Overdue for items that need agreement with the school.</p></div>`;
     const groups = nowGroups(rows);
     return [
-      sectionMarkup("Overdue - still needs action", "The due date has passed, but these tasks still have an action you can take.", groups.overdue, nowCard),
       sectionMarkup("Due soon", "Due today or within the next 7 days.", groups.dueSoon, nowCard),
       sectionMarkup("Later", "Still visible without turning School into a giant calendar.", groups.later, nowCard)
     ].join("");
+  }
+
+  function overdueCard(task) {
+    const dueLabel = formatDate(task.dueDate);
+    return `<article class="surface school50-state-card school50-overdue-card" style="--subject-accent:${escapeHtml(subjectAccent(task))}">
+      <div class="school50-card-head"><div><div class="school-meta">${escapeHtml(task.subject || "School")}</div><h3>${escapeHtml(task.title || "School task")}</h3></div><span class="school-status">Overdue</span></div>
+      <p class="school50-waiting"><strong>Check with your parent or school before deciding what happens next.</strong></p>
+      <div class="school50-secondary-meta">${dueLabel ? `Due ${escapeHtml(dueLabel)}` : "Due date has passed"}</div>
+      <details class="school50-details"><summary>Open</summary><div class="school50-details-body">${task.currentAction || task.nextAction ? `<p><strong>Last working step</strong><br>${escapeHtml(task.currentAction || task.nextAction)}</p>` : ""}${task.journeyStage ? `<p><strong>Assignment journey</strong><br>${escapeHtml(typeof schoolStageLabel === "function" ? schoolStageLabel(task.journeyStage) : task.journeyStage)}</p>` : ""}</div></details>
+    </article>`;
+  }
+
+  function renderOverdue(rows) {
+    if (!rows.length) return `<div class="surface empty school50-empty"><span class="empty-icon">▣</span><strong>No overdue items here.</strong><p>If something passes its due date without being submitted, it will appear here so you can check what the school wants next.</p></div>`;
+    const ordered = [...rows].sort((a, b) => dueDays(b) - dueDays(a) || stableTaskCompare(a, b));
+    return sectionMarkup("Overdue", "These items have passed their due date. Check with your parent or school before deciding what happens next.", ordered, overdueCard);
   }
 
   function submittedCard(task) {
@@ -291,7 +304,7 @@
   function enhanceChrome(model = school50Model()) {
     const view = document.querySelector("#view-school");
     const intro = view?.querySelector(".page-intro p");
-    if (intro) intro.textContent = "What needs action, what's waiting, and what came back.";
+    if (intro) intro.textContent = "What needs action, what's waiting, what came back, and what needs checking with school.";
 
     const toggle = document.querySelector("#school-view-toggle");
     if (toggle) {
@@ -300,7 +313,8 @@
       toggle.innerHTML = [
         ["now", "Now", model.now.length],
         ["submitted", "Submitted", model.submitted.length],
-        ["feedback", "Feedback", model.feedback.length]
+        ["feedback", "Feedback", model.feedback.length],
+        ["overdue", "Overdue", model.overdue.length]
       ].map(([key, label, count]) => `<button type="button" role="tab" data-school-view="${key}" aria-selected="false" aria-pressed="false" aria-label="${label}, ${count} ${count === 1 ? "task" : "tasks"}"><span>${label}</span><span class="school50-count" aria-hidden="true">${count}</span></button>`).join("");
     }
 
@@ -344,6 +358,7 @@
     const model = school50Model();
     if (app.schoolView === "submitted") workspace.innerHTML = renderSubmitted(model.submitted);
     else if (app.schoolView === "feedback") workspace.innerHTML = renderFeedback(model.feedback);
+    else if (app.schoolView === "overdue") workspace.innerHTML = renderOverdue(model.overdue);
     else if (app.schoolView === "now") workspace.innerHTML = renderNow(model.now);
   }
 
@@ -392,7 +407,7 @@
     const style = document.createElement("style");
     style.id = "issue50-school-status-styles";
     style.textContent = `
-      #school-view-toggle { grid-template-columns: repeat(3, minmax(0,1fr)); width: min(100%, 520px); }
+      #school-view-toggle { grid-template-columns: repeat(4, minmax(0,1fr)); width: min(100%, 680px); }
       #school-view-toggle button { display:flex; align-items:center; justify-content:center; gap:7px; min-width:0; }
       .school50-count { display:inline-flex; align-items:center; justify-content:center; min-width:1.45rem; min-height:1.45rem; padding:0 .38rem; border:1px solid currentColor; border-radius:999px; font-size:.72rem; line-height:1; opacity:.8; }
       .school50-subjects-button.active { border-color:var(--brand); color:var(--brand); background:var(--brand-soft); }
@@ -419,12 +434,13 @@
       .school50-empty { padding-block:28px; }
       @media (max-width:640px) {
         .school-toolbar { align-items:stretch; flex-direction:column; }
-        #school-view-toggle { width:100%; }
+        #school-view-toggle { width:100%; grid-template-columns:repeat(2, minmax(0,1fr)); }
         #school-view-toggle button { padding:8px 7px; font-size:.75rem; }
         .school-toolbar-actions { width:100%; }
         .school-toolbar-actions > button { flex:1 1 auto; }
         .school50-card-head { gap:8px; }
       }
+      html.compact-device #school-view-toggle { grid-template-columns:repeat(2, minmax(0,1fr)); }
       html.compact-device #school-view-toggle button,
       html.compact-device .school50-secondary-meta,
       html.compact-device .school50-result span,

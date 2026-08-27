@@ -3,7 +3,7 @@
   "use strict";
 
   const KEYS = new Set(["ArrowLeft", "ArrowRight", "Home", "End"]);
-  const VIEWS = ["now", "submitted", "feedback"];
+  const VIEWS = ["now", "submitted", "feedback", "overdue"];
 
   document.addEventListener("keydown", event => {
     const button = event.target.closest?.("#school-view-toggle [data-school-view]");
