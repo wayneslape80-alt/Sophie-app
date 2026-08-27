@@ -1,5 +1,5 @@
 /* Wave 1 + issue #50 release integration loader.
- * Loads the accepted Wave 1 technique-choice implementation, then the accepted School status modules.
+ * Loads the accepted Wave 1 technique-choice implementation, School status modules, then the PWA trust layer.
  */
 (() => {
   function load(src, onload) {
@@ -13,7 +13,9 @@
 
   load("./assets/skill-pathways-v28-choice-core.js", () =>
     load("./assets/issue50-school-status.js", () =>
-      load("./assets/issue50-school-status-focus.js")
+      load("./assets/issue50-school-status-focus.js", () =>
+        load("./assets/wave1-pwa-trust.js?v=wave1-pwa-trust-draft")
+      )
     )
   );
 })();
