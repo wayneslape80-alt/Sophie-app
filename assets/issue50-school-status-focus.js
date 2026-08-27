@@ -17,8 +17,8 @@
     else index = (index + (event.key === "ArrowRight" ? 1 : -1) + VIEWS.length) % VIEWS.length;
 
     const targetView = VIEWS[index];
-    queueMicrotask(() => {
+    setTimeout(() => {
       document.querySelector(`#school-view-toggle [data-school-view="${targetView}"]`)?.focus();
-    });
+    }, 0);
   });
 })();
