@@ -12,6 +12,7 @@ const APP_FILES = [
   "./assets/skill-pathways-v28-choice.js",
   "./assets/skill-pathways-v28-choice-core.js",
   "./assets/issue50-school-status.js",
+  "./assets/issue50-school-status-focus.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
