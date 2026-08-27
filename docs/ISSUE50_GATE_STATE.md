@@ -10,5 +10,4 @@
 - Merge: NOT AUTHORISED / NOT PERFORMED
 - Deployment: NOT AUTHORISED / NOT PERFORMED
 
-Current issue #50 branch head: `c1c0112a5f7679005b1e2cb443446476e9ff27ac`.
 Production `main` remains unchanged at `312028cd67e991cf41e12dc6a5326bc7e86a201d`.
