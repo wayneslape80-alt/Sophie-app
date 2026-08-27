@@ -1,6 +1,6 @@
-# Wave 1 + School Overdue release candidate
+# Wave 1 + School Overdue production release
 
-This branch is a release integration candidate built from production `main` `312028cd67e991cf41e12dc6a5326bc7e86a201d`.
+Wave 1 Skills/PWA work and the accepted issue #50 School status architecture were released to production on 27 August 2026 through PR #52, followed by the one-file PWA trust-loader correction in PR #53.
 
 ## Source authority
 
@@ -12,13 +12,15 @@ This branch is a release integration candidate built from production `main` `312
 - Accepted School status blob: `c0b8fe35d98de93808282e099a3393571c7172d6`
 - Accepted School focus blob: `c4c0ddeb397029a081a3e659f6e52c1f0b27fc47`
 
-## Reconciliation
+## Production reconciliation
 
-- `assets/skill-pathways-v28-choice.js` is a loader only.
-- Load order is Wave 1 choice core -> School status -> School focus.
+- `assets/skill-pathways-v28-choice.js` is a sequencing loader only.
+- Production load order is Wave 1 choice core -> School status -> School focus -> Wave 1 PWA trust.
+- The trust-layer URL loaded by the page exactly matches the service-worker precache entry: `./assets/wave1-pwa-trust.js?v=wave1-pwa-trust-draft`.
 - Wave 1 service-worker lifecycle/fetch semantics are retained.
-- Service-worker precache adds the choice core and the two School modules.
-- Release-candidate cache generation is `v2-9-2-9-wave1-school-overdue-rc1`.
+- Service-worker precache contains the choice core, the two School modules, and the PWA trust module.
+- The accepted immutable cache generation retains the identifier `v2-9-2-9-wave1-school-overdue-rc1`; the identifier is a cache key and no longer represents release status.
+- No backend Apps Script or Google Sheet/schema change was part of this release.
 
 ## Accepted School behaviour
 
@@ -26,13 +28,19 @@ Primary status order is `Now -> Submitted -> Feedback -> Overdue`.
 
 Approved active `not_submitted` records with a due date before today are excluded from Now and shown in Overdue, after withheld/archived/feedback/submitted precedence. `PreferredSchoolView` persistence remains limited to `now|subjects`; Submitted, Feedback and Overdue are transient.
 
-## Physical-device evidence already completed
+## Physical-device evidence completed before release
 
 - Physical Android layout: PASS
 - TalkBack/accessibility including Overdue: PASS
 - Offline cached shell: PASS
 - Reconnect/recovery: PASS
 
-## Release control
+## Release record
 
-This integration branch does not itself merge or deploy. Production `main` remains unchanged until a separate release decision.
+- PR #52: merged — Wave 1 + School overdue production integration
+- PR #53: merged — load the already-precached PWA trust layer after the accepted modules
+- Source/acceptance PRs #36, #38, #39 and #43: closed unmerged as superseded
+- Issue #50: closed as completed
+- Issue #37: remains open only for later Wave 2 / Wave 3 roadmap work
+
+This document is the durable production release record for the Wave 1 + School Overdue release.
