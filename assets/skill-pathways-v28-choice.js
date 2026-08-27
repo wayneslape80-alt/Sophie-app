@@ -8,5 +8,9 @@
     script.addEventListener("error", () => console.error(`Could not load ${src}`), { once: true });
     document.head.appendChild(script);
   }
-  load("./assets/skill-pathways-v28-choice-core.js", () => load("./assets/issue50-school-status.js"));
+  load("./assets/skill-pathways-v28-choice-core.js", () =>
+    load("./assets/issue50-school-status.js", () =>
+      load("./assets/issue50-school-status-focus.js")
+    )
+  );
 })();
