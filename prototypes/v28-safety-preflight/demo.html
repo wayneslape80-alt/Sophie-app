@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>v2.8 safety preflight prototype — Set Up Sharp Tools Safely</title>
+<style>
+:root{--bg:#eeecde;--surface:#fffef7;--surface-2:#efede3;--ink:#101225;--muted:#66677a;--line:#24263a;--brand:#3f57ff;--brand-soft:#e4e7ff;--shadow:0 12px 30px rgba(16,18,37,.14);font-family:Inter,system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:17px}.stage{min-height:100dvh;padding:28px 16px 120px;background-image:linear-gradient(135deg,rgba(63,87,255,.06) 25%,transparent 25%),linear-gradient(315deg,rgba(255,105,98,.07) 25%,transparent 25%);background-size:32px 32px}.context{max-width:520px;margin:auto}.eyebrow,.opportunity-detail-domain,.rec-progress{font-size:16px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.context h1{font-size:28px;margin:6px 0 10px}.context p{line-height:1.5;color:var(--muted)}.primary-button,.secondary-button,.rec-choice,.close-button{font:inherit;border:1px solid var(--line);border-radius:14px;min-height:48px;padding:11px 13px;background:var(--surface);color:var(--ink);font-weight:800}.primary-button{background:var(--brand);color:white;border-color:var(--brand)}button:disabled{opacity:.55;cursor:not-allowed}.secondary-button{background:var(--surface)}dialog{width:min(calc(100% - 24px),560px);border:1px solid var(--line);border-radius:22px;padding:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}dialog::backdrop{background:rgba(16,18,37,.38)}.dialog-body{padding:20px}.dialog-head{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}.dialog-head h2{font-size:24px;margin:5px 0 0}.close-button{min-width:48px;padding:0;font-size:24px}.rec-progress{margin:14px 0;color:var(--muted)}h3{font-size:20px;margin:8px 0}.rec-copy{line-height:1.5;color:var(--muted)}.rec-option-group{display:grid;gap:10px;margin:12px 0}.rec-choice{text-align:left}.rec-choice[aria-pressed="true"]{border:2px solid var(--brand);background:var(--brand-soft)}.rec-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.rec-unavailable,.rec-eligibility{padding:12px;border-radius:12px;background:var(--surface-2);line-height:1.45}.rec-grid{display:grid;gap:10px}.rec-card{padding:14px;border:1px solid var(--line);border-radius:14px}.pill{display:inline-block;padding:5px 8px;border-radius:99px;background:var(--surface-2);font-size:16px}.metrics{margin-top:20px;padding:14px;border:1px dashed var(--line);border-radius:14px;background:rgba(255,254,247,.88);font-size:16px;line-height:1.45}.metrics strong{display:block;margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <main class="context">
+    <div class="eyebrow">COOKING · TECHNIQUE</div>
+    <h1>Set Up Sharp Tools Safely</h1>
+    <p>Prototype fixture using the real technique/candidate IDs and mocked authenticated catalogue eligibility responses. No production credential is used.</p>
+    <button class="primary-button" type="button" data-v28-learn-technique="COOK-T003">I want to learn this</button>
+    <div class="metrics" id="metrics"><strong>Preflight metrics</strong>Waiting for Step 1…</div>
+  </main>
+</div>
+<dialog id="recommendation-dialog">
+  <div class="dialog-body" id="recommendation-dialog-body"></div>
+</dialog>
+<script>
+const REC_SAFETY_OPTIONS = [
+  ["none","No adult available right now"],
+  ["adult_available","An adult can come if I need them"],
+  ["adult_nearby","An adult will be nearby"],
+  ["direct_supervision","An adult will stay with me"]
+];
+const app = {
+  skillsDomain:"cooking",
+  v28TechniqueChoice:{techniqueId:"",techniqueTitle:"",domain:"",safetySupport:"",candidates:[],error:""},
+  rec:{view:"",loading:false,recommendationSessionId:"",catalogue:[],availableSafetySupport:"",supportChoice:""},
+  v28CandidateIdsForTechnique(id,domain){return id==="COOK-T003"&&domain==="cooking"?["LC-COOK-001"]:[];}
+};
+function safe(value){return String(value??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+function normaliseCatalogueCandidate(v={}){return{candidateId:String(v.candidateId||""),title:String(v.title||""),estimatedMinutes:Number(v.estimatedMinutes)||0,eligibility:{status:String(v.eligibility?.status||""),reason:String(v.eligibility?.reason||"")}};}
+function recommendationUnavailableMessage(){return "Learning choices are unavailable right now.";}
+function writeNavigationState(){}
+window.__mockCalls=[];
+const delayBySupport={none:90,adult_available:130,adult_nearby:170,direct_supervision:210};
+function recommendationPost(operation){
+  const support=operation.availableSafetySupport;
+  const started=performance.now();
+  window.__mockCalls.push({support,started});
+  return new Promise(resolve=>setTimeout(()=>{
+    const eligible=support==="direct_supervision";
+    const call=window.__mockCalls.find(item=>item.support===support);
+    call.completed=performance.now();
+    resolve([{candidateId:"LC-COOK-001",title:"Set Up for Safe Cutting",estimatedMinutes:15,eligibility:{status:eligible?"eligible":"blocked",reason:eligible?"":"This linked activity currently needs direct supervision."}}]);
+  },delayBySupport[support]));
+}
+function renderRecommendationDialog(){
+  const flow=app.v28TechniqueChoice;
+  const body=document.querySelector("#recommendation-dialog-body");
+  if(app.rec.view==="technique-safety"){
+    body.innerHTML=`<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Set up this learning choice</h2></div><button type="button" class="close-button" data-rec-exit aria-label="Close">×</button></div><div class="rec-progress">Step 1 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><p class="rec-copy">Who is around while you practise? This checks safety eligibility; it is not a score of what you can do.</p><div class="rec-option-group rec-safety" role="group" aria-label="Adult safety support">${REC_SAFETY_OPTIONS.map(([value,label])=>`<button class="rec-choice" type="button" data-v28-technique-safety="${safe(value)}" aria-pressed="${flow.safetySupport===value}">${safe(label)}</button>`).join("")}</div><div class="rec-controls"><button class="primary-button" type="button" data-v28-check-technique ${flow.safetySupport?"":"disabled"}>Show learning choices</button><button class="secondary-button" type="button" data-rec-exit>Not now</button></div>`;
+  } else if(app.rec.view==="technique-candidates"){
+    body.innerHTML=`<div class="dialog-head"><div><span class="opportunity-detail-domain">COOKING · LEARN</span><h2>Choose a real activity</h2></div></div><div class="rec-progress">Step 2 of 3</div><h3>${safe(flow.techniqueTitle)}</h3><div class="rec-grid">${flow.candidates.map(candidate=>`<article class="rec-card"><h3>${safe(candidate.title)}</h3><span class="pill">About ${candidate.estimatedMinutes} min</span><div class="rec-eligibility"><strong>Available for this setup</strong></div></article>`).join("")}</div>`;
+  }
+}
+document.addEventListener("click",event=>{
+  const learn=event.target.closest("[data-v28-learn-technique]");
+  if(learn){
+    const flow=app.v28TechniqueChoice;
+    flow.techniqueId=learn.dataset.v28LearnTechnique;
+    flow.techniqueTitle="Set Up Sharp Tools Safely";
+    flow.domain="cooking";
+    flow.safetySupport="";
+    flow.candidates=[];
+    app.rec.view="technique-safety";
+    renderRecommendationDialog();
+    document.querySelector("#recommendation-dialog").showModal();
+    return;
+  }
+  const safety=event.target.closest("[data-v28-technique-safety]");
+  if(safety){app.v28TechniqueChoice.safetySupport=safety.dataset.v28TechniqueSafety;renderRecommendationDialog();}
+});
+</script>
+<script src="./prototype.js"></script>
+<script>
+function updateMetrics(){
+  const m=app.v28SafetyPreflightPrototype?.lastMetrics;
+  if(!m)return;
+  const parallel=Math.round(m.wallClockMs);
+  const serial=m.supports.reduce((sum,row)=>sum+row.durationMs,0);
+  document.querySelector("#metrics").innerHTML=`<strong>Preflight metrics</strong>${m.requestCount} authenticated catalogue-shaped requests in parallel · ${parallel} ms wall clock in this fixture · about ${serial} ms if serial.`;
+}
+const timer=setInterval(()=>{updateMetrics();if(document.documentElement.dataset.v28SafetyPreflight==="ready")clearInterval(timer);},30);
+setTimeout(()=>document.querySelector("[data-v28-learn-technique]").click(),60);
+</script>
+</body>
+</html>
